@@ -33,7 +33,7 @@ matf32_forward_substitution(const matf32_t* const p_l, float* const p_b, float* 
 
 
 /*
- * @brief   Solves a system a Lx=b system through backward substitution. U must be a lower triangular matrix,
+ * @brief   Solves a system a Ux=b system through backward substitution. U must be a lower triangular matrix,
  * the length of b and x must be the same as U amount of rows.
  *
  * @param[in]       p_u    Points to lower triangular matrix.
@@ -48,5 +48,7 @@ err_status_t
 matf32_backward_substitution(const matf32_t* const p_u, float* const p_b, float* p_x);
 
 
+err_status_t
+matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_l);
 
 #endif // ROBOTAT_LINSOLVE_H_

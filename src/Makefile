@@ -2,8 +2,6 @@
 
 INCLUDE = ../include
 
-MATF32_SRC = ./matf32
-
 CC = gcc
 
 
