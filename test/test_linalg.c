@@ -29,6 +29,21 @@ float b1_vector[] = {1, 8, 32};
 float b2_vector[] = {10, 13, 6};
 float x_vector[] = {0, 0, 0};
 
+float D_data[] = {1, 2, 3, 4,
+                  2, 1, 2, 3,
+                  3, 2, 1, 2,
+                  4, 3, 2, 1};
+
+float E_data[] = {1, 2, 3,
+                  2, 1, 2,
+                  3, 2, 1};
+
+
+float F_data[] = { 1,  2,  3,  4,
+                   5,  6,  7,  8,
+                   9, 10, 11, 12,
+                  13, 14, 15, 16};
+
 void
 main(void)
 {
@@ -37,40 +52,6 @@ main(void)
     matf32_init(&A, 3, 3, A_data);
     matf32_init(&B, 3, 3, B_data);
     matf32_init(&C, 3, 3, C_data);
-
-    printf("Matrix A: \n");
-    matf32_print(&A);
-    printf("Matrix B: \n");
-    matf32_print(&B);
-
-    printf("Testing add: \n");
-    matf32_add(&A, &B, &C);
-    matf32_print(&C);
-
-
-    printf("Testing sub: \n");
-    matf32_sub(&A, &B, &C);
-    matf32_print(&C);
-
-    printf("Testing scale: \n");
-    matf32_scale(&A, 10, &C);
-    matf32_print(&C);
-
-    printf("Testing transpose: \n");
-    matf32_trans(&A, &C);
-    matf32_print(&C);
-
-    printf("Testing equal: \n");
-
-    if (matf32_is_equal(&A, &B))
-    {
-        printf("A and B are equal.\n\n");
-    }
-    else
-    {
-        printf("A and B are NOT equal.\n\n");
-    }
-
 
     matf32_init(&Upper, 3, 3, Upper_data);
     matf32_init(&Lower, 3, 3, Lower_data);
@@ -163,10 +144,40 @@ main(void)
         printf("%f\n", x_vector[i]);
     }
 
-}
+    printf("\n\nTesting symmetry check:\n");
+    printf("Matrix D: \n");
+    matf32_t D, E;
+    matf32_init(&D, 4, 4, D_data);
+    matf32_init(&E, 3, 3, E_data);
 
-err_status_t
-matf32_equal(const matf32_t* p_srca, const matf32_t* p_srcb)
-{
+    matf32_print(&D);
+
+    if (matf32_check_symmetric(&D))
+    {
+        printf("D is symmetrical.\n");
+    }
+    else
+    {
+        printf("D is not symmetrical.\n");
+    }
+
+
+    printf("\nMatrix E: \n");
+    matf32_print(&E);
+
+    if (matf32_check_symmetric(&E))
+    {
+        printf("E is symmetrical.\n");
+    }
+    else
+    {
+        printf("E is not symmetrical.\n");
+    }
+
+    printf("\n\n");
+    
+    matf32_t F;
+    matf32_init(&F, 4, 4, F_data);
+    matf32_check_hessenberg_lower(&F);
 
 }
