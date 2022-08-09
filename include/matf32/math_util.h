@@ -18,6 +18,7 @@
 #include <stdbool.h>                    // For bool datatype.
 #include <time.h>                       // For srand, clock.
 
+#include "constants.h"
 
 /**
  * @brief   Find the dot product of two vectors, pointed by p_srca and p_srcb, of the same size.
@@ -189,6 +190,23 @@ std(float* p_src, uint16_t length);
  */
 bool
 is_equal(float* p_a, float* p_b, uint16_t length);
+
+
+/**
+ * @brief   Compares two floats with a given precision.
+ *
+ * @param[in]   a   First value.
+ * @param[in]   b   Second vaue.
+ * @param[in]   p   Precision value.
+ *
+ * @return  If values are equal within precision.
+ */
+// static keyword fixes explained error of undefined ref when incuding constants.h in math_util.h
+static inline bool
+is_equal_margin(float a, float b)
+{
+    return (abs(a-b) <= MATH_EQUAL_PRECISION);
+}
 
 
 #endif // ROBOTAT_MATH_UTIL_H_
