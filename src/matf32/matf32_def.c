@@ -30,6 +30,47 @@ matf32_print(const matf32_t* p_src)
 }
 
 
+void
+err_status_print(err_status_t err)
+{
+    switch(err)
+    {
+        case MATH_SUCCESS:
+            printf("MATH_SUCCESS\n");
+            break;
+            
+        case MATH_ARGUMENT_ERROR:
+            printf("MATH_ARGUMENT_ERROR\n");
+            break;
+            
+        case MATH_LENGTH_ERROR:
+            printf("MATH_LENGTH_ERROR\n");
+            break;
+            
+        case MATH_SIZE_MISMATCH:
+            printf("MATH_SIZE_MISMATCH\n");
+            break;
+            
+        case MATH_NANINF:
+            printf("MATH_NANINF\n");
+            break;
+            
+        case MATH_SINGULAR:
+            printf("MATH_SINGULAR\n");
+            break;
+            
+        case MATH_TEST_FAILURE:
+            printf("MATH_TEST_FAILURE\n");
+            break;
+            
+        case MATH_DECOMPOSITION_FAILURE:
+            printf("MATH_DECOMPOSITION_FAILURE\n");
+            break;
+            
+    }
+}
+
+
 // ====================================================================================================
 // Special matrix initializations
 // ====================================================================================================

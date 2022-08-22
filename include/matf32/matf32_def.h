@@ -87,6 +87,16 @@ matf32_init(matf32_t* const instance, uint16_t num_rows, uint16_t num_cols, floa
 void
 matf32_print(const matf32_t* p_src);
 
+/**
+ * @brief   Prints error status to console.
+ *
+ * @param[in]   err   Error stats value to print.
+ *
+ * @return  None.
+ */
+void
+err_status_print(err_status_t err);
+
 
 /**
  * @brief   Gets an specific element from a matrix.
