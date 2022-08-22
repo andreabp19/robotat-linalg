@@ -27,8 +27,17 @@ matf32_check_triangular_upper: lib
 matf32_check_triangular_lower: lib
 	$(CC) test_matf32_check_triangular_lower.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_matf32_check_triangular_lower
 
+matf32_check_symmetric: lib
+	$(CC) test_matf32_check_symmetric.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_matf32_check_symmetric
+
 matf32_cholesky: lib
 	$(CC) test_matf32_cholesky.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_matf32_cholesky
+
+matf32_lu: lib
+	$(CC) test_matf32_lu.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_matf32_lu
+
+matf32_linsolve: lib
+	$(CC) test_matf32_linsolve.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_matf32_linsolve
 
 
 lib:

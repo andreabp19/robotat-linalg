@@ -17,8 +17,6 @@ float Result_data[] = {1, -0.0/0.0, -0.0/0.0,
                        0, sqrtf(2), -1.0/0.0,
                        1,        0, sqrtf(2)};
 
-err_status_t cholesky(const matf32_t* const p_a, matf32_t* const p_c);
-
 int
 main(void)
 {
@@ -30,11 +28,13 @@ main(void)
 
     printf("Matrix A: \n");
     matf32_print(&A);
+
     printf("Matrix C: \n");
     matf32_print(&C);
 
     printf("Testing cholesky: \n");
     matf32_cholesky(&A, &C);
+
     printf("Matrix C: \n");
     matf32_print(&C);
 

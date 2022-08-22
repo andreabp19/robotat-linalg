@@ -12,6 +12,33 @@
 
 
 // ====================================================================================================
+// Data structures, enums and type definitions
+// ====================================================================================================
+
+
+/**
+ * @brief Linear solver method.
+ * 
+ */
+typedef enum
+{
+    FORWARD_SUBS,
+    BACKWARD_SUBS,
+    CHOLESKY,
+    QR,
+    LU
+} linsolve_method_t;
+
+
+void
+print_linsolve_method(linsolve_method_t lsm);
+
+
+linsolve_method_t
+matf32_linsolve_get_method(const matf32_t* const p_a);
+
+
+// ====================================================================================================
 // Matrix datatype-based linear solvers
 // ====================================================================================================
 
@@ -22,14 +49,14 @@
  *
  * @param[in]       p_l    Points to lower triangular matrix.
  * @param[in]       p_b    Points to b vector.
- * @param[in,out]   p_x    Points to otput x vector.
+ * @param[in,out]   p_x    Points to output x vector.
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-matf32_forward_substitution(const matf32_t* const p_l, float* const p_b, float* p_x);
+matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, float* p_x);
 
 
 /*
@@ -38,17 +65,79 @@ matf32_forward_substitution(const matf32_t* const p_l, float* const p_b, float* 
  *
  * @param[in]       p_u    Points to lower triangular matrix.
  * @param[in]       p_b    Points to b vector.
- * @param[in,out]   p_x    Points to otput x vector.
+ * @param[in,out]   p_x    Points to output x vector.
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-matf32_backward_substitution(const matf32_t* const p_u, float* const p_b, float* p_x);
+matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, float* p_x);
 
 
+/*
+ * @brief   Calculates the Cholesky decomposition of a matrix.
+ *
+ * @param[in]       p_a    Points to matrix to factorize.
+ * @param[in]       p_c    Points to lower triangular factorized matrix.
+ *
+ * @return  Execution status
+ *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ */
 err_status_t
-matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_l);
+matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
+
+
+/**
+ * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
+ * such that PA = LU.
+ *
+ * @param[in]       p_src   Points to square matrix to decompose.
+ * @param[in, out]  p_l     Points to the lower result of the decomposition.
+ * @param[in, out]  p_u     Points to the upper of the decomposition.
+ *
+ * @return  Execution status
+ *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SINGULAR :         Matrix is singular.
+ */
+err_status_t
+matf32_lu(const matf32_t* p_a, matf32_t* p_l, matf32_t* p_u);
+
+/*
+ * @brief   Solve the linear system Ax=b,
+ * automatically selecting the method to use according to A matrix type.
+ *
+ * @param[in]       p_a    Points to system matrix.
+ * @param[in]       p_b    Points to b vector.
+ * @param[in,out]   p_x    Points to output x vector.
+ *
+ * @return  Execution status
+ *              MATH_SUCCESS :                  Operation successful.
+ *              MATH_SIZE_MISMATCH :            Matrix size check failed.
+ *              MATH_DECOMPOSITION_FAILURE :    Failed decomposition method.
+ *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
+ */
+err_status_t
+matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* p_x);
+
+
+/*
+ * @brief   Solve the linear system Ax=b, with specified method.
+ *
+ * @param[in]       p_a     Points to system matrix.
+ * @param[in]       p_b     Points to b vector.
+ * @param[in,out]   p_x     Points to output x vector.
+ * @param[in]       method  Metohd to use.
+ *
+ * @return  Execution status
+ *              MATH_SUCCESS :                  Operation successful.
+ *              MATH_SIZE_MISMATCH :            Matrix size check failed.
+ *              MATH_DECOMPOSITION_FAILURE :    Failed decomposition method.
+ *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
+ */
+err_status_t
+matf32_linsolve_method(const matf32_t* const p_a, const float* const p_b, float* p_x, linsolve_method_t method);
 
 #endif // ROBOTAT_LINSOLVE_H_
