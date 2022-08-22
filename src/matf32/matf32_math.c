@@ -154,6 +154,9 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
     return MATH_SUCCESS;
 }
 
+
+// fix
+// move to linsolve
 err_status_t
 matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 {
@@ -164,7 +167,9 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 
     // Check if the input matrix is square 
     if (p_src->num_cols != p_src->num_rows)
+    {
         return MATH_SIZE_MISMATCH;
+    }
 
     uint16_t ind_max;
     uint16_t tmp_int;
@@ -172,40 +177,53 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 
     // Don't copy if the pointer to the decomposition data is the same as the input
     if (p_src->p_data != p_lu->p_data)
+    {
         memcpy(p_lu->p_data, p_src->p_data, p_src->num_rows * p_src->num_cols * sizeof(float));
+    }
 
     // Create the pivot vector
     for (uint16_t i = 0; i < row; ++i)
+    {
         pivot[i] = i;
+    }
 
     for (uint16_t i = 0; i < row - 1; ++i)
     {
         ind_max = i;
         for (uint16_t j = i + 1; j < p_src->num_rows; ++j)
+        {
             if (fabsf(p_lu->p_data[row * pivot[j] + i]) > fabsf(p_lu->p_data[row * pivot[ind_max] + i]))
+            {
                 ind_max = j;
+            }
+        }
 
         tmp_int = pivot[i];
         pivot[i] = pivot[ind_max];
         pivot[ind_max] = tmp_int;
 
         if (fabsf(p_lu->p_data[row * pivot[i] + i]) < FLT_EPSILON)
+        {
             return MATH_SINGULAR; // matrix is singular (up to tolerance)
+        }
 
         for (uint16_t j = i + 1; j < row; ++j)
         {
             p_lu->p_data[row * pivot[j] + i] = p_lu->p_data[row * pivot[j] + i] / p_lu->p_data[row * pivot[i] + i];
 
             for (uint16_t k = i + 1; k < row; ++k)
+            {
                 p_lu->p_data[row * pivot[j] + k] = p_lu->p_data[row * pivot[j] + k]
                 - p_lu->p_data[row * pivot[i] + k] * p_lu->p_data[row * pivot[j] + i];
+            }
         }
     }
 
     return MATH_SUCCESS;
 }
 
-static void 
+// move to linsolve
+void 
 solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
 {
     // Forward substitution with pivoting
@@ -227,7 +245,7 @@ solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row)
     }
 }
 
-
+// move to linsolve
 err_status_t
 matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 {
