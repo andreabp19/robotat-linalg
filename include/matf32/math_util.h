@@ -1,7 +1,7 @@
 /**
  * @file math_util.h
  *
- * Linear algebra routines that do not depend on the matrix datatype
+ * Linear algebra routines that do not depend on the matrix datatype.
  *
  */
 
@@ -201,12 +201,25 @@ is_equal(float* p_a, float* p_b, uint16_t length);
  *
  * @return  If values are equal within precision.
  */
-// static keyword fixes explained error of undefined ref when incuding constants.h in math_util.h
+// static keyword fixes unexplained error of undefined ref when incuding constants.h in math_util.h
 static inline bool
 is_equal_margin(float a, float b)
 {
-    return (abs(a-b) <= MATH_EQUAL_PRECISION);
+    return (fabs(a-b) <= MATH_EQUAL_PRECISION);
 }
+
+
+/**
+ * @brief   Changes NaN and Inf alues to zero.
+ * Needed to avoid errors in cases where irrelevant elements end set as NaN or Inf.
+ *
+ * @param[in]   p_a   Points to first array.
+ * @param[in]   p_b   Points to second array.
+ *
+ * @return  If arrays values are equal.
+ */
+void
+zero_patch(float* p_dst, uint16_t length);
 
 
 #endif // ROBOTAT_MATH_UTIL_H_

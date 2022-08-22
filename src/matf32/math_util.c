@@ -194,3 +194,16 @@ is_equal(float* p_a, float* p_b, uint16_t length)
 
     return true;
 }
+
+void
+zero_patch(float* p_a, uint16_t length)
+{
+    for (uint16_t i = 0; i < length; ++i)
+    {
+        // skip if both are NaN
+        if (isnan(p_a[i]) || isinf(p_a[i]))
+        {
+            p_a[i] = 0.0;
+        }
+    }
+}
