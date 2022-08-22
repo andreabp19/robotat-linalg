@@ -82,7 +82,7 @@ bool
 matf32_check_symmetric(const matf32_t* const p_mat)
 {
 #ifdef MATH_MATRIX_CHECK
-    if (matf32_check_square_matrix(p_mat))
+    if (!matf32_check_square_matrix(p_mat))
     {
         return false;
     }
@@ -90,14 +90,23 @@ matf32_check_symmetric(const matf32_t* const p_mat)
 
     float* p_data_source = p_mat->p_data;
 
-    uint16_t size = p_mat->num_cols*p_mat->num_rows -1;
+    uint16_t size = p_mat->num_cols;
 
-    for (uint16_t i = 0; i < size; ++i)
+    for (uint16_t i = 0; i < size-1; ++i)
     {
-        // change != with a comparation with error (abs(a-b) < err)
-        if (p_data_source[i] != p_data_source[size-i])
+        for (int j = 1; j < size; ++j)
         {
-            return false;
+            // skip diagonal
+            if (i == j)
+            {
+                continue;
+            }
+
+            // compare within presicion
+            if (!is_equal_margin(p_data_source[i*size + j], p_data_source[j*size + i]))
+            {
+                return false;
+            }
         }
     }
 
