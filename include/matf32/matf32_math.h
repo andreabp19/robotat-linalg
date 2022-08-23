@@ -112,7 +112,7 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
  *
  * @param[in]       p_src   Points to square matrix to decompose.
  * @param[in, out]  p_lu    Points to the result of the decomposition.
- * @param[in, out]  p_dst   Points to the pivot vector.
+ * @param[in, out]  pivot   Points to the pivot vector.
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.

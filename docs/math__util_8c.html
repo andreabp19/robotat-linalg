@@ -161,7 +161,9 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">p_src</td><td>Points to matrix to copy from. </td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">p_dst</td><td>Points to matrix to copy to.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">p_dst</td><td>Points to matrix to copy to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">row</td><td>Amount of rows. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">column</td><td>Amount of columns.</td></tr>
   </table>
   </dd>
 </dl>
@@ -347,7 +349,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">p_a</td><td>Points to first array. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">p_b</td><td>Points to second array.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p_b</td><td>Points to second array. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Arrays length.</td></tr>
   </table>
   </dd>
 </dl>
@@ -655,7 +658,7 @@ Functions</h2></td></tr>
           <td class="memname">void zero_patch </td>
           <td>(</td>
           <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>p_dst</em>, </td>
+          <td class="paramname"><em>p_a</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -674,8 +677,8 @@ Functions</h2></td></tr>
 <p>Changes NaN and Inf alues to zero. Needed to avoid errors in cases where irrelevant elements end set as NaN or Inf. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">p_a</td><td>Points to first array. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">p_b</td><td>Points to second array.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p_a</td><td>Points to array. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Array length.</td></tr>
   </table>
   </dd>
 </dl>

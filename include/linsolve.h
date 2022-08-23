@@ -29,11 +29,26 @@ typedef enum
     LU
 } linsolve_method_t;
 
-
+/**
+*  @brief   Prints string representing the linear method.
+*/
 void
 print_linsolve_method(linsolve_method_t lsm);
 
 
+/**
+ * @brief   Solves a system a Lx=b system through forward substitution. L must be a lower triangular matrix,
+ * the length of b and x must be the same as L amount of rows.
+ *
+ * @param[in]       p_a    Points to system matrix.
+ *
+ * @return  linsolve_method_t
+ *              FORWARD_SUBS :  Forward substitution.
+ *              BACKWARD_SUBS : Backward substitution.
+ *              CHOLESKY :      Cholesky factorization
+ *              QR :            QR factorization.
+ *              LU :            LU factorization.
+ */
 linsolve_method_t
 matf32_linsolve_get_method(const matf32_t* const p_a);
 
@@ -43,7 +58,7 @@ matf32_linsolve_get_method(const matf32_t* const p_a);
 // ====================================================================================================
 
 
-/*
+/**
  * @brief   Solves a system a Lx=b system through forward substitution. L must be a lower triangular matrix,
  * the length of b and x must be the same as L amount of rows.
  *
@@ -59,7 +74,7 @@ err_status_t
 matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, float* p_x);
 
 
-/*
+/**
  * @brief   Solves a system a Ux=b system through backward substitution. U must be a lower triangular matrix,
  * the length of b and x must be the same as U amount of rows.
  *
@@ -75,7 +90,7 @@ err_status_t
 matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, float* p_x);
 
 
-/*
+/**
  * @brief   Calculates the Cholesky decomposition of a matrix.
  *
  * @param[in]           p_a    Points to matrix to factorize.
@@ -93,7 +108,7 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
  * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
  * such that PA = LU.
  *
- * @param[in]       p_src   Points to square matrix to decompose.
+ * @param[in]       p_a   Points to square matrix to decompose.
  * @param[in, out]  p_l     Points to the lower result of the decomposition.
  * @param[in, out]  p_u     Points to the upper of the decomposition.
  *
@@ -105,7 +120,7 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* p_l, matf32_t* p_u);
 
-/*
+/**
  * @brief   Solve the linear system Ax=b,
  * automatically selecting the method to use according to A matrix type.
  *
@@ -123,7 +138,7 @@ err_status_t
 matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* p_x);
 
 
-/*
+/**
  * @brief   Solve the linear system Ax=b, with specified method.
  *
  * @param[in]       p_a     Points to system matrix.

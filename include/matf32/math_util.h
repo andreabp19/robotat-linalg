@@ -110,6 +110,8 @@ randn(float* p_dst, uint16_t length, float mu, float sigma);
  *
  * @param[in]       p_src   Points to matrix to copy from.
  * @param[in, out]  p_dst   Points to matrix to copy to.
+ * @param[in]       row     Amount of rows.
+ * @param[in]       column  Amount of columns.
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.
@@ -183,8 +185,9 @@ std(float* p_src, uint16_t length);
 /**
  * @brief   Compares two arrays.
  *
- * @param[in]   p_a   Points to first array.
- * @param[in]   p_b   Points to second array.
+ * @param[in]   p_a     Points to first array.
+ * @param[in]   p_b     Points to second array.
+ * @param[in]   length  Arrays length.
  *
  * @return  If arrays values are equal.
  */
@@ -213,13 +216,13 @@ is_equal_margin(float a, float b)
  * @brief   Changes NaN and Inf alues to zero.
  * Needed to avoid errors in cases where irrelevant elements end set as NaN or Inf.
  *
- * @param[in]   p_a   Points to first array.
- * @param[in]   p_b   Points to second array.
+ * @param[in]   p_a     Points to array.
+ * @param[in]   length  Array length.
  *
  * @return  If arrays values are equal.
  */
 void
-zero_patch(float* p_dst, uint16_t length);
+zero_patch(float* p_a, uint16_t length);
 
 
 #endif // ROBOTAT_MATH_UTIL_H_
