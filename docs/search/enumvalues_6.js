@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['zoh_233',['ZOH',['../robotat__control_8h.html#aa0d00368ca0d1f134e8e112e45ce7b57a1a16142c263a8206b3dfa08f37257493',1,'robotat_control.h']]]
+  ['qr_265',['QR',['../linsolve_8h.html#af7b80e182bc3b1a898fa12a252d9fd3fa427d8933c3f220f92b96cd2fe4a08351',1,'linsolve.h']]]
 ];

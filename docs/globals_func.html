@@ -88,6 +88,10 @@ $(function() {
 
 
 <h3><a id="index_e"></a>- e -</h3><ul>
+<li>err_status_print()
+: <a class="el" href="matf32__def_8c.html#a13db01fbbb817ea2acf807459ff61768">matf32_def.c</a>
+, <a class="el" href="matf32__def_8h.html#a13db01fbbb817ea2acf807459ff61768">matf32_def.h</a>
+</li>
 <li>eye()
 : <a class="el" href="math__util_8c.html#a4327019ccfa9b96b5b1d89621760ba20">math_util.c</a>
 , <a class="el" href="math__util_8h.html#a4327019ccfa9b96b5b1d89621760ba20">math_util.h</a>
@@ -149,11 +153,20 @@ $(function() {
 , <a class="el" href="matf32__math_8h.html#aefc3b50c0d7f777c73193ba0be6179a7">matf32_math.h</a>
 </li>
 <li>matf32_backward_substitution()
-: <a class="el" href="linsolve_8c.html#add3e9f92289ee2be02f05baf41f46b94">linsolve.c</a>
-, <a class="el" href="linsolve_8h.html#add3e9f92289ee2be02f05baf41f46b94">linsolve.h</a>
+: <a class="el" href="linsolve_8c.html#a90800cc3d2e8e7f21b0d3ef83b057476">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#a90800cc3d2e8e7f21b0d3ef83b057476">linsolve.h</a>
 </li>
-<li>matf32_check_square_matrix()
-: <a class="el" href="matf32__check_8h.html#a35ffd25a0483ebc49a03f7177cb1f598">matf32_check.h</a>
+<li>matf32_check_hessenberg_lower()
+: <a class="el" href="matf32__check_8c.html#a0c54c8aeb9b1bd0abc8261d36a2ac4fa">matf32_check.c</a>
+, <a class="el" href="matf32__check_8h.html#a0c54c8aeb9b1bd0abc8261d36a2ac4fa">matf32_check.h</a>
+</li>
+<li>matf32_check_hessenberg_upper()
+: <a class="el" href="matf32__check_8c.html#a8e6c7d288e3bc51bbe0f3ce48f0abd4d">matf32_check.c</a>
+, <a class="el" href="matf32__check_8h.html#a8e6c7d288e3bc51bbe0f3ce48f0abd4d">matf32_check.h</a>
+</li>
+<li>matf32_check_symmetric()
+: <a class="el" href="matf32__check_8c.html#a0a1aadce13ca73083780b2804707cfb3">matf32_check.c</a>
+, <a class="el" href="matf32__check_8h.html#a0a1aadce13ca73083780b2804707cfb3">matf32_check.h</a>
 </li>
 <li>matf32_check_triangular_lower()
 : <a class="el" href="matf32__check_8c.html#ab4c244f9fdc9c54ea4519ccafa9c1583">matf32_check.c</a>
@@ -162,6 +175,10 @@ $(function() {
 <li>matf32_check_triangular_upper()
 : <a class="el" href="matf32__check_8c.html#a70d0a9ace39f0717585ca79535307b21">matf32_check.c</a>
 , <a class="el" href="matf32__check_8h.html#a70d0a9ace39f0717585ca79535307b21">matf32_check.h</a>
+</li>
+<li>matf32_cholesky()
+: <a class="el" href="linsolve_8c.html#a2ed4db2895dff45cdff5721622bb778a">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#a2ed4db2895dff45cdff5721622bb778a">linsolve.h</a>
 </li>
 <li>matf32_diag()
 : <a class="el" href="matf32__def_8c.html#a5ac2b407a5aecd5e5a7b472201651d29">matf32_def.c</a>
@@ -172,8 +189,8 @@ $(function() {
 , <a class="el" href="matf32__def_8h.html#a02421a777aa00791613abae0dcaa4ba7">matf32_def.h</a>
 </li>
 <li>matf32_forward_substitution()
-: <a class="el" href="linsolve_8c.html#ab91076ca880b9bd64ee4f295aaa33542">linsolve.c</a>
-, <a class="el" href="linsolve_8h.html#ab91076ca880b9bd64ee4f295aaa33542">linsolve.h</a>
+: <a class="el" href="linsolve_8c.html#a908f68840ee5847a0455bdaa9b4a8f87">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#a908f68840ee5847a0455bdaa9b4a8f87">linsolve.h</a>
 </li>
 <li>matf32_init()
 : <a class="el" href="matf32__def_8c.html#a67c53b326cac94f8870a97f334c071ef">matf32_def.c</a>
@@ -186,6 +203,22 @@ $(function() {
 <li>matf32_is_equal()
 : <a class="el" href="matf32__check_8c.html#a1f369b22ec44cb73ef21f329a94fa9f7">matf32_check.c</a>
 , <a class="el" href="matf32__check_8h.html#a1f369b22ec44cb73ef21f329a94fa9f7">matf32_check.h</a>
+</li>
+<li>matf32_linsolve()
+: <a class="el" href="linsolve_8c.html#a31f125e93b74d8e1caa6ceda4ff367c8">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#a7282fbe1d7747b1e79f66a0bf6937d79">linsolve.h</a>
+</li>
+<li>matf32_linsolve_get_method()
+: <a class="el" href="linsolve_8c.html#aa9c1035951712c7d5881024312cf5c17">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#aa9c1035951712c7d5881024312cf5c17">linsolve.h</a>
+</li>
+<li>matf32_linsolve_method()
+: <a class="el" href="linsolve_8c.html#add2ccc133e1e331f86c5f12974f6a45d">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#add2ccc133e1e331f86c5f12974f6a45d">linsolve.h</a>
+</li>
+<li>matf32_lu()
+: <a class="el" href="linsolve_8c.html#ad06cdc18c5f6383a889b482049ab1552">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#ad06cdc18c5f6383a889b482049ab1552">linsolve.h</a>
 </li>
 <li>matf32_lup()
 : <a class="el" href="matf32__math_8c.html#a25087775382c75e44445e4cb607c7a89">matf32_math.c</a>
@@ -255,6 +288,10 @@ $(function() {
 : <a class="el" href="math__util_8c.html#a7321947cdcdbef20a76d6900a3fc4a4b">math_util.c</a>
 , <a class="el" href="math__util_8h.html#a7321947cdcdbef20a76d6900a3fc4a4b">math_util.h</a>
 </li>
+<li>print_linsolve_method()
+: <a class="el" href="linsolve_8c.html#a1c4dab99e1a7c263f275b0a4f2f29196">linsolve.c</a>
+, <a class="el" href="linsolve_8h.html#a1c4dab99e1a7c263f275b0a4f2f29196">linsolve.h</a>
+</li>
 </ul>
 
 
@@ -274,6 +311,9 @@ $(function() {
 <li>sign()
 : <a class="el" href="math__util_8c.html#a56754c0f0b40e29f4b42f525f6bdf1f2">math_util.c</a>
 , <a class="el" href="math__util_8h.html#a56754c0f0b40e29f4b42f525f6bdf1f2">math_util.h</a>
+</li>
+<li>solve()
+: <a class="el" href="matf32__math_8c.html#a9c9ba2e7b7ae7c5169072e1b54ee46b8">matf32_math.c</a>
 </li>
 <li>ss()
 : <a class="el" href="robotat__control_8c.html#a0377300652a4184364cb46133142596d">robotat_control.c</a>
@@ -295,6 +335,10 @@ $(function() {
 
 
 <h3><a id="index_z"></a>- z -</h3><ul>
+<li>zero_patch()
+: <a class="el" href="math__util_8c.html#a9080e77d29b866bc62c3338221b73d92">math_util.c</a>
+, <a class="el" href="math__util_8h.html#ada9cec469fb2382f374d579e38372349">math_util.h</a>
+</li>
 <li>zeros()
 : <a class="el" href="math__util_8c.html#a2c620c8421439023d6765cc40e44c31a">math_util.c</a>
 , <a class="el" href="math__util_8h.html#a2c620c8421439023d6765cc40e44c31a">math_util.h</a>

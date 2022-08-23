@@ -75,38 +75,52 @@ $(function() {
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="matf32__def_8h.html">matf32_def.h</a>&quot;</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">// ====================================================================================================</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">// Matrix datatype-based checks</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">// ====================================================================================================</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="math__util_8h.html">matf32/math_util.h</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">// ====================================================================================================</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">// Matrix datatype-based checks</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">// ====================================================================================================</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="matf32__check_8h.html#a35ffd25a0483ebc49a03f7177cb1f598">   33</a></span>&#160;<a class="code" href="matf32__check_8h.html#a35ffd25a0483ebc49a03f7177cb1f598">matf32_check_square_matrix</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat)</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;{</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordflow">return</span> (p_mat-&gt;<a class="code" href="structmatf32__t.html#aeae000579eee2a807875fc47911c4aee">num_cols</a> == p_mat-&gt;<a class="code" href="structmatf32__t.html#a13a796bf0174f885e2419c0c56f0f185">num_rows</a>);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;}</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keywordtype">bool</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<a class="code" href="matf32__check_8h.html#a70d0a9ace39f0717585ca79535307b21">matf32_check_triangular_upper</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="keywordtype">bool</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<a class="code" href="matf32__check_8h.html#ab4c244f9fdc9c54ea4519ccafa9c1583">matf32_check_triangular_lower</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keywordtype">bool</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<a class="code" href="matf32__check_8h.html#a1f369b22ec44cb73ef21f329a94fa9f7">matf32_is_equal</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat_a, <span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat_b);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#endif // ROBOTAT_MATF32_CHECK_H_</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">// static keyword fixes explained error of undefined ref when incuding constants.h in math_util.h</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;matf32_check_square_matrix(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat)</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;{</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordflow">return</span> (p_mat-&gt;<a class="code" href="structmatf32__t.html#aeae000579eee2a807875fc47911c4aee">num_cols</a> == p_mat-&gt;<a class="code" href="structmatf32__t.html#a13a796bf0174f885e2419c0c56f0f185">num_rows</a>);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<a class="code" href="matf32__check_8h.html#a70d0a9ace39f0717585ca79535307b21">matf32_check_triangular_upper</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<a class="code" href="matf32__check_8h.html#ab4c244f9fdc9c54ea4519ccafa9c1583">matf32_check_triangular_lower</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<a class="code" href="matf32__check_8h.html#a1f369b22ec44cb73ef21f329a94fa9f7">matf32_is_equal</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat_a, <span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat_b);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<a class="code" href="matf32__check_8h.html#a0a1aadce13ca73083780b2804707cfb3">matf32_check_symmetric</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<a class="code" href="matf32__check_8h.html#a8e6c7d288e3bc51bbe0f3ce48f0abd4d">matf32_check_hessenberg_upper</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<a class="code" href="matf32__check_8h.html#a0c54c8aeb9b1bd0abc8261d36a2ac4fa">matf32_check_hessenberg_lower</a>(<span class="keyword">const</span> <a class="code" href="structmatf32__t.html">matf32_t</a>* <span class="keyword">const</span> p_mat);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="preprocessor">#endif // ROBOTAT_MATF32_CHECK_H_</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="amatf32__check_8h_html_ab4c244f9fdc9c54ea4519ccafa9c1583"><div class="ttname"><a href="matf32__check_8h.html#ab4c244f9fdc9c54ea4519ccafa9c1583">matf32_check_triangular_lower</a></div><div class="ttdeci">bool matf32_check_triangular_lower(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if matrix is lower triangular.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:45</div></div>
-<div class="ttc" id="amatf32__check_8h_html_a70d0a9ace39f0717585ca79535307b21"><div class="ttname"><a href="matf32__check_8h.html#a70d0a9ace39f0717585ca79535307b21">matf32_check_triangular_upper</a></div><div class="ttdeci">bool matf32_check_triangular_upper(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if matrix is upper triangular.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:19</div></div>
+<div class="ttc" id="amatf32__check_8h_html_ab4c244f9fdc9c54ea4519ccafa9c1583"><div class="ttname"><a href="matf32__check_8h.html#ab4c244f9fdc9c54ea4519ccafa9c1583">matf32_check_triangular_lower</a></div><div class="ttdeci">bool matf32_check_triangular_lower(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if matrix is lower triangular.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:43</div></div>
+<div class="ttc" id="amatf32__check_8h_html_a70d0a9ace39f0717585ca79535307b21"><div class="ttname"><a href="matf32__check_8h.html#a70d0a9ace39f0717585ca79535307b21">matf32_check_triangular_upper</a></div><div class="ttdeci">bool matf32_check_triangular_upper(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if matrix is upper triangular.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:17</div></div>
 <div class="ttc" id="amatf32__def_8h_html"><div class="ttname"><a href="matf32__def_8h.html">matf32_def.h</a></div></div>
-<div class="ttc" id="amatf32__check_8h_html_a35ffd25a0483ebc49a03f7177cb1f598"><div class="ttname"><a href="matf32__check_8h.html#a35ffd25a0483ebc49a03f7177cb1f598">matf32_check_square_matrix</a></div><div class="ttdeci">bool matf32_check_square_matrix(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if matrix is square.</div><div class="ttdef"><b>Definition:</b> matf32_check.h:33</div></div>
+<div class="ttc" id="amatf32__check_8h_html_a0a1aadce13ca73083780b2804707cfb3"><div class="ttname"><a href="matf32__check_8h.html#a0a1aadce13ca73083780b2804707cfb3">matf32_check_symmetric</a></div><div class="ttdeci">bool matf32_check_symmetric(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if a matrix is symmetric.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:82</div></div>
+<div class="ttc" id="amatf32__check_8h_html_a8e6c7d288e3bc51bbe0f3ce48f0abd4d"><div class="ttname"><a href="matf32__check_8h.html#a8e6c7d288e3bc51bbe0f3ce48f0abd4d">matf32_check_hessenberg_upper</a></div><div class="ttdeci">bool matf32_check_hessenberg_upper(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if a matrix is upper hessenberg.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:118</div></div>
 <div class="ttc" id="astructmatf32__t_html"><div class="ttname"><a href="structmatf32__t.html">matf32_t</a></div><div class="ttdoc">Floating point matrix data structure.</div><div class="ttdef"><b>Definition:</b> matf32_def.h:35</div></div>
+<div class="ttc" id="amath__util_8h_html"><div class="ttname"><a href="math__util_8h.html">math_util.h</a></div></div>
 <div class="ttc" id="astructmatf32__t_html_aeae000579eee2a807875fc47911c4aee"><div class="ttname"><a href="structmatf32__t.html#aeae000579eee2a807875fc47911c4aee">matf32_t::num_cols</a></div><div class="ttdeci">uint16_t num_cols</div><div class="ttdef"><b>Definition:</b> matf32_def.h:38</div></div>
-<div class="ttc" id="amatf32__check_8h_html_a1f369b22ec44cb73ef21f329a94fa9f7"><div class="ttname"><a href="matf32__check_8h.html#a1f369b22ec44cb73ef21f329a94fa9f7">matf32_is_equal</a></div><div class="ttdeci">bool matf32_is_equal(const matf32_t *const p_mat_a, const matf32_t *const p_mat_b)</div><div class="ttdoc">Checks if two matrices are equal.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:71</div></div>
+<div class="ttc" id="amatf32__check_8h_html_a0c54c8aeb9b1bd0abc8261d36a2ac4fa"><div class="ttname"><a href="matf32__check_8h.html#a0c54c8aeb9b1bd0abc8261d36a2ac4fa">matf32_check_hessenberg_lower</a></div><div class="ttdeci">bool matf32_check_hessenberg_lower(const matf32_t *const p_mat)</div><div class="ttdoc">Checks if a matrix is lower hessenberg.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:145</div></div>
+<div class="ttc" id="amatf32__check_8h_html_a1f369b22ec44cb73ef21f329a94fa9f7"><div class="ttname"><a href="matf32__check_8h.html#a1f369b22ec44cb73ef21f329a94fa9f7">matf32_is_equal</a></div><div class="ttdeci">bool matf32_is_equal(const matf32_t *const p_mat_a, const matf32_t *const p_mat_b)</div><div class="ttdoc">Checks if two matrices are equal.</div><div class="ttdef"><b>Definition:</b> matf32_check.c:69</div></div>
 <div class="ttc" id="astructmatf32__t_html_a13a796bf0174f885e2419c0c56f0f185"><div class="ttname"><a href="structmatf32__t.html#a13a796bf0174f885e2419c0c56f0f185">matf32_t::num_rows</a></div><div class="ttdeci">uint16_t num_rows</div><div class="ttdef"><b>Definition:</b> matf32_def.h:37</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -93,6 +93,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a25087775382c75e44445e4cb607c7a89"><td class="memItemLeft" align="right" valign="top"><a class="el" href="matf32__def_8h.html#a494f2de0f45bd38d26dd3211000d65dd">err_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="matf32__math_8c.html#a25087775382c75e44445e4cb607c7a89">matf32_lup</a> (const <a class="el" href="structmatf32__t.html">matf32_t</a> *p_src, <a class="el" href="structmatf32__t.html">matf32_t</a> *p_lu, uint16_t *pivot)</td></tr>
 <tr class="memdesc:a25087775382c75e44445e4cb607c7a89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the LU decomposition (with partial pivoting) of a square matrix A, pointed by p_src, such that PA = LU.  <a href="matf32__math_8c.html#a25087775382c75e44445e4cb607c7a89">More...</a><br /></td></tr>
 <tr class="separator:a25087775382c75e44445e4cb607c7a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c9ba2e7b7ae7c5169072e1b54ee46b8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="matf32__math_8c.html#a9c9ba2e7b7ae7c5169072e1b54ee46b8">solve</a> (float *A, float *x, float *b, uint16_t *P, float *<a class="el" href="linsolve_8h.html#af7b80e182bc3b1a898fa12a252d9fd3fa073c7c73f16e7fe5727b02b920273ecf">LU</a>, uint16_t row)</td></tr>
+<tr class="separator:a9c9ba2e7b7ae7c5169072e1b54ee46b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ecec890d9f1a051942f6bd593f33cdf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="matf32__def_8h.html#a494f2de0f45bd38d26dd3211000d65dd">err_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="matf32__math_8c.html#a8ecec890d9f1a051942f6bd593f33cdf">matf32_inv</a> (const <a class="el" href="structmatf32__t.html">matf32_t</a> *p_src, <a class="el" href="structmatf32__t.html">matf32_t</a> *p_dst)</td></tr>
 <tr class="memdesc:a8ecec890d9f1a051942f6bd593f33cdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the inverse of a square, non-singular matrix.  <a href="matf32__math_8c.html#a8ecec890d9f1a051942f6bd593f33cdf">More...</a><br /></td></tr>
 <tr class="separator:a8ecec890d9f1a051942f6bd593f33cdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -589,6 +591,58 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
+<a id="a9c9ba2e7b7ae7c5169072e1b54ee46b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c9ba2e7b7ae7c5169072e1b54ee46b8">&#9670;&nbsp;</a></span>solve()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void solve </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t *&#160;</td>
+          <td class="paramname"><em>P</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>LU</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>row</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

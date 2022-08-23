@@ -79,6 +79,7 @@ $(function() {
 <code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="constants_8h_source.html">constants.h</a>&quot;</code><br />
 </div>
 <p><a href="math__util_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -123,9 +124,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ad12c0388c3c2033ea6bcad73bde48466"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__util_8h.html#ad12c0388c3c2033ea6bcad73bde48466">is_equal</a> (float *p_a, float *p_b, uint16_t length)</td></tr>
 <tr class="memdesc:ad12c0388c3c2033ea6bcad73bde48466"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two arrays.  <a href="math__util_8h.html#ad12c0388c3c2033ea6bcad73bde48466">More...</a><br /></td></tr>
 <tr class="separator:ad12c0388c3c2033ea6bcad73bde48466"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada9cec469fb2382f374d579e38372349"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="math__util_8h.html#ada9cec469fb2382f374d579e38372349">zero_patch</a> (float *p_dst, uint16_t length)</td></tr>
+<tr class="memdesc:ada9cec469fb2382f374d579e38372349"><td class="mdescLeft">&#160;</td><td class="mdescRight">Changes NaN and Inf alues to zero. Needed to avoid errors in cases where irrelevant elements end set as NaN or Inf.  <a href="math__util_8h.html#ada9cec469fb2382f374d579e38372349">More...</a><br /></td></tr>
+<tr class="separator:ada9cec469fb2382f374d579e38372349"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Linear algebra routines that do not depend on the matrix datatype </p>
+<div class="textblock"><p>Linear algebra routines that do not depend on the matrix datatype. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a36fca6357b82279b810982242b0b9dd2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36fca6357b82279b810982242b0b9dd2">&#9670;&nbsp;</a></span>copy()</h2>
@@ -650,6 +654,44 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Standard deviation of array. </dd></dl>
+
+</div>
+</div>
+<a id="ada9cec469fb2382f374d579e38372349"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada9cec469fb2382f374d579e38372349">&#9670;&nbsp;</a></span>zero_patch()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void zero_patch </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>p_dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Changes NaN and Inf alues to zero. Needed to avoid errors in cases where irrelevant elements end set as NaN or Inf. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">p_a</td><td>Points to first array. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p_b</td><td>Points to second array.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>If arrays values are equal. </dd></dl>
 
 </div>
 </div>
