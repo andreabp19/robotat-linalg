@@ -78,8 +78,8 @@ matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, 
 /*
  * @brief   Calculates the Cholesky decomposition of a matrix.
  *
- * @param[in]       p_a    Points to matrix to factorize.
- * @param[in]       p_c    Points to lower triangular factorized matrix.
+ * @param[in]           p_a    Points to matrix to factorize.
+ * @param[in,out]       p_c    Points to lower triangular factorized matrix.
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.
@@ -129,7 +129,7 @@ matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* p_x);
  * @param[in]       p_a     Points to system matrix.
  * @param[in]       p_b     Points to b vector.
  * @param[in,out]   p_x     Points to output x vector.
- * @param[in]       method  Metohd to use.
+ * @param[in]       method  Method to use.
  *
  * @return  Execution status
  *              MATH_SUCCESS :                  Operation successful.
