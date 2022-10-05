@@ -22,13 +22,26 @@
 
 #include "constants.h"
 #include "matf32_def.h"
-#include "matf32_math.h"
 
 
 // ====================================================================================================
 // Matrix datatype-based linear algebra routines
 // TODO: add inline function wrappers for native library (like CMS_DSP on ARM, ESP-IDF on esp, etc)
 // ====================================================================================================
+
+
+/**
+ * @brief   Calculates the frobenius norm of a matrix.
+ *
+ * @param[in]       p_src  Points input matrix.
+ *
+ * @return  Norm of te matrix.
+ */
+inline float
+matf32_norm(const matf32_t* p_src)
+{
+    return norm(p_src->p_data, p_src->num_rows, p_src->num_cols);
+}
 
 
 /**
@@ -147,14 +160,29 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst);
  *
  * @param[in]       p_srcm  Points to input matrix.
  * @param[in]       p_srcv  Points to input vector.
- * @param[in, out]  p_dst   Points to result.
+ * @param[in, out]  p_dst   Points to result vector.
  *
  * @return  None.
  */
 void
-matf32_vecposmult(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
+matf32_vecposmul(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
 
 
+/**
+ * @brief   vector-Matrix pre multiplication, i.e. xA. Assumes a row vector.
+ *
+ * @param[in]       p_srcm  Points to input matrix.
+ * @param[in]       p_srcv  Points to input vector.
+ * @param[in, out]  p_dst   Points to result vector.
+ *
+ * @return  None.
+ */
+void
+matf32_vecpremul(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
+
+// vector lengths taken from matrix dimensions
+void
+matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst);
 
 // ====================================================================================================
 // Array of matrices operations

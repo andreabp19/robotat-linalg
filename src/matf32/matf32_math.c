@@ -33,7 +33,9 @@ matf32_add(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
     float* p_data_dst = p_dst->p_data;
 
     for (int i = 0; i < p_srca->num_rows * p_srca->num_cols; i++)
+    {
         *(p_data_dst++) = *(p_data_srca++) + *(p_data_srcb++);
+    }
 
     return MATH_SUCCESS;
 }
@@ -44,9 +46,16 @@ matf32_sub(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
 {
 #ifdef MATH_MATRIX_CHECK 
     if (matf32_is_same_size(p_srca, p_srcb))
-        if (matf32_is_same_size(p_srca, p_dst));
-        else return MATH_SIZE_MISMATCH;
-    else return MATH_SIZE_MISMATCH;
+    {
+        if (!matf32_is_same_size(p_srca, p_dst))
+        {
+            return MATH_SIZE_MISMATCH;
+        }
+    }
+    else
+    {
+        return MATH_SIZE_MISMATCH;
+    }
 #endif
 
     float* p_data_srca = p_srca->p_data;
@@ -54,7 +63,9 @@ matf32_sub(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
     float* p_data_dst = p_dst->p_data;
 
     for (int i = 0; i < p_srca->num_rows * p_srca->num_cols; i++)
-        *(p_data_dst++) = *(p_data_srca++) - *(p_data_srcb++);
+    {
+        p_data_dst[i] = p_data_srca[i] - p_data_srcb[i];
+    }
 
     return MATH_SUCCESS;
 }
@@ -64,15 +75,15 @@ err_status_t
 matf32_scale(const matf32_t* p_src, float scalar, matf32_t* p_dst)
 {
 #ifdef MATH_MATRIX_CHECK 
-    if (matf32_is_same_size(p_src, p_dst));
-    else return MATH_SIZE_MISMATCH;
+    if (!matf32_is_same_size(p_src, p_dst))
+    {
+        return MATH_SIZE_MISMATCH;
+    }
 #endif
 
-    float* p_data_src = p_src->p_data;
-    float* p_data_dst = p_dst->p_data;
+    uint16_t size = p_src->num_rows*p_src->num_cols;
 
-    for (int i = 0; i < p_src->num_rows * p_src->num_cols; i++)
-        *(p_data_dst++) = scalar * (*(p_data_src++));
+    scale(p_src->p_data, size, scalar, p_dst->p_data);
 
     return MATH_SUCCESS;
 }
@@ -82,8 +93,10 @@ err_status_t
 matf32_trans(const matf32_t* p_src, matf32_t* p_dst)
 {
 #ifdef MATH_MATRIX_CHECK 
-    if (matf32_size_check(p_dst, p_src->num_cols, p_src->num_rows));
-    else return MATH_SIZE_MISMATCH;
+    if (!matf32_size_check(p_dst, p_src->num_cols, p_src->num_rows))
+    {
+        return MATH_SIZE_MISMATCH;
+    }
 #endif
     float* p_data_src = p_src->p_data;
     float* p_trans;
@@ -115,7 +128,9 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
 #ifdef MATH_MATRIX_CHECK 
     // Check size consistency
     if (!matf32_size_check(p_dst, p_srca->num_rows, p_srcb->num_cols) || (p_srca->num_cols != p_srcb->num_rows))
+    {
         return MATH_SIZE_MISMATCH;
+    }
 
     /*if ((p_srca->num_cols != p_srcb->num_rows) || (p_srca->num_rows != p_dst->num_rows) || (p_srcb->num_cols != p_dst->num_cols))
         return MATH_SIZE_MISMATCH;*/
@@ -127,22 +142,27 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
 
     // Checks if one of the inputs is being used to store the output (this is NOT allowed even in the square matrix case)
     if ((p_srca->p_data == p_dst->p_data) || (p_srcb->p_data == p_dst->p_data))
+    {
         return MATH_ARGUMENT_ERROR;
+    }
 
     // Data matrix
     float* data_a;
     float* data_b;
     float* data_c = p_dst->p_data;
 
-    for (uint16_t i = 0; i < p_srca->num_rows; i++) {
+    for (uint16_t i = 0; i < p_srca->num_rows; i++)
+    {
         // Then we go through every column of b
-        for (uint16_t j = 0; j < p_srcb->num_cols; j++) {
+        for (uint16_t j = 0; j < p_srcb->num_cols; j++)
+        {
             data_a = &p_srca->p_data[i * p_srca->num_cols];
             data_b = &p_srcb->p_data[j];
 
             *data_c = 0; // Reset
             // And we multiply rows from a with columns of b
-            for (uint16_t k = 0; k < p_srca->num_cols; k++) {
+            for (uint16_t k = 0; k < p_srca->num_cols; k++)
+            {
                 *data_c += *data_a * *data_b;
                 data_a++;
                 data_b += p_srcb->num_cols;
@@ -250,8 +270,10 @@ err_status_t
 matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 {
 #ifdef MATH_MATRIX_CHECK 
-    if (matf32_is_same_size(p_src, p_dst));
-    else return MATH_SIZE_MISMATCH;
+    if (!matf32_is_same_size(p_src, p_dst))
+    {
+        return MATH_SIZE_MISMATCH;
+    }
 #endif
 
     // Get number of rows
@@ -273,7 +295,9 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 
     // Check if the determinant is 0
     if (matf32_lup(p_src, lu, p) == MATH_SINGULAR)
+    {
         return MATH_SINGULAR; // matrix is singular
+    }
 
     // Create the inverse
     for (uint16_t i = 0; i < row; ++i)
@@ -292,33 +316,63 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
     return MATH_SUCCESS;
 }
 
-
 void
-matf32_vecposmult(const matf32_t* p_srcm, float* p_srcv, float* p_dst)
+matf32_vecposmul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
 {
-    float* tmpvec;
     float* res = v1;
+    zeros(res, p_srcm->num_rows, 1);
 
-    for (int i = 0; i < p_srcm->num_rows; i++)
+    for (uint16_t i = 0; i < p_srcm->num_rows; i++)
     {
-        tmpvec = p_srcm->p_data + i * p_srcm->num_rows;
-        for (int j = 0; j < p_srcm->num_cols; j++)
-            *res += (*(tmpvec++)) * (*(p_srcv++));
-        res++;
+        for (uint16_t j = 0; j < p_srcm->num_cols; j++)
+        {
+            res[i] += p_srcm->p_data[i*p_srcm->num_cols + j] * p_srcv[j];
+        }
     }
 
     memcpy(p_dst, res, p_srcm->num_rows * sizeof(float));
 }
 
 
+void
+matf32_vecpremul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
+{
+    float* tmpvec;
+    float* res = v1;
+    zeros(res, 1, p_srcm->num_cols);
 
+    for (uint16_t i = 0; i < p_srcm->num_cols; ++i)
+    {
+        for (uint16_t j = 0; j < p_srcm->num_rows; ++j)
+        {
+            res[i] += p_srcm->p_data[j*p_srcm->num_cols + i] * p_srcv[j];
+        }
+    }
+
+    memcpy(p_dst, res, p_srcm->num_cols * sizeof(float));
+}
+
+void
+matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst)
+{
+    for (uint16_t i = 0; i < p_dst->num_rows; ++i)
+    {
+        for (uint16_t j = 0; j < p_dst->num_cols; ++j)
+        {
+            // revisar todos los iteradores, i*num_rows + j es incorrecto
+            p_dst->p_data[i*p_dst->num_cols + j] = col_vec[i] * row_vec[j];
+        }
+    }
+}
 
 
 err_status_t
 matf32_arr_add(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst)
 {
     if (length < 3)
+    {
         return MATH_ARGUMENT_ERROR;
+    }
 
     matf32_t* tmpmat = &m1;
     matf32_init(tmpmat, p_matarray[0]->num_rows, p_matarray[0]->num_cols, m1data);
@@ -328,7 +382,9 @@ matf32_arr_add(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
     {
 #ifdef MATH_MATRIX_CHECK 
         if (matf32_add(tmpmat, p_matarray[i], tmpmat) == MATH_SIZE_MISMATCH)
+        {
             return MATH_SIZE_MISMATCH;
+        }
 #else
         matf32_add(tmpmat, p_matarray[i], tmpmat);
 #endif
@@ -342,7 +398,9 @@ err_status_t
 matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst)
 {
     if (length < 3)
+    {
         return MATH_ARGUMENT_ERROR;
+    }
 
     matf32_t* tmpmat = &m1;
     matf32_init(tmpmat, p_matarray[0]->num_rows, p_matarray[0]->num_cols, m1data);
@@ -350,7 +408,9 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 
 #ifdef MATH_MATRIX_CHECK 
     if (matf32_sub(p_matarray[0], p_matarray[1], tmpmat) == MATH_SIZE_MISMATCH)
+    {
         return MATH_SIZE_MISMATCH;
+    }
 #else
     matf32_sub(p_matarray[0], p_matarray[1], tmpmat)
 #endif
@@ -359,7 +419,9 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
     {
 #ifdef MATH_MATRIX_CHECK 
         if (matf32_sub(tmpmat, p_matarray[i], tmpmat) == MATH_SIZE_MISMATCH)
+        {
             return MATH_SIZE_MISMATCH;
+        }
 #else
         matf32_sub(tmpmat, p_matarray[i], tmpmat);
 #endif
@@ -373,7 +435,9 @@ err_status_t
 matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst)
 {
     if (length < 3)
+    {
         return MATH_ARGUMENT_ERROR;
+    }
 
     matf32_t* tmpmat1 = &m1;
     matf32_t* tmpmat2 = &m2;
@@ -383,7 +447,9 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 
 #ifdef MATH_MATRIX_CHECK
     if (matf32_mul(p_matarray[0], p_matarray[1], tmpmat1) == MATH_SIZE_MISMATCH)
+    {
         return MATH_SIZE_MISMATCH;
+    }
 #else 
     matf32_mul(p_matarray[0], p_matarray[1], tmpmat1);
 #endif
@@ -393,7 +459,9 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
         matf32_reshape(tmpmat2, tmpmat1->num_rows, p_matarray[i]->num_cols);
 #ifdef MATH_MATRIX_CHECK 
         if (matf32_mul(tmpmat1, p_matarray[i], tmpmat2) == MATH_SIZE_MISMATCH)
+        {
             return MATH_SIZE_MISMATCH;
+        }
 #else
         matf32_mul(tmpmat1, p_matarray[i], tmpmat2);
 #endif
