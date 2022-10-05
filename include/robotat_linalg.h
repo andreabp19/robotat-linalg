@@ -23,7 +23,9 @@
  *  Modified on: 1 aug. 2021
  *           By: Miguel Zea (mezea@uvg.edu.gt)
  *  Modified on: 20 may 2022
- *           By: Daniel Pineda (bar18714@uv.edu.gt)        
+ *           By: Daniel Pineda (bar18714@uv.edu.gt)
+ *
+ * TODO: Update above description.
  */
 
 #ifndef ROBOTAT_LINALG_H_
