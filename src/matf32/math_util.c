@@ -107,6 +107,30 @@ randn(float* p_dst, uint16_t length, float mu, float sigma)
         p_dst[i] = generate_gauss(mu, sigma);
 }
 
+float
+norm(float* p_src, int row, int column)
+{
+    uint16_t size = row*column;
+
+    float sum = 0;
+
+    for (uint16_t i = 0; i < size; ++i)
+    {
+        sum += p_src[i]*p_src[i];
+    }
+
+    return sqrtf(sum);
+}
+
+void
+scale(float* p_src, uint16_t length, float scalar, float* p_dst)
+{
+    for (int i = 0; i < length; ++i)
+    {
+        p_dst[i] = p_src[i]*scalar;
+    }
+}
+
 // ====================================================================================================
 // Miscellaneous
 // ====================================================================================================
@@ -186,7 +210,7 @@ is_equal(float* p_a, float* p_b, uint16_t length)
             continue;
         }
 
-        if (p_a[i] != p_b[i])
+        if (!is_equal_margin(p_a[i], p_b[i]))
         {
             return false;
         }

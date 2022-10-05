@@ -102,6 +102,31 @@ void
 randn(float* p_dst, uint16_t length, float mu, float sigma);
 
 
+/**
+ * @brief   Calculates the norm of a given matrix (euclidean for vectors, frobenius for matrices).
+ *
+ * @param[in,out]   p_src   Points to matrix array.
+ * @param[in]       row     Number or rows.
+ * @param[in]       column  Number of columns.
+ *
+ * @return Norm of matrix or vector.
+ */
+float
+norm(float* p_src, int row, int column);
+
+
+/**
+ * @brief   Multiplies a vector by a scalar.
+ *
+ * @param[in]    p_src   Vector to scale.
+ * @param[in]    length  Vector size.
+ * @param[in]    scalar     Factor to scale the vector.
+ * @param[out]   p_dst   Scaled vector.
+ *
+ */
+void
+scale(float* p_src, uint16_t length, float scalar, float* p_dst);
+
 // ====================================================================================================
 // Miscellaneous
 // ====================================================================================================
@@ -200,7 +225,6 @@ is_equal(float* p_a, float* p_b, uint16_t length);
  *
  * @param[in]   a   First value.
  * @param[in]   b   Second vaue.
- * @param[in]   p   Precision value.
  *
  * @return  If values are equal within precision.
  */
@@ -209,6 +233,13 @@ static inline bool
 is_equal_margin(float a, float b)
 {
     return (fabs(a-b) <= MATH_EQUAL_PRECISION);
+}
+
+
+static inline float
+inf_bound(float num)
+{
+    return (num > FLT_MAX? FLT_MAX : (num < -FLT_MAX? -FLT_MAX: num));
 }
 
 
