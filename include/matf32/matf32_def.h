@@ -134,7 +134,7 @@ matf32_get(const matf32_t* p_src, uint16_t row, uint16_t col, float* dst)
  * @param[in, out]  p_src   Points to matrix.
  * @param[in]       row     Row of element.
  * @param[in]       col     Column of element.
- * @param[in]       dst     Value of element to set.
+ * @param[in]       value     Value of element to set.
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.
@@ -170,6 +170,8 @@ matf32_is_same_size(const matf32_t* p_srca, const matf32_t* p_srcb)
  * Checks if a matrix has a specified size.
  *
  * @param[in]   p_src   Points to input matrix.
+ * @param[in]   rows    Amount of rows.
+ * @param[in]   cols    Amount of cols.
  *
  * @return  true if the matrix has the specified size, false otherwise.
  */
@@ -251,6 +253,18 @@ matf32_reshape_safe(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
         return MATH_SIZE_MISMATCH;
 }
 
+
+// ====================================================================================================
+// Sub-matrix operattions
+// ====================================================================================================
+
+// hacer vesion indice progra y version indice matematico
+
+err_status_t
+matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
+                      const uint16_t src_row, const uint16_t src_col,
+                      const uint16_t dst_row, const uint16_t dst_col,
+                      const uint16_t rows,    const uint16_t cols);
 
 
 

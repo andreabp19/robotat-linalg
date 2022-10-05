@@ -70,6 +70,38 @@ err_status_print(err_status_t err)
     }
 }
 
+// ====================================================================================================
+// Sub-matrix operattions
+// ====================================================================================================
+
+err_status_t
+matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
+                      const uint16_t src_row, const uint16_t src_col,
+                      const uint16_t dst_row, const uint16_t dst_col,
+                      const uint16_t rows,    const uint16_t cols)
+{
+#ifdef MATH_MATRIX_CHECK
+    if (    (p_src->num_rows < (src_row+rows) )
+         || (p_src->num_cols < (src_col+cols) )
+         || (p_dst->num_rows < (dst_row+rows) )
+         || (p_dst->num_cols < (dst_col+cols) ))
+    {
+        return MATH_SIZE_MISMATCH;
+    }
+#endif
+
+    // A(i,j)
+    for (uint16_t i = 0; i < rows; ++i)
+    {
+        for (uint16_t j = 0; j < cols; ++j)
+        {
+            p_dst->p_data[(dst_row+i)*p_dst->num_cols + (dst_col+j)] = p_src->p_data[(src_row+i)*p_src->num_cols + (src_col+j)];
+        }
+    }
+
+    return MATH_SUCCESS;
+}
+
 
 // ====================================================================================================
 // Special matrix initializations
