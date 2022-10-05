@@ -21,7 +21,6 @@
 #include <stdbool.h>                    // For bool datatype.
 
 #include "constants.h"
-#include "matf32_def.h"
 
 
 // ====================================================================================================
