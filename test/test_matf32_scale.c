@@ -20,6 +20,9 @@ float Result_data[] = {00, 10, 20,
 int
 main(void)
 {
+    clock_t time;
+    float time_data = 0;
+
     matf32_t A, B, Result;
 
     matf32_init(&A, 3, 3, A_data);
@@ -32,8 +35,17 @@ main(void)
     matf32_print(&B);
 
     printf("Testing scale: \n");
-    matf32_scale(&A, 10, &B);
+
+    for (int i = 0; i < 100; ++i)
+    {
+        time = clock();
+        matf32_scale(&A, 10, &B);
+        time_data += ((float)clock()-time)/CLOCKS_PER_SEC;
+    }
+    
     matf32_print(&B);
+    
+    printf("Time taken: %.9f seconds.\n", time_data/100);
 
     bool ans = matf32_is_equal(&B, &Result);
 
