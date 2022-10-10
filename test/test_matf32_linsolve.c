@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "robotat_linalg.h"
 
@@ -37,15 +38,24 @@ float m4_data[] = {1, 2, 1,
 float b4[] = {1, 2, 3};
 float x4[] = {0.5, -0.5, 1.5};
 
+
+float singular_data[] = {1, 2, 2,
+                         1, 2, 2,
+                         3, 2, -1};
+
+
 float result[] = {0, 0, 0};
 
 bool ans = false;
 
 matf32_t A;
 
+
 int
 main(void)
 {
+    clock_t time;
+
     matf32_init(&A, 3, 3, m1_data);
 
     printf("Matrix A: \n");
@@ -59,7 +69,10 @@ main(void)
     printf("\n");
 
     printf("Solving... \n");
+    print_linsolve_method(matf32_linsolve_get_method(&A));
+    time = clock();
     matf32_linsolve(&A, b1, result);
+    time = clock() - time;
 
     printf("vector x: \n");
     for (int i=0; i<3; ++i)
@@ -67,6 +80,9 @@ main(void)
         printf("%f\n", result[i]);
     }
     printf("\n");
+
+    printf("Time taken: %f seconds.\n", ((float)time)/CLOCKS_PER_SEC);
+    printf("Cicles taken: %i\n\n", time);
 
     ans = is_equal(result, x1, 3);
 
@@ -94,7 +110,10 @@ main(void)
     printf("\n");
 
     printf("Solving... \n");
+    print_linsolve_method(matf32_linsolve_get_method(&A));
+    time = clock();
     matf32_linsolve(&A, b2, result);
+    time = clock() - time;
 
     printf("vector x: \n");
     for (int i=0; i<3; ++i)
@@ -104,6 +123,9 @@ main(void)
     printf("\n");
 
     ans = is_equal(result, x2, 3);
+
+    printf("Time taken: %f seconds.\n", ((float)time)/CLOCKS_PER_SEC);
+    printf("Cicles taken: %i\n\n", time);
 
     if (ans)
     {
@@ -129,7 +151,10 @@ main(void)
     printf("\n");
 
     printf("Solving... \n");
+    print_linsolve_method(matf32_linsolve_get_method(&A));
+    time = clock();
     matf32_linsolve(&A, b3, result);
+    time = clock() - time;
 
     printf("vector x: \n");
     for (int i=0; i<3; ++i)
@@ -137,6 +162,9 @@ main(void)
         printf("%f\n", result[i]);
     }
     printf("\n");
+
+    printf("Time taken: %f seconds.\n", ((float)time)/CLOCKS_PER_SEC);
+    printf("Cicles taken: %i\n\n", time);
 
     ans = is_equal(result, x3, 3);
 
@@ -148,6 +176,7 @@ main(void)
     {
         printf("matf32_linsolve failure.\n");
     }
+
 
 
     matf32_init(&A, 3, 3, m4_data);
@@ -164,8 +193,10 @@ main(void)
     printf("\n");
 
     printf("Solving... \n");
-    print_linsolve_method(matf32_linsolve_method(&A));
+    print_linsolve_method(matf32_linsolve_get_method(&A));
+    time = clock();
     matf32_linsolve(&A, b4, result);
+    time = clock() - time;
 
     printf("vector x: \n");
     for (int i=0; i<3; ++i)
@@ -173,6 +204,9 @@ main(void)
         printf("%f\n", result[i]);
     }
     printf("\n");
+
+    printf("Time taken: %f seconds.\n", ((float)time)/CLOCKS_PER_SEC);
+    printf("Cicles taken: %i\n\n", time);
 
     ans = is_equal(result, x4, 3);
 
@@ -184,4 +218,48 @@ main(void)
     {
         printf("matf32_linsolve failure.\n");
     }
+
+
+
+    printf("\n\nSingular matrix\n");
+    matf32_init(&A, 3, 3, singular_data);
+    zeros(&result, 3, 3);
+
+    printf("Matrix A: \n");
+    matf32_print(&A);
+
+    printf("vector b: \n");
+    for (int i=0; i<3; ++i)
+    {
+        printf("%f\n", b4[i]);
+    }
+    printf("\n");
+
+    printf("Solving... \n");
+    print_linsolve_method(matf32_linsolve_get_method(&A));
+    time = clock();
+    err_status_print(matf32_linsolve(&A, b4, result));
+    time = clock() - time;
+
+    printf("vector x: \n");
+    for (int i=0; i<3; ++i)
+    {
+        printf("%f\n", result[i]);
+    }
+    printf("\n");
+
+    printf("Time taken: %f seconds.\n", ((float)time)/CLOCKS_PER_SEC);
+    printf("Cicles taken: %i\n\n", time);
+
+    ans = is_equal(result, x4, 3);
+
+    if (ans)
+    {
+        printf("matf32_linsolve sucess.\n");
+    }
+    else
+    {
+        printf("matf32_linsolve failure.\n");
+    }
+
 }
