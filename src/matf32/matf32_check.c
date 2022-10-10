@@ -29,7 +29,7 @@ matf32_check_triangular_upper(const matf32_t* const p_mat)
     {
         for (uint16_t j = 0; j < i; ++j)
         {
-            if (0 != p_data_src[i*p_mat->num_rows + j])
+            if (!is_equal_margin(0, p_data_src[i*p_mat->num_rows + j]))
             {
                 return false;
             }
@@ -55,7 +55,7 @@ matf32_check_triangular_lower(const matf32_t* const p_mat)
     {
         for (uint16_t j = p_mat->num_cols-1; j > i; --j)
         {
-            if (0 != p_data_src[i*p_mat->num_rows + j])
+            if (!is_equal_margin(0, p_data_src[i*p_mat->num_rows + j]))
             {
                 return false;
             }
@@ -130,7 +130,7 @@ matf32_check_hessenberg_upper(const matf32_t* const p_mat)
     {
         for (uint16_t j = 0; j < i-1; ++j)
         {
-            if (0 != p_data_src[i*p_mat->num_rows + j])
+            if (!is_equal_margin(0, p_data_src[i*p_mat->num_rows + j]))
             {
                 return false;
             }
@@ -157,9 +157,9 @@ matf32_check_hessenberg_lower(const matf32_t* const p_mat)
     {
         for (uint16_t j = p_mat->num_cols-1; j > i+1; --j)
         {
-            if (0 != p_data_src[i*p_mat->num_rows + j])
+            if (!is_equal_margin(0, p_data_src[i*p_mat->num_rows + j]))
             {
-                //return false;
+                return false;
             }
         }
     }
