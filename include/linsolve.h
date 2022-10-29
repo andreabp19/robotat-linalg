@@ -71,7 +71,7 @@ matf32_linsolve_get_method(const matf32_t* const p_a);
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, float* p_x);
+matf32_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -87,7 +87,7 @@ matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, f
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, float* p_x);
+matf32_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -104,7 +104,7 @@ err_status_t
 matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 
 err_status_t
-matf32_cholesky_solve(matf32_t* const p_c,  const float* const p_b, float* const p_x);
+matf32_cholesky_solve(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
@@ -124,7 +124,7 @@ err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u);
 
 err_status_t
-matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const float* const p_b, float* const p_x);
+matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
 
 
 err_status_t
@@ -146,7 +146,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* p_x);
+matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
@@ -164,7 +164,7 @@ matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* p_x);
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-matf32_linsolve_method(const matf32_t* const p_a, const float* const p_b, float* p_x, linsolve_method_t method);
+matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);
 
 
 #endif // ROBOTAT_LINSOLVE_H_

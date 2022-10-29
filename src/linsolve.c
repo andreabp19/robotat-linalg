@@ -61,10 +61,10 @@ matf32_linsolve_get_method(const matf32_t* const p_a)
     }
 
 
-    // symmetric matrix
-    // TODO: add check for hermitian and self-adjoint?
-
-    if (matf32_check_symmetric(p_a))
+    // definite positive matrix
+    // TODO: add check for definite positive
+    // cholesky only should be used on postive definite
+    if (matf32_check_symmetric(p_a) && false)
     {
         return CHOLESKY;
     }
@@ -76,7 +76,7 @@ matf32_linsolve_get_method(const matf32_t* const p_a)
 
 
 err_status_t
-matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, float* p_x)
+matf32_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_lower(p_l))
@@ -85,7 +85,9 @@ matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, f
     }
 #endif
 
-    float* p_data_src = p_l->p_data;
+    float* p_data_l = p_l->p_data;
+    float* p_data_x = p_x->p_data;
+    float* p_data_b = p_b->p_data;
 
     float lx = 0; // sum accumulator
 
@@ -97,11 +99,11 @@ matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, f
         // calculate sum x_i * l_(i,j)
         for (uint16_t j = 0; j < i; ++j)
         {
-            lx += p_x[j]*p_data_src[i*p_l->num_rows + j];
+            lx += p_data_x[j]*p_data_l[i*p_l->num_rows + j];
         }
 
         // calculate x_i
-        p_x[i] = (p_b[i] - lx)/p_data_src[i*p_l->num_rows + i];
+        p_data_x[i] = (p_data_b[i] - lx)/p_data_l[i*p_l->num_rows + i];
     }
 
     return MATH_SUCCESS;
@@ -109,7 +111,7 @@ matf32_forward_substitution(const matf32_t* const p_l, const float* const p_b, f
 
 
 err_status_t
-matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, float* p_x)
+matf32_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_upper(p_u))
@@ -118,7 +120,9 @@ matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, 
     }
 #endif
 
-    float* p_data_src = p_u->p_data;
+    float* p_data_u = p_u->p_data;
+    float* p_data_x = p_x->p_data;
+    float* p_data_b = p_b->p_data;
 
     float ux = 0; // sum accumulator
 
@@ -129,11 +133,11 @@ matf32_backward_substitution(const matf32_t* const p_u, const float* const p_b, 
         // calculate sum x_i * u_(i,j)
         for (uint16_t j = p_u->num_cols-1; j>i; --j)
         {
-            ux += p_x[j]*p_data_src[i*p_u->num_rows + j];
+            ux += p_data_x[j]*p_data_u[i*p_u->num_rows + j];
         }
 
         // calculate x_i
-        p_x[i] = (p_b[i] - ux)/p_data_src[i*p_u->num_rows + i];
+        p_data_x[i] = (p_data_b[i] - ux)/p_data_u[i*p_u->num_rows + i];
     }
     return MATH_SUCCESS;
 }
@@ -378,7 +382,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 }
 
 err_status_t
-matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* const p_x)
+matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
 {
     linsolve_method_t method = matf32_linsolve_get_method(p_a);
 
@@ -388,7 +392,7 @@ matf32_linsolve(const matf32_t* const p_a, const float* const p_b, float* const 
 // TODO:
 // qr_solve
 err_status_t
-matf32_linsolve_method(const matf32_t* const p_a, const float* const p_b, float* p_x, linsolve_method_t method)
+matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
 {
     err_status_t status;
 
@@ -448,34 +452,38 @@ matf32_linsolve_method(const matf32_t* const p_a, const float* const p_b, float*
 }
 
 err_status_t
-matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const float* const p_b, float* const p_x)
+matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
-    float* y = p1;
-    zeros(y, p_l->num_rows, 1);
+    float* y_data = p1;
+    matf32_t y;
+    matf32_init(&y, p_l->num_rows, 1, y_data);
+    matf32_zeros(&y);
 
-    status = matf32_forward_substitution(p_l, p_b, y);
+    status = matf32_forward_substitution(p_l, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
         return status;
     }
 
-    status = matf32_backward_substitution(p_u, y, p_x);
+    status = matf32_backward_substitution(p_u, &y, p_x);
 
     return status;
 }
 
 err_status_t
-matf32_cholesky_solve(matf32_t* const p_c,  const float* const p_b, float* const p_x)
+matf32_cholesky_solve(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
-    float* y = p1;
-    zeros(y, p_c->num_rows, 1);
+    float* y_data = p1;
+    matf32_t y;
+    matf32_init(&y, p_c->num_rows, 1, y_data);
+    matf32_zeros(&y);
 
-    status = matf32_forward_substitution(p_c, p_b, y);
+    status = matf32_forward_substitution(p_c, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
@@ -484,7 +492,7 @@ matf32_cholesky_solve(matf32_t* const p_c,  const float* const p_b, float* const
 
     matf32_trans(p_c, p_c);
 
-    status = matf32_backward_substitution(p_c, y, p_x);
+    status = matf32_backward_substitution(p_c, &y, p_x);
 
     return status;
 }
