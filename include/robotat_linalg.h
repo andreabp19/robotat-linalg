@@ -46,6 +46,7 @@
 
 #include "matf32.h"
 #include "linsolve.h"
+#include "quadprog.h"
 
 
 
@@ -62,9 +63,6 @@
 //  * Linear algebra.
 //  */
 //void
-//linsolve_upper_triangular(float* A, float* x, float* b, uint16_t column);
-//
-//void
 //svd_jacobi_one_sided(float A[], uint16_t row, uint8_t max_iterations, float U[], float S[], float V[]);
 //
 //void
@@ -73,26 +71,12 @@
 //uint8_t
 //svd_golub_reinsch(float A[], uint16_t row, uint16_t column, float U[], float S[], float V[]);
 //
-//void
-//qr(float A[], float Q[], float R[], uint16_t row_a, uint16_t column_a);
-//
-//void
-//linsolve_qr(float A[], float x[], float b[], uint16_t row, uint16_t column);
-//
-//void
-//linsolve_lower_triangular(float A[], float x[], float b[], uint16_t row);
 
 //float
 //det(float A[], uint16_t row);
 //
 //uint8_t
 //linsolve_lup(float A[], float x[], float b[], uint16_t row);
-//
-//void
-//chol(float A[], float L[], uint16_t row);
-//
-//void
-//linsolve_chol(float A[], float x[], float b[], uint16_t row);
 //
 //void
 //pinv(float A[], uint16_t row, uint16_t column);

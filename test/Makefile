@@ -55,6 +55,9 @@ matf32_submatrix_copy: lib
 matf32_linsolve: lib
 	$(CC) test_matf32_linsolve.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_matf32_linsolve
 
+quadprog: lib
+	$(CC) test_quadprog.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/test_quadprog
+
 
 lib:
 	$(MAKE) -C $(SRC)
