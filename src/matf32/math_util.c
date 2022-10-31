@@ -2,7 +2,7 @@
  * @file math_util.c
  */
 
-#include "matf32/math_util.h"
+#include "math_util.h"
 
 
 // ====================================================================================================
@@ -189,7 +189,7 @@ mean(float* p_src, uint16_t length)
 
 
 float
-std(float* p_src, uint16_t length)
+std_dev(float* p_src, uint16_t length)
 {
     float mu = mean(p_src, length);
     float sigma = 0;

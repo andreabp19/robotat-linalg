@@ -1,9 +1,7 @@
 
 
-INCLUDE = ../../include
-
 matf32:
-	$(CC) -c *.c -lm -I$(INCLUDE)
+	$(CC) -c *.c -lm
 
 
 clean:

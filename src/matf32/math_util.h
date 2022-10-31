@@ -18,7 +18,7 @@
 #include <stdbool.h>                    // For bool datatype.
 #include <time.h>                       // For srand, clock.
 
-#include "constants.h"
+#include "../constants.h"
 
 /**
  * @brief   Find the dot product of two vectors, pointed by p_srca and p_srcb, of the same size.
@@ -204,7 +204,7 @@ mean(float* p_src, uint16_t length);
  * @return  Standard deviation of array.
  */
 float
-std(float* p_src, uint16_t length);
+std_dev(float* p_src, uint16_t length);
 
 
 /**

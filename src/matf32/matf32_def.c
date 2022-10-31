@@ -1,7 +1,7 @@
 /**
  * @file robotat_linalg.c
  */
-#include "matf32/matf32_def.h"
+#include "matf32_def.h"
 
 
 void

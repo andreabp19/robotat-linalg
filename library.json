@@ -1,0 +1,26 @@
+{
+    "name":"robotat-linalg",
+    "version":"0.1",
+    "license":"MIT",
+    "authors":
+    [
+        {
+            "name":"Daniel Pineda",
+            "email":"bar18714@uvg.edu.gt",
+            "maintainer":true
+        },
+        {
+            "name":"Miguel Zea",
+            "email":"mezea@uvg.edu.gt"
+        }
+    ],
+    "export":
+    {
+        "exclude":
+        [
+            "*.o",
+            "*/build/*"
+        ]
+    },
+    "platform":"espressif32"
+}

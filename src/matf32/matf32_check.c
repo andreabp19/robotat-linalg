@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "matf32/matf32_check.h"
+#include "matf32_check.h"
 
 
 // ====================================================================================================

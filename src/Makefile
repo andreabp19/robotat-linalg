@@ -1,7 +1,5 @@
 
 
-INCLUDE = ../include
-
 CC = gcc
 
 
@@ -11,13 +9,13 @@ matf32:
 	$(MAKE) -C matf32
 
 linsolve:
-	$(CC) -c linsolve.c -I$(INCLUDE)
+	$(CC) -c linsolve.c
 
 quadprog:
-	$(CC) -c quadprog.c -I$(INCLUDE)
+	$(CC) -c quadprog.c
 
 control:
-	$(CC) -c robotat_control.c -I$(INCLUDE)
+	$(CC) -c robotat_control.c
 
 
 clean:
@@ -25,4 +23,4 @@ clean:
 	rm -f *.o
 
 
-.PHONY: matf32 linsolve clean
+.PHONY: clean matf32 linsolve quadprog

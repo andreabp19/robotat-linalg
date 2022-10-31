@@ -14,7 +14,7 @@
   * Dependencies.
   */
 #include "matf32_def.h"
-#include "matf32/math_util.h"
+#include "math_util.h"
 
 // ====================================================================================================
 // Matrix datatype-based checks
