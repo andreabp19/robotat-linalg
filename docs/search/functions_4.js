@@ -1,6 +1,0 @@
-var searchData=
-[
-  ['kalman_5fcorrect_165',['kalman_correct',['../robotat__control_8c.html#a390c8c97b04d20e0cddb6de638d9869f',1,'kalman_correct(kalman_info_t *const kf, const matf32_t *measurements):&#160;robotat_control.c'],['../robotat__control_8h.html#a390c8c97b04d20e0cddb6de638d9869f',1,'kalman_correct(kalman_info_t *const kf, const matf32_t *measurements):&#160;robotat_control.c']]],
-  ['kalman_5finit_166',['kalman_init',['../robotat__control_8c.html#aa5ba8da9bf28e5d9532f9bc137f3a435',1,'kalman_init(kalman_info_t *const kf, sys_lti_t *const sys, matf32_t *F, matf32_t *Qw, matf32_t *Qv, matf32_t *const xhat, matf32_t *const P):&#160;robotat_control.c'],['../robotat__control_8h.html#aa5ba8da9bf28e5d9532f9bc137f3a435',1,'kalman_init(kalman_info_t *const kf, sys_lti_t *const sys, matf32_t *F, matf32_t *Qw, matf32_t *Qv, matf32_t *const xhat, matf32_t *const P):&#160;robotat_control.c']]],
-  ['kalman_5fpredict_167',['kalman_predict',['../robotat__control_8c.html#aeaca1ad93c485e089101ed578306c095',1,'kalman_predict(kalman_info_t *const kf, const matf32_t *inputs):&#160;robotat_control.c'],['../robotat__control_8h.html#aeaca1ad93c485e089101ed578306c095',1,'kalman_predict(kalman_info_t *const kf, const matf32_t *inputs):&#160;robotat_control.c']]]
-];
