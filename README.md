@@ -14,3 +14,7 @@ robotat_linalg.h - Matrix algebra and mathematical solvers.
 robotat_control.h - Control related algorithms (PID, discrete, etc).
 
 robotat_robotic.h - Robotics related algorithms.
+
+## License
+
+This project is licensed under the terms of the MIT license.
