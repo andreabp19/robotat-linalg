@@ -10,6 +10,9 @@
 
 #include "matf32.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // ====================================================================================================
 // Data structures, enums and type definitions
@@ -166,5 +169,9 @@ matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
 err_status_t
 matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ROBOTAT_LINSOLVE_H_
