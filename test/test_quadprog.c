@@ -22,6 +22,9 @@ float Result_data[] = {-0.8, 0.8};
 
 int main(void)
 {
+    clock_t time;
+    float time_data = 0;
+
     matf32_t Q, c, Aeq, beq,  x, Result;
 
     matf32_init(&Q, 2, 2, Q_data);
@@ -48,11 +51,18 @@ int main(void)
     printf("beq:\n");
     matf32_print(&beq);
 
-    quadprog_status_print(quadprog(&problem, &x));
+    printf("Testing quadprog: \n");
+    for (int i = 0; i < 100; ++i)
+    {
+        time = clock();
+        quadprog(&problem, &x);
+        time_data += ((float)clock()-time)/CLOCKS_PER_SEC;
+    }
 
     printf("x:\n");
     matf32_print(&x);
 
+    printf("Time taken: %.9f seconds.\n", time_data/100);
 
     bool ans = matf32_is_equal(&x, &Result);
 
