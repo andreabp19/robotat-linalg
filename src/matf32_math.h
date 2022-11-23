@@ -21,8 +21,11 @@
 #include <stdbool.h>                    // For bool datatype.
 
 #include "matf32_def.h"
-#include "../constants.h"
+#include "constants.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // ====================================================================================================
 // Matrix datatype-based linear algebra routines
@@ -232,6 +235,10 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  */
 err_status_t
 matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 

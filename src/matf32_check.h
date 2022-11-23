@@ -16,6 +16,10 @@
 #include "matf32_def.h"
 #include "math_util.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // ====================================================================================================
 // Matrix datatype-based checks
 // ====================================================================================================
@@ -111,5 +115,9 @@ matf32_check_hessenberg_upper(const matf32_t* const p_mat);
  */
 bool
 matf32_check_hessenberg_lower(const matf32_t* const p_mat);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ROBOTAT_MATF32_CHECK_H_

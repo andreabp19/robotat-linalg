@@ -22,6 +22,9 @@
 
 #include "math_util.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // ====================================================================================================
 // Data structures, enums and type definitions
@@ -330,6 +333,10 @@ matf32_ones(matf32_t* const p_dst);
  */
 void
 matf32_randn(matf32_t* const p_dst, float mu, float sigma);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 

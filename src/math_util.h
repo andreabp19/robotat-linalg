@@ -18,8 +18,12 @@
 #include <stdbool.h>                    // For bool datatype.
 #include <time.h>                       // For srand, clock.
 
-#include "../constants.h"
+#include "constants.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
 /**
  * @brief   Find the dot product of two vectors, pointed by p_srca and p_srcb, of the same size.
  *
@@ -197,6 +201,7 @@ mean(float* p_src, uint16_t length);
 
 /**
  * @brief   Gets the standard deviation of a given array.
+ * Named this way instead of "std" to avoid conflict with std namesapce in c++
  *
  * @param[in]   p_src   Points to input array.
  * @param[in]   length  Array length.
@@ -254,6 +259,10 @@ inf_bound(float num)
  */
 void
 zero_patch(float* p_a, uint16_t length);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // ROBOTAT_MATH_UTIL_H_

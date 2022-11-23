@@ -6,7 +6,7 @@ CC = gcc
 all: matf32 linsolve control quadprog
 
 matf32:
-	$(MAKE) -C matf32
+	$(CC) -c matf32*.c -lm
 
 linsolve:
 	$(CC) -c linsolve.c
