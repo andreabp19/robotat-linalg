@@ -6,6 +6,18 @@
 
 #include "quadprog.h"
 
+float M_data[MAX_MAT_SIZE];
+matf32_t M;
+
+float y_data[MAX_MAT_SIZE];
+matf32_t y;
+
+float n_data[MAX_MAT_SIZE];
+matf32_t n;
+
+float temp_Aeq_data[MAX_MAT_SIZE];
+matf32_t temp_Aeq;
+
 
 void
 quadprog_init(quadprog_t* const p_qp,
@@ -51,22 +63,22 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x)
 {
 
     /*
-        * Sistema lineal: My=n
+        * Lineal system: My=n
 
-        crear M = [Q Aeq'; Aeq 0]
-        copiar Q, Aeq en M
-        transponer Aeq en temp Aeq
-        copiar Aeq' en M
+        create M = [Q Aeq'; Aeq 0]
+        copy Q, Aeq in M
+        transpose Aeq in temp Aeq
+        copy Aeq' en M
 
-        crear y = [x; lambda] <- you left here
+        create y = [x; lambda]
 
-        crear n = [-c, -beq]
-        copiar c y beq en n
+        create n = [-c, -beq]
+        copy c y beq in n
         n = -n
 
-        resolver My=n
+        solve My=n
 
-        copiar x desde y
+        copy x from y
     */
 
     const matf32_t* p_Q = p_qp->p_Q;
@@ -74,36 +86,28 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x)
     const matf32_t* p_c = p_qp->p_c;
     const matf32_t* p_beq = p_qp->p_beq;
 
-    // HERE size check M matrices
+    // TODO: add size checks for matrices, use above comment as guide
 
     uint16_t rows = p_qp->p_Q->num_rows + p_qp->p_Aeq->num_rows; 
     uint16_t cols = p_qp->p_Q->num_cols + p_qp->p_Aeq->num_rows; // Aeq is used transposed here
 
-
-    // temp, use file-level defined matrices/arrays
-    matf32_t M;
-    float M_data[100];
+    // init matrices
     matf32_init(&M, rows, cols, M_data);
     matf32_zeros(&M);
 
-    matf32_t y;
-    float y_data[rows];
     matf32_init(&y, rows, 1, y_data);
     matf32_zeros(&y);
 
-    matf32_t n;
-    float n_data[rows];
     matf32_init(&n, rows, 1, n_data);
     matf32_zeros(&n);
+
+    matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
 
 
     matf32_submatrix_copy(p_Q, &M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols);
 
     matf32_submatrix_copy(p_Aeq, &M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols);
 
-    float temp_Aeq_data[100];
-    matf32_t temp_Aeq;
-    matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
 
     // transpose A
     matf32_trans(p_Aeq, &temp_Aeq);

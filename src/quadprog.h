@@ -47,6 +47,13 @@ typedef enum
 } quadprog_status_t;
 
 
+/**
+ * @brief   Print quadprog status.
+ *
+ * @param[in]  p_qp quadprog execution status.
+ *
+ * @return  None
+ */
 void
 quadprog_status_print(quadprog_status_t status);
 
