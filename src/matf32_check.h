@@ -81,6 +81,33 @@ matf32_is_equal(const matf32_t* const p_mat_a, const matf32_t* const p_mat_b);
 
 
 /**
+ * @brief Checks if a matrix values are equal to a scalar
+ *
+ * @param[in]   p_mat  Points to the matrix to compare.
+ * @param[in]   scalar Value to compare against.
+ *
+ * @return  Execution status
+ *              true  :     Matrix values are equal to scalar.
+ *              false :     Matrix values are not equal to scalar.
+ */
+bool
+matf32_is_equal_scalar(const matf32_t* const p_mat, float scalar);
+
+
+/**
+ * @brief Checks if a matrix values are equal or lesser than a scalar
+ *
+ * @param[in]   p_mat  Points to the matrix to compare.
+ * @param[in]   scalar Value to compare against.
+ *
+ * @return  Execution status
+ *              true  :     Matrix values are equal or less than scalar.
+ *              false :     Matrix values are not equal or less than scalar.
+ */
+bool
+matf32_is_equal_less_scalar(const matf32_t* const p_mat, float scalar);
+
+/**
  * @brief Checks if a matrix is symmetric
  *
  * @param[in]   p_mat Points to matrix to check.

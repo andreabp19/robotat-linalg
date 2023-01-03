@@ -77,6 +77,45 @@ matf32_is_equal(const matf32_t* const p_mat_a, const matf32_t* const p_mat_b)
     return is_equal(p_mat_a->p_data, p_mat_b->p_data, p_mat_a->num_rows * p_mat_a->num_cols);
 }
 
+bool
+matf32_is_equal_scalar(const matf32_t* const p_mat, float scalar)
+{
+    float* p_mat_data = p_mat->p_data;
+
+    uint16_t size = p_mat->num_cols * p_mat->num_rows;
+
+    for (uint16_t i = 0; i < size; ++i)
+    {
+
+        if (!is_equal_margin(p_mat_data[i], scalar))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool
+matf32_is_equal_less_scalar(const matf32_t* const p_mat, float scalar)
+{
+    float* p_mat_data = p_mat->p_data;
+
+    uint16_t size = p_mat->num_cols * p_mat->num_rows;
+
+    for (uint16_t i = 0; i < size; ++i)
+    {
+
+        if (!is_equal_margin(p_mat_data[i], scalar) && (p_mat_data[i] > scalar))
+        {
+            return false;
+        }
+    }
+
+    return true;
+
+}
 
 bool
 matf32_check_symmetric(const matf32_t* const p_mat)
