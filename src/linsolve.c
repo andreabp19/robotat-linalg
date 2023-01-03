@@ -245,6 +245,7 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
             if (i == j)
             {
                 p_l_data[i*rows + i] = 1;
+                p_u_data[i*rows + i] = 1;
                 continue;
             }
 
@@ -262,6 +263,7 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
 }
 
 // https://www.cs.cornell.edu/~bindel/class/cs6210-f09/lec18.pdf
+// update to use matf32 vectors instead of array of floats
 err_status_t
 matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 {
@@ -381,6 +383,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 
 }
 
+// make inline to reduce call stack?
 err_status_t
 matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
 {
@@ -409,6 +412,7 @@ matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
         case CHOLESKY:
             
             matf32_init(&m1, p_a->num_rows, p_a->num_rows, m1data);
+            matf32_zeros(&m1);
 
 
             status = matf32_cholesky(p_a, &m1);
@@ -431,10 +435,11 @@ matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
         case LU:
             // matrix L
             matf32_init(&m1, p_a->num_rows, p_a->num_rows, m1data);
+            matf32_zeros(&m1);
 
             // matrix U
             matf32_init(&m2, p_a->num_rows, p_a->num_rows, m2data);
-
+            matf32_zeros(&m2);
 
             status = matf32_lu(p_a, &m1, &m2);
 
@@ -442,7 +447,6 @@ matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
             {
                 return status;
             }
-
 
             status = matf32_lu_solve(&m1, &m2, p_b, p_x);
 
