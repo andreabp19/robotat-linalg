@@ -6,7 +6,7 @@ CC = gcc
 all: matf32 linsolve control quadprog
 
 matf32:
-	$(CC) -c matf32*.c -lm
+	$(CC) -c matf32*.c math_util.c -lm
 
 linsolve:
 	$(CC) -c linsolve.c
@@ -19,7 +19,6 @@ control:
 
 
 clean:
-	$(MAKE) clean -C matf32
 	rm -f *.o
 
 
