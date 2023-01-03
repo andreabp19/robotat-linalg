@@ -316,6 +316,21 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
     return MATH_SUCCESS;
 }
 
+
+err_status_t
+matf32_dot(const matf32_t* const p_srca, const matf32_t* const p_srcb, float* const p_dst)
+{
+#ifdef MATH_MATRIX_CHECK
+    if (p_srca->num_cols*p_srca->num_rows != p_srcb->num_cols*p_srcb->num_rows)
+    {
+        return MATH_SIZE_MISMATCH;
+    }
+#endif
+
+    *p_dst = dot(p_srca->p_data, p_srcb->p_data, p_srca->num_cols*p_srca->num_rows);
+}
+
+
 void
 matf32_vecposmul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
 {

@@ -159,6 +159,19 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst);
 
 
 /**
+ * @brief   Dot product between two vectors (wether row or column).
+ *
+ * @param[in]       p_srca  Points to first input vector.
+ * @param[in]       p_srcb  Points to second input vector.
+ * @param[in]       p_dst   Points to scalar result.
+ *
+ * @return  Execution status.
+ */
+err_status_t
+matf32_dot(const matf32_t* const p_srca, const matf32_t* const p_srcb, float* const p_dst);
+
+
+/**
  * @brief   Matrix-vector post multiplication, i.e. Ax. Assumes a column vector.
  *
  * @param[in]       p_srcm  Points to input matrix.
