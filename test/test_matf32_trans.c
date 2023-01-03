@@ -2,60 +2,44 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "robotat_linalg.h"
+#include "math_data.h"
 
-float A_data[] = {0, 1, 2,
-                  3, 4, 5,
-                  6, 7, 8};
+float* A_list[9] = {A2_data, A3_data, A4_data, A5_data, A6_data, A7_data, A8_data, A9_data, A10_data};
+float* Rtrans_list[9] = {Result_trans_2_data, Result_trans_3_data, Result_trans_4_data, Result_trans_5_data, Result_trans_6_data, Result_trans_7_data, Result_trans_8_data, Result_trans_9_data, Result_trans_10_data};
 
-float B_data[] = {0, 0, 0,
-                  0, 0, 0,
-                  0, 0, 0};
-
-float Result_data[] = {0, 3, 6,
-                       1, 4, 7,
-                       2, 5, 8};
+float B_data[10];
 
 int
 main(void)
 {
     clock_t time;
     float time_data = 0;
-    
+
     matf32_t A, B, Result;
 
-    matf32_init(&A, 3, 3, A_data);
-    matf32_init(&B, 3, 3, B_data);
-    matf32_init(&Result, 3, 3, Result_data);
-
-    printf("Matrix A: \n");
-    matf32_print(&A);
-    printf("Matrix B: \n");
-    matf32_print(&B);
-
-    printf("Testing trans: \n");
-
-    for (int i = 0; i < 100; ++i)
+    for (int i = 0; i < (11-2); ++i)
     {
-        time = clock();
-        matf32_trans(&A, &B);
-        time_data += ((float)clock()-time)/CLOCKS_PER_SEC;
-    }
-    matf32_print(&B);
-    
-    printf("Time taken: %.9f seconds.\n", time_data/100);
+        int n = i+2;
 
-    bool ans = matf32_is_equal(&B, &Result);
+        matf32_init(&A, n, n, A_list[i]);
+        matf32_init(&B, n, n, B_data);
+        matf32_init(&Result, n, n, Rtrans_list[i]);
 
-    if (ans)
-    {
-        printf("matf32_trans sucess.\n");
-        return 0;
-    }
-    else
-    {
-        printf("matf32_trans failure.\n");
-        return 1;
+        for (int j = 0; j < 100; ++j)
+        {
+            time = clock();
+            matf32_trans(&A, &B);
+            time_data += ((float)clock()-time)/CLOCKS_PER_SEC;
+        }
+        
+        bool ans = matf32_is_equal(&B, &Result);
+        
+        printf("Time taken n=%i: %.9f seconds, %s\n", n, time_data/100, ans?"sucess":"failure");
+        
+        matf32_sub(&Result, &B, &B);
+        //matf32_print(&x);
     }
 }

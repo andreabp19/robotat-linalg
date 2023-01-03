@@ -9,7 +9,7 @@ linalg: lib
 	$(CC) test_linalg.c $(SRC)*.o -I$(SRC) -lm -o build/test_linalg
 
 matf32_add: lib
-	$(CC) $(FLAGS) test_matf32_add.c $(SRC)*.o -I$(SRC) -lm
+	$(CC) $(FLAGS) test_matf32_add.c $(SRC)*.o -I$(SRC) -lm -o build/test_matf32_add
 
 matf32_sub: lib
 	$(CC) test_matf32_sub.c $(SRC)*.o -I$(SRC) -lm -o build/test_matf32_sub
@@ -55,6 +55,10 @@ matf32_linsolve: lib
 
 quadprog: lib
 	$(CC) test_quadprog.c $(SRC)*.o -I$(SRC) -lm -o build/test_quadprog
+
+quadprog_sqp: lib
+	$(CC) test_quadprog_sqp.c $(SRC)*.o -I$(SRC) -lm -o build/test_quadprog_sqp
+
 
 
 lib:
