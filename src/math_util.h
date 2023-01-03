@@ -255,7 +255,6 @@ inf_bound(float num)
  * @param[in]   p_a     Points to array.
  * @param[in]   length  Array length.
  *
- * @return  If arrays values are equal.
  */
 void
 zero_patch(float* p_a, uint16_t length);
