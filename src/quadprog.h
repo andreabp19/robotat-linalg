@@ -43,7 +43,8 @@ typedef enum
     QP_SUCESS,
     QP_SIZE_MISMATCH,   /** Matrices/vectors are not the correct size */
     QP_NOT_RESTRICTED,  /** Missing restrictions */
-    QP_NOT_CONVEX       /** Problem is not convex */
+    QP_NOT_CONVEX,      /** Problem is not convex */
+    QP_BAD_DEFINED      /** Problem is not correctly defined */
 } quadprog_status_t;
 
 
@@ -90,6 +91,30 @@ quadprog_init(quadprog_t* const p_qp,
  */
 quadprog_status_t
 quadprog(quadprog_t* p_qp, matf32_t* const p_x);
+
+
+/**
+ * @brief   Equality restricted quadratic convex problem solver
+ *
+ * @param[in]  p_qp Points to the structure representing the problem to solve.
+ * @param[out] p_x  Points to the vector to store the result.
+ *
+ * @return  Execution status.
+ */
+quadprog_status_t
+quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x);
+
+
+/**
+ * @brief   Inequality restricted quadratic convex problem solver.
+ *
+ * @param[in]  p_qp Points to the structure representing the problem to solve.
+ * @param[out] p_x  Points to the vector to store the result.
+ *
+ * @return  Execution status.
+ */
+quadprog_status_t
+quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x);
 
 
 #ifdef __cplusplus
