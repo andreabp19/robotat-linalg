@@ -270,6 +270,30 @@ matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
                       const uint16_t rows,    const uint16_t cols);
 
 
+/**
+ * @brief   Sets a matrix row to a value.
+ *
+ * @param[in, out]  p_dst   Points to matrix to edit.
+ * @param[in]       row     Number of row to set as a value.
+ * @param[in]       val     Value to set the row to.
+ *
+ * @return None.
+ */
+void 
+matf32_set_row(matf32_t* const p_dst, uint16_t row, float val);
+
+
+/**
+ * @brief   Sets a matrix col to a value.
+ *
+ * @param[in, out]  p_dst   Points to matrix to edit.
+ * @param[in]       col     Number of column to set as a value.
+ * @param[in]       val     Value to set the row to.
+ *
+ * @return None.
+ */
+void 
+matf32_set_col(matf32_t* const p_dst, uint16_t col, float val);
 
 // ====================================================================================================
 // Special matrix initializations

@@ -102,6 +102,28 @@ matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
     return MATH_SUCCESS;
 }
 
+void 
+matf32_set_row(matf32_t* const p_dst, uint16_t row, float val)
+{
+    float* p_dst_data = p_dst->p_data;
+
+    for (int i = 0; i < p_dst->num_cols; ++i)
+    {
+        p_dst_data[p_dst->num_cols*row + i] = val;
+    }
+}
+
+void 
+matf32_set_col(matf32_t* const p_dst, uint16_t col, float val)
+{
+    float* p_dst_data = p_dst->p_data;
+
+    for (int i = 0; i < p_dst->num_rows; ++i)
+    {
+        p_dst_data[p_dst->num_cols*i + col] = val;
+    }
+}
+
 
 // ====================================================================================================
 // Special matrix initializations
