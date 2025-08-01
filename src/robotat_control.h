@@ -26,6 +26,13 @@
 // ====================================================================================================
 // NOTE: these should not be manipulated directly, use the init, setter and getter routines instead.
 
+// POSSIBLE TODO:
+// LQI
+// MPC
+// Funciones con espacio de estados:
+//      - ej. función para un ciclo de simulación, con forward euler y runge kutta para propagar un step hacia adelante en la simulacion del estado siguiente,
+//              usando el valor del estado actual y las condiciones iniciales.
+
 /**
  * @brief   Discretization specification data type.
  * 
@@ -39,7 +46,7 @@ typedef enum
     TUSTIN,         /**< Trapezoidal rule. */
     ZOH,            /**< Zero-order hold. */
     RK4,            /**< 4th order Runge-Kutta. */
-} discretization_spec_t;
+} ctr_discretizations_t;
 
 
 /**
@@ -56,8 +63,8 @@ typedef struct
     float i_max;    /**< Upper integrator saturation threshold. */
     float tau;      /**< Time constant of the derivative HPF. */
     float dt;       /**< Sampling period. */
-    discretization_spec_t pid_alg;  /**< Specifies the discretization scheme to be used. */
-} pid_info_t;
+    ctr_discretizations_t pid_alg;  /**< Specifies the discretization scheme to be used. */
+} ctr_pid_t;
 
 
 /**
@@ -75,7 +82,7 @@ typedef struct
     matf32_t* D;            /**< Feedforward terms. */
     float dt;               /**< Sampling period (for discrete time systems). */
     bool is_continuous;     /**< System time domain specification. */
-} sys_lti_t;
+} ctr_sys_lti_t;
 
 
 /**
@@ -91,7 +98,7 @@ typedef struct
     err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*);       /** System outputs. */
     float dt;               /**< Sampling period (for discrete time systems). */
     bool is_continuous;     /**< System time domain specification. */
-} sys_nonlin_t;
+} ctr_sys_nonlin_t;
 
 
 /**
@@ -99,13 +106,13 @@ typedef struct
  */
 typedef struct
 {
-    sys_lti_t* sys;     /**< LTI system model(has to be discrete time). */
+    ctr_sys_lti_t* sys;     /**< LTI system model(has to be discrete time). */
     matf32_t* F;        /**< Coupling matrix for the process noise. */
     matf32_t* Qw;       /**< Process noise covariance matrix. */
     matf32_t* Qv;       /**< Measurement noise covariance matrix. */
     matf32_t* xhat;     /**< State estimate. */
     matf32_t* P;        /**< Estimation covariance matrix. */
-} kalman_info_t;
+} ctr_kalman_t;
 
 
 // ====================================================================================================
@@ -121,10 +128,10 @@ typedef struct
  * Depending on the discretization scheme and whether or not the integrator saturates, the function 
  * can ask for additional parameters:
  * 
- * 1) pid_init(pid, kp, ki, kd, PURE_DISCRETE, 0); 
- * 2) pid_init(pid, kp, ki, kd, PURE_DISCRETE, 1, i_min, i_max); // With saturation limits.
- * 3) pid_init(pid, kp, ki, kd, pid_alg, 0, dt, tau); // Needs sampling period and time constant.
- * 4) pid_init(pid, kp, ki, kd, pid_alg, 1, dt, tau, i_min, i_max); // Needs all info. 
+ * 1) ctr_pid_init(pid, kp, ki, kd, PURE_DISCRETE, 0); 
+ * 2) ctr_pid_init(pid, kp, ki, kd, PURE_DISCRETE, 1, i_min, i_max); // With saturation limits.
+ * 3) ctr_pid_init(pid, kp, ki, kd, pid_alg, 0, dt, tau); // Needs sampling period and time constant.
+ * 4) ctr_pid_init(pid, kp, ki, kd, pid_alg, 1, dt, tau, i_min, i_max); // Needs all info. 
  * 
  * @param[in, out]  pid             PID controller data structure.
  * @param[in]       kp              Proportional gain.
@@ -140,7 +147,7 @@ typedef struct
  * @return  None.
  */
 void
-pid_init(pid_info_t* const pid, float kp, float ki, float kd, discretization_spec_t pid_alg, bool set_i_limits, ...);
+ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizations_t pid_alg, bool set_i_limits, ...);
 
 
 /**
@@ -154,7 +161,7 @@ pid_init(pid_info_t* const pid, float kp, float ki, float kd, discretization_spe
  * @return  None.
  */
 static inline void
-pid_set_gains(pid_info_t* const pid, float kp, float ki, float kd)
+ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
 {
     pid->kp = kp;
     pid->ki = ki;
@@ -175,7 +182,7 @@ pid_set_gains(pid_info_t* const pid, float kp, float ki, float kd)
  * @return  Controller output.
  */
 float
-pid_update(pid_info_t* const pid, float r_k, float y_k);
+ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k);
 
 
 // ====================================================================================================
@@ -199,7 +206,7 @@ pid_update(pid_info_t* const pid, float r_k, float y_k);
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-ss(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, sys_lti_t* const sys);
+ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, ctr_sys_lti_t* const sys);
 
 
 /**
@@ -217,19 +224,19 @@ ss(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, sys_lt
  *              MATH_SIZE_MISMATCH :    Matrix size check failed. 
  */
 err_status_t
-c2d(sys_lti_t* const sys, float sample_time, discretization_spec_t method);
+ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method);
 
 
 err_status_t
-sys_lti_init(sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, matf32_t* const B, matf32_t* const C, matf32_t* const D, float sample_time);
+ctr_sys_lti_init(ctr_sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, matf32_t* const B, matf32_t* const C, matf32_t* const D, float sample_time);
 
 
 err_status_t
-sys_nonlin_init(sys_nonlin_t* const sys, matf32_t* const state, uint16_t input_dim, uint16_t output_dim, err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*), err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*), float sample_time);
+ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t input_dim, uint16_t output_dim, err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*), err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*), float sample_time);
 
 
 err_status_t
-linloc(sys_nonlin_t* const src_sys, sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta);
+ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta);
 
 
 // ====================================================================================================
@@ -249,7 +256,7 @@ linloc(sys_nonlin_t* const src_sys, sys_lti_t* const dst_sys, const matf32_t* co
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, const matf32_t* xss, const matf32_t* uss);
+ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, const matf32_t* xss, const matf32_t* uss);
 
 
 // ====================================================================================================
@@ -272,27 +279,27 @@ linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, c
  *              MATH_ARGUMENT_ERROR :   LTI system model is not discrete time.
  */
 err_status_t
-kalman_init(kalman_info_t* const kf, sys_lti_t* const sys, matf32_t* F, matf32_t* Qw, matf32_t* Qv, matf32_t* const xhat, matf32_t* const P);
+ctr_kalman_init(ctr_kalman_t* const kf, ctr_sys_lti_t* const sys, matf32_t* F, matf32_t* Qw, matf32_t* Qv, matf32_t* const xhat, matf32_t* const P);
 
 
 err_status_t
-kalman_predict(kalman_info_t* const kf, const matf32_t* inputs);
+ctr_kalman_predict(ctr_kalman_t* const kf, const matf32_t* inputs);
 
 
 err_status_t
-kalman_correct(kalman_info_t* const kf, const matf32_t* measurements);
+ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements);
 
 
 static inline err_status_t
-kalman_update(kalman_info_t* const kf, const matf32_t* inputs, const matf32_t* measurements)
+ctr_kalman_update(ctr_kalman_t* const kf, const matf32_t* inputs, const matf32_t* measurements)
 {
-    kalman_predict(kf, inputs);
-    return kalman_correct(kf, measurements);
+    ctr_kalman_predict(kf, inputs);
+    return ctr_kalman_correct(kf, measurements);
 }
 
 
 static inline void
-kalman_get_estimate(kalman_info_t* const kf, float* const estimate)
+ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
 {
     memcpy(estimate, kf->xhat->p_data, kf->xhat->num_rows * sizeof(float));
 }
@@ -307,8 +314,8 @@ kalman_get_estimate(kalman_info_t* const kf, float* const estimate)
 
 
 //void
-//kalman_predict(kalman_info_t* const kf, float* const inputs);
+//kalman_predict(ctr_kalman_t* const kf, float* const inputs);
 //err_status_t
-//kalman_correct(kalman_info_t* const kf, float* const measurements);
+//kalman_correct(ctr_kalman_t* const kf, float* const measurements);
 
 #endif /* ROBOTAT_CONTROL_H_ */

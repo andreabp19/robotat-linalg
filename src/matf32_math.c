@@ -330,7 +330,6 @@ matf32_dot(const matf32_t* const p_srca, const matf32_t* const p_srcb, float* co
     *p_dst = dot(p_srca->p_data, p_srcb->p_data, p_srca->num_cols*p_srca->num_rows);
 }
 
-
 void
 matf32_vecposmul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
 {

@@ -47,8 +47,7 @@
 #include "matf32.h"
 #include "linsolve.h"
 #include "quadprog.h"
-
-
+#include "robotat_robotics.h"
 
 
 //// ====================================================================================================

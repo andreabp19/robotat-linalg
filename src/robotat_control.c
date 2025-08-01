@@ -1,5 +1,6 @@
 #include "robotat_control.h"
 
+
 static float m1data[MAX_MAT_SIZE];
 static matf32_t m1;
 static float m2data[MAX_MAT_SIZE];
@@ -17,7 +18,7 @@ static matf32_t m5;
 // PID Control
 // ====================================================================================================
 void
-pid_init(pid_info_t* const pid, float kp, float ki, float kd, discretization_spec_t pid_alg, bool set_i_limits, ...)
+ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizations_t pid_alg, bool set_i_limits, ...)
 {
 	va_list ap;
 
@@ -58,7 +59,7 @@ pid_init(pid_info_t* const pid, float kp, float ki, float kd, discretization_spe
 
 
 float
-pid_update(pid_info_t* const pid, float r_k, float y_k)
+ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k)
 {
 	float u_k = 0;
 	float e_k;
@@ -112,7 +113,7 @@ pid_update(pid_info_t* const pid, float r_k, float y_k)
 // State space representation
 // ====================================================================================================
 err_status_t
-ss(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, sys_lti_t* const sys) 
+ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, ctr_sys_lti_t* const sys) 
 {
 	// Check if the dimensions of all matrices are consistent
 	if ((!matf32_size_check(A, A->num_rows, A->num_rows)) || (A->num_cols != B->num_rows) || (A->num_rows != C->num_cols))
@@ -141,7 +142,7 @@ ss(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, sys_lt
 
 
 err_status_t
-c2d(sys_lti_t* const sys, float sample_time, discretization_spec_t method)
+ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method)
 {	
 	// Check if system is already discrete time
 	if (!sys->is_continuous)
@@ -187,7 +188,7 @@ c2d(sys_lti_t* const sys, float sample_time, discretization_spec_t method)
 
 
 err_status_t
-sys_lti_init(sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, matf32_t* const B, matf32_t* const C, matf32_t* const D, float sample_time)
+ctr_sys_lti_init(ctr_sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, matf32_t* const B, matf32_t* const C, matf32_t* const D, float sample_time)
 {
 	const uint16_t state_dim = state->num_rows; 
 
@@ -224,7 +225,7 @@ sys_lti_init(sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, mat
 
 // NOTE: change matf32_size_check to matf32_is_correct_size for readability, maybe add matf32_is_colvector
 err_status_t
-sys_nonlin_init(sys_nonlin_t* const sys, matf32_t* const state, uint16_t input_dim, uint16_t output_dim, err_status_t(*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*), err_status_t(*outputs)(matf32_t* const, const matf32_t*, const matf32_t*), float sample_time)
+ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t input_dim, uint16_t output_dim, err_status_t(*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*), err_status_t(*outputs)(matf32_t* const, const matf32_t*, const matf32_t*), float sample_time)
 {
 	const uint16_t state_dim = state->num_rows;
 
@@ -270,7 +271,7 @@ sys_nonlin_init(sys_nonlin_t* const sys, matf32_t* const state, uint16_t input_d
 
 
 err_status_t
-linloc(sys_nonlin_t* const src_sys, sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta)
+ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta)
 {
 #ifdef MATH_MATRIX_CHECK
 	if ((src_sys->state_dim == dst_sys->state_dim) && (src_sys->input_dim == dst_sys->input_dim) && (src_sys->output_dim == dst_sys->output_dim));
@@ -364,7 +365,7 @@ linloc(sys_nonlin_t* const src_sys, sys_lti_t* const dst_sys, const matf32_t* co
 // Linear state space controllers
 // ====================================================================================================
 err_status_t
-linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, const matf32_t* xss, const matf32_t* uss)
+ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, const matf32_t* xss, const matf32_t* uss)
 {
 #ifdef MATH_MATRIX_CHECK
 	if (matf32_is_same_size(x, xss) && matf32_size_check(K, uss->num_rows, x->num_rows) &&
@@ -390,7 +391,7 @@ linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, c
 // Linear time-varying, discrete time Kalman filter
 // ====================================================================================================
 err_status_t
-kalman_init(kalman_info_t* const kf, sys_lti_t* const sys, matf32_t* F, matf32_t* Qw, matf32_t* Qv, matf32_t* const xhat, matf32_t* const P)
+ctr_kalman_init(ctr_kalman_t* const kf, ctr_sys_lti_t* const sys, matf32_t* F, matf32_t* Qw, matf32_t* Qv, matf32_t* const xhat, matf32_t* const P)
 {
 	// Mandatory size checking (change to use new size checking routines)
 	if ( (sys->A->num_rows == P->num_rows) && (sys->A->num_cols == P->num_cols) 
@@ -414,7 +415,7 @@ kalman_init(kalman_info_t* const kf, sys_lti_t* const sys, matf32_t* F, matf32_t
 
 
 err_status_t
-kalman_predict(kalman_info_t* const kf, const matf32_t* inputs)
+ctr_kalman_predict(ctr_kalman_t* const kf, const matf32_t* inputs)
 {
 	// Check if the inputs vector has the correct size
 	if ((inputs->num_rows != kf->sys->input_dim) || (inputs->num_cols != 1))
@@ -461,7 +462,7 @@ kalman_predict(kalman_info_t* const kf, const matf32_t* inputs)
 
 
 err_status_t
-kalman_correct(kalman_info_t* const kf, const matf32_t* measurements)
+ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 {
 	// Check if the measurements vector has the correct size
 	if ((measurements->num_rows != kf->sys->output_dim) || (measurements->num_cols != 1))

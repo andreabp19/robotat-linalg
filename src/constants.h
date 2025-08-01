@@ -16,6 +16,6 @@
 #define MAX_VEC_SIZE            (10)   /**< Maximum number of elements allowed for a single row vector. */
 #define MAX_MAT_SIZE            (MAX_VEC_SIZE*MAX_VEC_SIZE)     /**< Maximum number of elements allowed for a matrix. */
 #define MATH_MATRIX_CHECK               /**< Comment this to disable matrix size checking. */
-#define MATH_EQUAL_PRECISION    (1E-5)  /**< Precision of equal comparisons. WARNING: Algorithms may break if they can't reach specified precision. Adjust as needed.*/
+#define MATH_EQUAL_PRECISION    (1E-5f)  /**< Precision of equal comparisons. WARNING: Algorithms may break if they can't reach specified precision. Adjust as needed.*/
 
 #endif // ROBOTAT_CONSTANTS_H_

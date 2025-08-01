@@ -1,7 +1,9 @@
 /**
  * @file matf32.h
  *
- * Single header to include all matrix related functions.
+ * @author Daniel Pineda
+ * *Changes: original library distributed in files: matf32_def, matf32_check, matf32_math y math_util.
+ * *Combined into a single file by Andrea Pineda - 31 Jul 2025
  *
  */
 
@@ -13,3 +15,7 @@
 #include "matf32_check.h"
 
 #endif // ROBOTAT_MATF32_H_
+
+
+// matf32: juntar def, math, check y util en este archivo.
+

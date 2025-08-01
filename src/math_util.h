@@ -237,7 +237,7 @@ is_equal(float* p_a, float* p_b, uint16_t length);
 static inline bool
 is_equal_margin(float a, float b)
 {
-    return (fabs(a-b) <= MATH_EQUAL_PRECISION);
+    return (fabsf(a-b) <= MATH_EQUAL_PRECISION);
 }
 
 

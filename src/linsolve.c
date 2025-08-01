@@ -4,9 +4,6 @@
 
 #include "linsolve.h"
 
-// temporary
-// fix to use the temp matrices at matf32_math.c
-// or move all preallocations to a single file
 static float m1data[MAX_MAT_SIZE];
 static matf32_t m1;
 static float m2data[MAX_MAT_SIZE];

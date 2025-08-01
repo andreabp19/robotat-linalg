@@ -29,7 +29,8 @@ typedef enum
     BACKWARD_SUBS,
     CHOLESKY,
     QR,
-    LU
+    LU,
+    SCHUR
 } linsolve_method_t;
 
 /**
@@ -167,8 +168,7 @@ matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);
-
+matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);  
 
 #ifdef __cplusplus
 }

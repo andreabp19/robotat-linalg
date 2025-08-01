@@ -1,14 +1,11 @@
 
-
-INCLUDE = ../include
-
 SRC = ../src/
 
 CC = gcc
 
 
 main: lib
-	$(CC) main.c $(SRC)*.o $(SRC)matf32/*.o -I$(INCLUDE) -lm -o build/main
+	$(CC) main.c $(SRC)*.o -I$(SRC) -lm -o build/main
 
 lib:
 	$(MAKE) -C $(SRC)
