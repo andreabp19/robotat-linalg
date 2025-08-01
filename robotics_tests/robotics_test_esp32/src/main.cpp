@@ -110,16 +110,20 @@ void setup()
         rotx_time[i] = (float)toc;
     }
 
-    /*printf("ROTX\n");
+    // Print time values formatted to a .mat for plotting in matlab
+    printf("rob_rotx\n");
+    
     for (uint8_t j = 0; j < x; j++)
     {
-        printf("%i,%.9f\n", j+1, rotx_time[j]/1000000.0);
-    }*/
+        printf("%.9f ", rotx_time[j]/1000000.0);
+    }
+
+    printf("\n\n");
 
     rotx_mean_time = mean(rotx_time, x);
 
     bool rotx_ans = matf32_is_equal(F_AB.p_R, &R_rotx);
-    Serial.printf("rotx,%s, mean time: %.9f\n", rotx_ans?"success":"failure", rotx_mean_time/1000000.0);
+    //Serial.printf("rotx,%s, mean time: %.9f\n", rotx_ans?"success":"failure", rotx_mean_time/1000000.0);
 
     // ---------------------------------------------------------------------------
     // 2. rob_roty
@@ -136,16 +140,20 @@ void setup()
         roty_time[i] = (float)toc;
     }
 
-    /*printf("ROTY\n");
+    // Print time values formatted to a .mat for plotting in matlab
+    printf("rob_roty\n");
+    
     for (uint8_t j = 0; j < x; j++)
     {
-        printf("%i,%.9f\n", j+1, roty_time[j]/1000000.0);
-    }*/
+        printf("%.9f ", roty_time[j]/1000000.0);
+    }
+
+    printf("\n\n");
 
     roty_mean_time = mean(roty_time, x);
 
     bool roty_ans = matf32_is_equal(F_AB.p_R, &R_roty);
-    Serial.printf("roty,%s, mean time: %.9f\n", roty_ans?"success":"failure", roty_mean_time/1000000.0);
+    //Serial.printf("roty,%s, mean time: %.9f\n", roty_ans?"success":"failure", roty_mean_time/1000000.0);
 
     // ---------------------------------------------------------------------------
     // 3. rob_rotz
@@ -162,16 +170,20 @@ void setup()
         rotz_time[i] = (float)toc;
     }
 
-    /*printf("ROTZ\n");
+    // Print time values formatted to a .mat for plotting in matlab
+    printf("rob_rotz\n");
+    
     for (uint8_t j = 0; j < x; j++)
     {
-        printf("%i,%.9f\n", j+1, rotz_time[j]/1000000.0);
-    }*/
+        printf("%.9f ", rotz_time[j]/1000000.0);
+    }
+
+    printf("\n\n");
 
     rotz_mean_time = mean(rotz_time, x);
 
     bool rotz_ans = matf32_is_equal(F_AB.p_R, &R_rotz);
-    Serial.printf("rotz,%s, mean time: %.9f\n", rotz_ans?"success":"failure", rotz_mean_time/1000000.0);
+    //Serial.printf("rotz,%s, mean time: %.9f\n", rotz_ans?"success":"failure", rotz_mean_time/1000000.0);
 
     // ---------------------------------------------------------------------------
     // 4. rob_transl
@@ -196,16 +208,20 @@ void setup()
         transl_time[i] = (float)toc;
     }
 
-    /*printf("TRANSL\n");
+    // Print time values formatted to a .mat for plotting in matlab
+    printf("rob_transl\n");
+    
     for (uint8_t j = 0; j < x; j++)
     {
-        printf("%i,%.9f\n", j+1, transl_time[j]/1000000.0);
-    }*/
+        printf("%.9f ", transl_time[j]/1000000.0);
+    }
+
+    printf("\n\n");
 
     transl_mean_time = mean(transl_time, x);
 
     bool transl_ans = matf32_is_equal(F_AB.p_T, &R_transl);
-    Serial.printf("transl,%s, mean time: %.9f\n", transl_ans?"success":"failure", transl_mean_time/1000000.0);
+    //Serial.printf("transl,%s, mean time: %.9f\n", transl_ans?"success":"failure", transl_mean_time/1000000.0);
 
     // ---------------------------------------------------------------------------
     // 5. rob_apply_transform
@@ -225,16 +241,20 @@ void setup()
         homtrans_time[i] = (float)toc;
     }
 
-    /*printf("HOMTRANS\n");
+    // Print time values formatted to a .mat for plotting in matlab
+    printf("rob_apply_transform\n");
+    
     for (uint8_t j = 0; j < x; j++)
     {
-        printf("%i,%.9f\n", j+1, homtrans_time[j]/1000000.0);
-    }*/
+        printf("%.9f ", homtrans_time[j]/1000000.0);
+    }
+
+    printf("\n\n");
 
     homtrans_mean_time = mean(homtrans_time, x);
 
     bool homtrans_ans = matf32_is_equal(p_A.p_v, &R_homtrans);
-    Serial.printf("homtrans,%s, mean time: %.9f\n", homtrans_ans?"success":"failure", homtrans_mean_time/1000000.0);
+    //Serial.printf("homtrans,%s, mean time: %.9f\n", homtrans_ans?"success":"failure", homtrans_mean_time/1000000.0);
 
     // ---------------------------------------------------------------------------
     // 6. rob_apply_euler_angles
@@ -251,16 +271,20 @@ void setup()
         xyx_time[i] = (float)toc;
     }
 
-    /*printf("XYX\n");
+    // Print time values formatted to a .mat for plotting in matlab
+    printf("rob_apply_euler_angles\n");
+    
     for (uint8_t j = 0; j < x; j++)
     {
-        printf("%i,%.9f\n", j+1, homtrans_time[j]/1000000.0);
-    }*/
+        printf("%.9f ", xyx_time[j]/1000000.0);
+    }
+
+    printf("\n\n");
 
     xyx_mean_time = mean(xyx_time, x);
 
     bool xyx_ans = matf32_is_equal(p_A.p_v, &R_xyx);
-    Serial.printf("xyx,%s, mean time: %.9f\n", xyx_ans?"success":"failure", xyx_mean_time/1000000.0);
+    //Serial.printf("xyx,%s, mean time: %.9f\n", xyx_ans?"success":"failure", xyx_mean_time/1000000.0);
 }
 
 void loop()

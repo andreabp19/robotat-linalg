@@ -31,7 +31,7 @@
 % print matrices and values. Print functions will not be measured for time,
 % they work and that's it.
 %
-% work in progress will add more functions later :3
+% work in progress, will add more functions later :3
 
 %% CLEAN EVERYTHING
 
@@ -56,38 +56,32 @@ file_labels = ["n","time(s)"];
 
 rotx_time = zeros(1,x);
 rotx_stats = zeros(10,2);
-rotx_mean_time = 0;
 
 roty_time = zeros(1,x);
 roty_stats = zeros(10,2);
-roty_mean_time = 0;
 
 rotz_time = zeros(1,x);
 rotz_stats = zeros(10,2);
-rotz_mean_time = 0;
 
 transl_time = zeros(1,x);
 transl_stats = zeros(10,2);
-transl_mean_time = 0;
 
 homtrans_time = zeros(1,x);
 homtrans_stats = zeros(10,2);
-homtrans_mean_time = 0;
 
 xyx_time = zeros(1,x);
 xyx_stats = zeros(10,2);
-xyx_mean_time = 0;
 
 % -------------------------------------------------------------------------
 % PRINT DATA TO A .h TO USE AS INPUT DATA IN PLATFORMIO
 % -------------------------------------------------------------------------
 
-results_file = fopen('robotics_test_results.h','w');
-
-fprintf(results_file, 'uint8_t x = %.9f;\n', x);
-fprintf(results_file, 'float theta = %.9f;\n', theta);
-fprintf(results_file, 'float F_AB_v_data[3] = {%.9f, %.9f, %.9f};\n', v(1), v(2), v(3));
-fprintf(results_file, 'float p_B_data[4] = {%.9f, %.9f, %.9f, %.9f};\n', B_p(1), B_p(2), B_p(3), B_p(4));
+% results_file = fopen('robotics_test_results.h','w');
+ 
+% fprintf(results_file, 'uint8_t x = %.9f;\n', x);
+% fprintf(results_file, 'float theta = %.9f;\n', theta);
+% fprintf(results_file, 'float F_AB_v_data[3] = {%.9f, %.9f, %.9f};\n', v(1), v(2), v(3));
+% fprintf(results_file, 'float p_B_data[4] = {%.9f, %.9f, %.9f, %.9f};\n', B_p(1), B_p(2), B_p(3), B_p(4));
 
 % -------------------------------------------------------------------------
 % FUNCTIONS TESTING
@@ -105,22 +99,20 @@ for i = 1:1:x
     rotx_stats(i,2) = rotx_time(i);
 end
 
-rotx_mean_time = mean(rotx_stats(:,2));
-
-% Print results to .h
-fprintf(results_file, 'float R_rotx_data[9] = {');
-
-temp_rotx = transpose(rotx_result);
-for z = 1:1:9
-    
-    fprintf(results_file, '%.9f', temp_rotx(z));
-
-    if (z < 9)
-            fprintf(results_file, ',');
-    end
-end    
-
-fprintf(results_file, '};\n');
+% % Print results to .h
+% fprintf(results_file, 'float R_rotx_data[9] = {');
+% 
+% temp_rotx = transpose(rotx_result);
+% for z = 1:1:9
+% 
+%     fprintf(results_file, '%.9f', temp_rotx(z));
+% 
+%     if (z < 9)
+%             fprintf(results_file, ',');
+%     end
+% end    
+% 
+% fprintf(results_file, '};\n');
 
 % -------------------------------------------------------------------------
 % 2. roty
@@ -134,23 +126,21 @@ for i = 1:1:x
     roty_stats(i,1) = i;
     roty_stats(i,2) = roty_time(i);
 end
-
-roty_mean_time = mean(roty_stats(:,2));
-
-% Print results to .h
-fprintf(results_file, 'float R_roty_data[9] = {');
-
-temp_roty = transpose(roty_result);
-for z = 1:1:9
-    
-    fprintf(results_file, '%.9f', temp_roty(z));
-
-    if (z < 9)
-            fprintf(results_file, ',');
-    end
-end    
-
-fprintf(results_file, '};\n');
+ 
+% % Print results to .h
+% fprintf(results_file, 'float R_roty_data[9] = {');
+% 
+% temp_roty = transpose(roty_result);
+% for z = 1:1:9
+% 
+%     fprintf(results_file, '%.9f', temp_roty(z));
+% 
+%     if (z < 9)
+%             fprintf(results_file, ',');
+%     end
+% end    
+% 
+% fprintf(results_file, '};\n');
 
 % -------------------------------------------------------------------------
 % 3. rotz
@@ -164,23 +154,21 @@ for i = 1:1:x
     rotz_stats(i,1) = i;
     rotz_stats(i,2) = rotz_time(i);
 end
-
-rotz_mean_time = mean(rotz_stats(:,2));
-
-% Print results to .h
-fprintf(results_file, 'float R_rotz_data[9] = {');
-
-temp_rotz = transpose(rotz_result);
-for z = 1:1:9
-    
-    fprintf(results_file, '%.9f', temp_rotz(z));
-
-    if (z < 9)
-            fprintf(results_file, ',');
-    end
-end    
-
-fprintf(results_file, '};\n');
+ 
+% % Print results to .h
+% fprintf(results_file, 'float R_rotz_data[9] = {');
+% 
+% temp_rotz = transpose(rotz_result);
+% for z = 1:1:9
+% 
+%     fprintf(results_file, '%.9f', temp_rotz(z));
+% 
+%     if (z < 9)
+%             fprintf(results_file, ',');
+%     end
+% end    
+% 
+% fprintf(results_file, '};\n');
 
 % -------------------------------------------------------------------------
 % 4. transl
@@ -194,23 +182,21 @@ for i = 1:1:x
     transl_stats(i,1) = i;
     transl_stats(i,2) = transl_time(i);
 end
-
-transl_mean_time = mean(transl_stats(:,2));
-
-% Print results to .h
-fprintf(results_file, 'float R_transl_data[16] = {');
-
-temp_transl = transpose(transl_result);
-for z = 1:1:16
-    
-    fprintf(results_file, '%.9f', temp_transl(z));
-
-    if (z < 16)
-            fprintf(results_file, ',');
-    end
-end    
-
-fprintf(results_file, '};\n');
+ 
+% % Print results to .h
+% fprintf(results_file, 'float R_transl_data[16] = {');
+% 
+% temp_transl = transpose(transl_result);
+% for z = 1:1:16
+% 
+%     fprintf(results_file, '%.9f', temp_transl(z));
+% 
+%     if (z < 16)
+%             fprintf(results_file, ',');
+%     end
+% end    
+% 
+% fprintf(results_file, '};\n');
 
 % -------------------------------------------------------------------------
 % 5. homtrans
@@ -225,23 +211,21 @@ for i = 1:1:x
     homtrans_stats(i,1) = i;
     homtrans_stats(i,2) = homtrans_time(i);
 end
-
-homtrans_mean_time = mean(homtrans_stats(:,2));
-
-% Print results to .h
-fprintf(results_file, 'float R_homtrans_data[4] = {');
-
-temp_homtrans = transpose(homtrans_result);
-for z = 1:1:4
-    
-    fprintf(results_file, '%.9f', temp_homtrans(z));
-
-    if (z < 4)
-            fprintf(results_file, ',');
-    end
-end    
-
-fprintf(results_file, '};\n');
+ 
+% % Print results to .h
+% fprintf(results_file, 'float R_homtrans_data[4] = {');
+% 
+% temp_homtrans = transpose(homtrans_result);
+% for z = 1:1:4
+% 
+%     fprintf(results_file, '%.9f', temp_homtrans(z));
+% 
+%     if (z < 4)
+%             fprintf(results_file, ',');
+%     end
+% end    
+% 
+% fprintf(results_file, '};\n');
 
 % -------------------------------------------------------------------------
 % 6. XYX (no specific function for this, so manually and measure time
@@ -261,54 +245,23 @@ for i = 1:1:x
     xyx_stats(i,2) = xyx_time(i);
 end
 
-xyx_mean_time = mean(xyx_stats(:,2));
-
-% Print results to .h
-fprintf(results_file, 'float R_xyx_data[4] = {');
-
-temp_xyx = transpose(xyx_result);
-for z = 1:1:4
-    
-    fprintf(results_file, '%.9f', temp_xyx(z));
-
-    if (z < 4)
-            fprintf(results_file, ',');
-    end
-end    
-
-fprintf(results_file, '};\n');
+% % Print results to .h
+% fprintf(results_file, 'float R_xyx_data[4] = {');
+% 
+% temp_xyx = transpose(xyx_result);
+% for z = 1:1:4
+% 
+%     fprintf(results_file, '%.9f', temp_xyx(z));
+% 
+%     if (z < 4)
+%             fprintf(results_file, ',');
+%     end
+% end    
+% 
+% fprintf(results_file, '};\n');
 
 % -------------------------------------------------------------------------
-% EXPORT STATS TO A .csv TO USE IN EXCEL
+% Save time results into a .mat file for plotting in a new file
 % -------------------------------------------------------------------------
 
-% ROTX
-writematrix("ROTX TIME", 'robotics_test_stats.csv');
-writematrix(rotx_stats, 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix("", 'robotics_test_stats.csv', 'WriteMode', 'append');
-
-% ROTY
-writematrix("ROTY TIME", 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix(roty_stats, 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix("", 'robotics_test_stats.csv', 'WriteMode', 'append');
-
-% ROTZ
-writematrix("ROTZ TIME", 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix(rotz_stats, 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix("", 'robotics_test_stats.csv', 'WriteMode', 'append');
-
-% TRANSL
-writematrix("TRANSL TIME", 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix(transl_stats, 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix("", 'robotics_test_stats.csv', 'WriteMode', 'append');
-
-% HOMTRANS
-writematrix("HOMTRANS TIME", 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix(homtrans_stats, 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix("", 'robotics_test_stats.csv', 'WriteMode', 'append');
-
-% XYX
-writematrix("XYX TIME", 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix(xyx_stats, 'robotics_test_stats.csv', 'WriteMode', 'append');
-writematrix("", 'robotics_test_stats.csv', 'WriteMode', 'append');
-
+save matlab_robotics_test_stats.mat rotx_time roty_time rotz_time transl_time homtrans_time xyx_time
