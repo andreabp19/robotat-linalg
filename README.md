@@ -21,7 +21,7 @@ robotat_robotics.h | implements robotics algorithms based on the Matlab Robotics
 
 robotat_linalg.h | to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h so that all can be used when importing this only file (currently not importing robotat_control and robotat_robotics as they're both currently under development/testing).
 
-# History and purpose
+# History and Purpose
 
 Robotat-Linalg has been in development at the Universidad del Valle de Guatemala (UVG) as part of undergraduate thesis projects in 2022 (see Previous Versions below) and now in 2025 (this repository). The 2022 version developed the matf32.h library files, linsolve.h and quadprog.h and validated some functions. The version currently developed and documented in this repository focuses on validating all of the functions in the aformentioned files, validating and adding some algorithms in robotat_control.h and developing and validating the robotat_robotics.h library.
 
