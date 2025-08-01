@@ -27,6 +27,10 @@ Robotat-Linalg has been in development at the Universidad del Valle de Guatemala
 
 The purpose of this library is to be implemented in microcontrollers, such as the ESP32, that are used in the robotics laboratory Robotat of the UVG, while being flexible enough to be used in any microcontroller so that more embedded applications are developed with control and robotics.
 
+# Validation of the Libraries
+
+Section under development.
+
 # Documentation
 
 Under development.
