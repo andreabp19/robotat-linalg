@@ -1,0 +1,132 @@
+
+#ID      ,n ,time       ,result
+add      ,01,0.000000640,success
+sub      ,01,0.000000950,success
+scale    ,01,0.000001260,success
+trans    ,01,0.000001370,success
+mul      ,01,0.000001160,success
+inv      ,01,0.000003410,success
+dot      ,01,0.000000740,success
+vecposmul,01,0.000001380,success
+vecpremul,01,0.000001320,success
+vecmul   ,01,0.000000970,success
+arr_add  ,01,0.000002260,success
+arr_sub  ,01,0.000001950,success
+arr_mul  ,01,0.000002430,success
+add      ,02,0.000001070,success
+sub      ,02,0.000001000,success
+scale    ,02,0.000001100,success
+trans    ,02,0.000001040,success
+mul      ,02,0.000001800,success
+inv      ,02,0.000006220,success
+dot      ,02,0.000001000,success
+vecposmul,02,0.000001510,success
+vecpremul,02,0.000001520,success
+vecmul   ,02,0.000001220,success
+arr_add  ,02,0.000002840,success
+arr_sub  ,02,0.000002370,success
+arr_mul  ,02,0.000003770,success
+add      ,03,0.000001480,success
+sub      ,03,0.000001440,success
+scale    ,03,0.000001480,success
+trans    ,03,0.000002040,success
+mul      ,03,0.000003510,success
+inv      ,03,0.000011740,success
+dot      ,03,0.000001000,success
+vecposmul,03,0.000002000,success
+vecpremul,03,0.000001890,success
+vecmul   ,03,0.000001590,success
+arr_add  ,03,0.000004110,success
+arr_sub  ,03,0.000003080,success
+arr_mul  ,03,0.000007650,success
+add      ,04,0.000002040,success
+sub      ,04,0.000002050,success
+scale    ,04,0.000002010,success
+trans    ,04,0.000002640,success
+mul      ,04,0.000006870,success
+inv      ,04,0.000020930,success
+dot      ,04,0.000001000,success
+vecposmul,04,0.000002750,success
+vecpremul,04,0.000002530,success
+vecmul   ,04,0.000002030,success
+arr_add  ,04,0.000005870,success
+arr_sub  ,04,0.000004360,success
+arr_mul  ,04,0.000014310,success
+add      ,05,0.000002730,success
+sub      ,05,0.000002660,success
+scale    ,05,0.000002730,success
+trans    ,05,0.000003370,success
+mul      ,05,0.000012080,success
+inv      ,05,0.000034470,success
+dot      ,05,0.000001100,success
+vecposmul,05,0.000003000,success
+vecpremul,05,0.000003260,success
+vecmul   ,05,0.000002620,success
+arr_add  ,05,0.000008210,success
+arr_sub  ,05,0.000006010,success
+arr_mul  ,05,0.000024960,success
+add      ,06,0.000003720,success
+sub      ,06,0.000003600,success
+scale    ,06,0.000003710,success
+trans    ,06,0.000004030,success
+mul      ,06,0.000019740,success
+inv      ,06,0.000052800,failure
+dot      ,06,0.000001170,failure
+vecposmul,06,0.000004300,success
+vecpremul,06,0.000004040,success
+vecmul   ,06,0.000003150,success
+arr_add  ,06,0.000010830,success
+arr_sub  ,06,0.000007900,success
+arr_mul  ,06,0.000040380,success
+add      ,07,0.000004780,success
+sub      ,07,0.000004600,success
+scale    ,07,0.000004670,success
+trans    ,07,0.000005120,success
+mul      ,07,0.000030140,success
+inv      ,07,0.000077130,success
+dot      ,07,0.000001230,success
+vecposmul,07,0.000005210,success
+vecpremul,07,0.000005040,success
+vecmul   ,07,0.000004170,success
+arr_add  ,07,0.000014380,success
+arr_sub  ,07,0.000010210,success
+arr_mul  ,07,0.000061580,success
+add      ,08,0.000005920,success
+sub      ,08,0.000005820,success
+scale    ,08,0.000005730,success
+trans    ,08,0.000006240,success
+mul      ,08,0.000043910,success
+inv      ,08,0.000107720,success
+dot      ,08,0.000001370,success
+vecposmul,08,0.000006490,success
+vecpremul,08,0.000006250,success
+vecmul   ,08,0.000004620,success
+arr_add  ,08,0.000018160,success
+arr_sub  ,08,0.000012840,success
+arr_mul  ,08,0.000089360,success
+add      ,09,0.000007220,success
+sub      ,09,0.000007170,success
+scale    ,09,0.000007100,success
+trans    ,09,0.000007620,success
+mul      ,09,0.000061350,success
+inv      ,09,0.000145740,success
+dot      ,09,0.000001490,success
+vecposmul,09,0.000007770,success
+vecpremul,09,0.000007420,success
+vecmul   ,09,0.000006190,success
+arr_add  ,09,0.000022420,success
+arr_sub  ,09,0.000015760,success
+arr_mul  ,09,0.000124720,success
+add      ,10,0.000008730,success
+sub      ,10,0.000008680,success
+scale    ,10,0.000008670,success
+trans    ,10,0.000009030,success
+mul      ,10,0.000083130,success
+inv      ,10,0.000191470,success
+dot      ,10,0.000001500,success
+vecposmul,10,0.000009240,success
+vecpremul,10,0.000008800,success
+vecmul   ,10,0.000007110,success
+arr_add  ,10,0.000027360,success
+arr_sub  ,10,0.000019210,success
+arr_mul  ,10,0.000168410,success

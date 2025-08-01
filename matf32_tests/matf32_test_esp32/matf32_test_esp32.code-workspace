@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"name": "matf32_test_esp32",
+			"path": "../../../matf32_test_esp32"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"robotat_robotics.h": "c",
+			"vector": "c",
+			"array": "c",
+			"bitset": "c",
+			"deque": "c",
+			"forward_list": "c",
+			"list": "c",
+			"string": "c",
+			"iterator": "c",
+			"string_view": "c",
+			"initializer_list": "c",
+			"unordered_map": "c",
+			"unordered_set": "c"
+		}
+	}
+}
