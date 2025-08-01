@@ -4,6 +4,9 @@
  * @brief 
  * @version 0.1
  * @date 2021-08-12
+ * 
+ * @modified: Jul 2025 by Andrea Pineda
+ * Detail of modifications: changing function names to start with ctr_ as standard for the control file.
  *
  * @copyright Copyright (c) 2021
  *
