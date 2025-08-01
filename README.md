@@ -5,7 +5,7 @@ Low-level C library for numerical computation aimed at applications in optimizat
 
 constants.h | constant values to be used throughout the libraries, for example: maximum matrix and vector sizes.
 
-matf32.h | linear algebra and matrix operations, including: addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, etc.
+matf32.h | linear algebra and matrix operations, including: addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, etc. Currently divided in four different files for modular development and will be combined into a single matf32.h file soon!
 
 linsolve.h | methods for solving linear systems of the form Ax = b, incluidng: forwards and backward substitution, Cholesky, LU, QR and functions to determine automatically which method to use and solve the system.
 
