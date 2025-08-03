@@ -37,4 +37,4 @@ Under development.
 
 # Previous Versions
 
-Documentation of the 2022 version of robotat-linalg: https://github.com/danielp96/robotat-linalg?
+Documentation of the 2022 version of robotat-linalg: https://github.com/danielp96/robotat-linalg
