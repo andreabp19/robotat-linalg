@@ -22,10 +22,8 @@
  *      @author: Daniel Martensson
  *  Modified on: 1 aug. 2021
  *           By: Miguel Zea (mezea@uvg.edu.gt)
- *  Modified on: 20 may. 2022
- *           By: Daniel Pineda (bar18714@uvg.edu.gt)
- *  Modified on: 25 jul. 2025
- *           By: Andrea Pineda (bar20575@uvg.edu.gt)
+ *  Modified on: 20 may 2022
+ *           By: Daniel Pineda (bar18714@uv.edu.gt)
  *
  * TODO: Update above description.
  */

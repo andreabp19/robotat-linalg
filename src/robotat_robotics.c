@@ -231,7 +231,7 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 
 
 void
-rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float* p_theta)
+rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float* p_phi, float* p_theta, float* p_psi)
 {
     /**
      *  Switch-case to execute transformations based onthe euler_tag introduced
@@ -249,7 +249,7 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
         case XYX:
             // X
             //printf("ROTX:\n");
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             //matf32_print(p_F->p_T);
             //matf32_print(p_dstp->p_v);
@@ -261,7 +261,7 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
             //matf32_print(p_dstp->p_v);
             // X
             //printf("ROTX:\n");
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             //matf32_print(p_F->p_T);
             //matf32_print(p_dstp->p_v);
@@ -269,121 +269,121 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 
         case XZX:
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
             rob_rotz(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YXY:
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
             rob_rotx(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZXZ:
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
             rob_rotx(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZYZ:
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
             rob_roty(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case XYZ:
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
             rob_roty(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case XZY:
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
             rob_rotz(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YZX:
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
             rob_rotz(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YXZ:
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
             rob_rotx(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZXY:
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
             rob_rotx(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZYX:
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F, p_phi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
             rob_roty(p_F, p_theta);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F, p_psi);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;    
     }

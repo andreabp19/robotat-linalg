@@ -167,7 +167,7 @@ quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x)
 
     matf32_scale(&n, -1, &n);
 
-    matf32_linsolve(&M, &n, &y);
+    linsolve_matf32(&M, &n, &y);
 
     matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 

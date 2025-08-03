@@ -2,7 +2,13 @@
  * @file linsolve.h
  * 
  * Linear solvers based on matf32 datatype.
- *
+ * 
+ * Modified 3 Aug 2025
+ *      By: Andrea Pineda | Changed function names to start with linsolve and end with matf32.
+ *                          Exception: matf32_cholesky, matf32_lu and matf32_qr, because I don't know
+ *                          if it would be better to move those to matf32.h as they only calculate the
+ *                          factorizations, while linsolve_cholesky_matf32 solves a linear system with
+ *                          the cholesky method, for example.
  */
 
 #ifndef ROBOTAT_LINSOLVE_H_
@@ -37,7 +43,7 @@ typedef enum
 *  @brief   Prints string representing the linear method.
 */
 void
-print_linsolve_method(linsolve_method_t lsm);
+linsolve_print_method(linsolve_method_t lsm);
 
 
 /**
@@ -54,7 +60,7 @@ print_linsolve_method(linsolve_method_t lsm);
  *              LU :            LU factorization.
  */
 linsolve_method_t
-matf32_linsolve_get_method(const matf32_t* const p_a);
+linsolve_get_method_matf32(const matf32_t* const p_a);
 
 
 // ====================================================================================================
@@ -75,7 +81,7 @@ matf32_linsolve_get_method(const matf32_t* const p_a);
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-matf32_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_forward_subs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -91,9 +97,10 @@ matf32_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-matf32_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_backward_subs_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
 
 
+// Maybe move this to matf32.h
 /**
  * @brief   Calculates the Cholesky decomposition of a matrix.
  *
@@ -107,10 +114,15 @@ matf32_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_
 err_status_t
 matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 
+/**
+ * @brief   Pending
+ * 
+ * 
+ */
 err_status_t
-matf32_cholesky_solve(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
 
-
+// Maybe move this to matf32.h
 /**
  * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
  * such that PA = LU.
@@ -130,7 +142,7 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u);
 err_status_t
 matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
 
-
+// Maybe move this to matf32.h
 err_status_t
 matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
 
@@ -150,7 +162,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_matf32(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
@@ -168,7 +180,7 @@ matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);  
+linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);  
 
 #ifdef __cplusplus
 }

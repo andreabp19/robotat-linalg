@@ -1,7 +1,10 @@
 /**
  * @file matf32.h
  * @author Andrea Pineda
- * @date 2 Aug 2025
+ * @date Created 2 Aug 2025
+ * 
+ * Last Modified: 3 Aug 2025
+ *      By: Andrea Pineda
  *
  * Single to include all matrix related functions, combining them from all previously four files of matf32: matf32_def, matf32_check, matf32_math, math_util
  *
@@ -9,13 +12,17 @@
 
 #include "matf32.h"
 
+// DON'T CHANGE THE ORDER OF THE SECTIONS.
+// They are organized from more independent to increasingly dependent on the previous functions.
+// Moving them may lead to errors of declaration.
+
 // ====================================================================================================
-// Utility functions (previously math_util.h/.c)
+// 1. Base utility functions
 // ====================================================================================================
 
-// -------------------------------------------------------
-// Private function definitions/implementations
-// -------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
+// 1.1. Float-based operations
+// ----------------------------------------------------------------------------------------------------
 
 static float 
 generate_gauss(float mu, float sigma) 
@@ -47,9 +54,7 @@ generate_gauss(float mu, float sigma)
     return (mu + sigma * (float)X1);
 }
 
-// -------------------------------------------------------
-// Linear algebra routines that do not depend on the matrix datatype
-// -------------------------------------------------------
+
 float
 dot(float* p_srca, float* p_srcb, uint16_t length)
 {
@@ -115,6 +120,7 @@ randn(float* p_dst, uint16_t length, float mu, float sigma)
         p_dst[i] = generate_gauss(mu, sigma);
 }
 
+
 float
 norm(float* p_src, int row, int column)
 {
@@ -130,6 +136,7 @@ norm(float* p_src, int row, int column)
     return sqrtf(sum);
 }
 
+
 void
 scale(float* p_src, uint16_t length, float scalar, float* p_dst)
 {
@@ -139,14 +146,17 @@ scale(float* p_src, uint16_t length, float scalar, float* p_dst)
     }
 }
 
-// -------------------------------------------------------
-// Miscellaneous
-// -------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// 1.2. Miscellaneous functions
+// ----------------------------------------------------------------------------------------------------
+
 void
 copy(float* p_src, float* p_dst, int row, int column)
 {
     memcpy(p_dst, p_src, column * row * sizeof(float));
 }
+
 
 void 
 print(float* p_src, uint16_t row, uint16_t column)
@@ -207,6 +217,7 @@ std_dev(float* p_src, uint16_t length)
     return sqrtf(sigma / ((float)length));
 }
 
+
 bool
 is_equal(float* p_a, float* p_b, uint16_t length)
 {
@@ -227,6 +238,7 @@ is_equal(float* p_a, float* p_b, uint16_t length)
     return true;
 }
 
+
 void
 zero_patch(float* p_a, uint16_t length)
 {
@@ -240,9 +252,15 @@ zero_patch(float* p_a, uint16_t length)
     }
 }
 
+
+
 // ====================================================================================================
-// matf32 def. functions (previously matf32_def.h/.c)
+// 2. matf32: Matrix definitions
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 2.2. Utility functions for the matf32 structs
+// ----------------------------------------------------------------------------------------------------
 
 void
 matf32_init(matf32_t* const instance, uint16_t num_rows, uint16_t num_cols, float* p_data)
@@ -310,9 +328,10 @@ err_status_print(err_status_t err)
     }
 }
 
-// -------------------------------------------------------
-// Sub-matrix operattions
-// -------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// 2.3. Submatrix operations for the matf32 structs
+// ----------------------------------------------------------------------------------------------------
 
 err_status_t
 matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
@@ -365,10 +384,9 @@ matf32_set_col(matf32_t* const p_dst, uint16_t col, float val)
 }
 
 
-// -------------------------------------------------------
-// Special matrix initializations
-// -------------------------------------------------------
-
+// ----------------------------------------------------------------------------------------------------
+// 2.4. Special matrix initializations
+// ----------------------------------------------------------------------------------------------------
 
 void
 matf32_eye(matf32_t* const p_dst)
@@ -404,15 +422,11 @@ matf32_randn(matf32_t* const p_dst, float mu, float sigma)
     randn(p_dst->p_data, p_dst->num_rows * p_dst->num_cols, mu, sigma);
 }
 
+
+
 // ====================================================================================================
-// Matrix check functions (previously matf32_check.h/.c)
+// 3. Check functions for matf32 structs
 // ====================================================================================================
-
-
-// --------------------------------------------------
-// Matrix datatype-based checks
-// --------------------------------------------------
-
 
 bool
 matf32_check_triangular_upper(const matf32_t* const p_mat)
@@ -608,13 +622,16 @@ matf32_check_hessenberg_lower(const matf32_t* const p_mat)
 }
 
 
+
 // ====================================================================================================
-// Matrix and vector operations (previously matf32_math.h/.c)
+// 4. Matrix operations based on matf32 structs
 // ====================================================================================================
 
-// --------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
+// 4.1. Matrix and vector operations
+// ----------------------------------------------------------------------------------------------------
+
 // Private variables
-// --------------------------------------------------
 // Preallocated auxiliary matrices and vectors to use inside matrix operations. This reduces memory 
 // and data structure initialization overhead.
 static float m1data[MAX_MAT_SIZE];
@@ -849,6 +866,7 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
     return MATH_SUCCESS;
 }
 
+
 // move to linsolve
 void 
 solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
@@ -871,6 +889,7 @@ solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row)
         x[i] = x[i] / LU[row * P[i] + i];
     }
 }
+
 
 // move to linsolve
 err_status_t
@@ -937,6 +956,7 @@ matf32_dot(const matf32_t* const p_srca, const matf32_t* const p_srcb, float* co
     *p_dst = dot(p_srca->p_data, p_srcb->p_data, p_srca->num_cols*p_srca->num_rows);
 }
 
+
 void
 matf32_vecposmul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
 {
@@ -973,6 +993,7 @@ matf32_vecpremul(const matf32_t* const p_srcm, float* const p_srcv, float* const
     memcpy(p_dst, res, p_srcm->num_cols * sizeof(float));
 }
 
+
 void
 matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst)
 {
@@ -986,6 +1007,10 @@ matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, ma
     }
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 4.2. Array of matrices operations
+// ----------------------------------------------------------------------------------------------------
 
 err_status_t
 matf32_arr_add(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst)
@@ -1094,6 +1119,12 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
     return MATH_SUCCESS;
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 4.3. Matrix factorization/decomposition methods
+// ----------------------------------------------------------------------------------------------------
+
+// I could move matf32_cholesky, matf32_qr and matf32_lu from linsolve.h to here.
 
 
 

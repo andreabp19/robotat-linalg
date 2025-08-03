@@ -1,5 +1,8 @@
 /**
  * @file linsolve.c
+ * 
+ * Modified 3 Aug 2025
+ *      By: Andrea Pineda
  */
 
 #include "linsolve.h"
@@ -12,7 +15,7 @@ static float p1[MAX_VEC_SIZE];
 
 
 void
-print_linsolve_method(linsolve_method_t lsm)
+linsolve_print_method(linsolve_method_t lsm)
 {
     switch (lsm)
     {
@@ -39,7 +42,7 @@ print_linsolve_method(linsolve_method_t lsm)
 }
 
 linsolve_method_t
-matf32_linsolve_get_method(const matf32_t* const p_a)
+linsolve_get_method_matf32(const matf32_t* const p_a)
 {
     if (!matf32_check_square_matrix(p_a))
     {
@@ -57,7 +60,6 @@ matf32_linsolve_get_method(const matf32_t* const p_a)
         return BACKWARD_SUBS;
     }
 
-
     // definite positive matrix
     // TODO: add check for definite positive
     // cholesky only should be used on postive definite
@@ -73,7 +75,7 @@ matf32_linsolve_get_method(const matf32_t* const p_a)
 
 
 err_status_t
-matf32_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
+linsolve_forward_subs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_lower(p_l))
@@ -108,7 +110,7 @@ matf32_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b
 
 
 err_status_t
-matf32_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
+linsolve_backward_subs_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_upper(p_u))
@@ -382,28 +384,28 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 
 // make inline to reduce call stack?
 err_status_t
-matf32_linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_matf32(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
 {
-    linsolve_method_t method = matf32_linsolve_get_method(p_a);
+    linsolve_method_t method = linsolve_get_method_matf32(p_a);
 
-    return matf32_linsolve_method(p_a, p_b, p_x, method);
+    return linsolve_matf32_method(p_a, p_b, p_x, method);
 }
 
 // TODO:
 // qr_solve
 err_status_t
-matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
+linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
 {
     err_status_t status;
 
     switch (method)
     {
         case FORWARD_SUBS:
-            return matf32_forward_substitution(p_a, p_b, p_x);
+            return linsolve_forward_subs_matf32(p_a, p_b, p_x);
             break;
 
         case BACKWARD_SUBS:
-            return matf32_backward_substitution(p_a, p_b, p_x);
+            return linsolve_backward_subs_matf32(p_a, p_b, p_x);
             break;
 
         case CHOLESKY:
@@ -420,7 +422,7 @@ matf32_linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
             }
 
 
-            status = matf32_cholesky_solve(&m1, p_b, p_x);
+            status = linsolve_cholesky_matf32(&m1, p_b, p_x);
 
             return status;
             break;
@@ -462,20 +464,20 @@ matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const mat
     matf32_init(&y, p_l->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    status = matf32_forward_substitution(p_l, p_b, &y);
+    status = linsolve_forward_subs_matf32(p_l, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
         return status;
     }
 
-    status = matf32_backward_substitution(p_u, &y, p_x);
+    status = linsolve_backward_subs_matf32(p_u, &y, p_x);
 
     return status;
 }
 
 err_status_t
-matf32_cholesky_solve(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
@@ -484,7 +486,7 @@ matf32_cholesky_solve(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t*
     matf32_init(&y, p_c->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    status = matf32_forward_substitution(p_c, p_b, &y);
+    status = linsolve_forward_subs_matf32(p_c, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
@@ -493,7 +495,7 @@ matf32_cholesky_solve(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t*
 
     matf32_trans(p_c, p_c);
 
-    status = matf32_backward_substitution(p_c, &y, p_x);
+    status = linsolve_backward_subs_matf32(p_c, &y, p_x);
 
     return status;
 }

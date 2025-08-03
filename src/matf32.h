@@ -2,7 +2,9 @@
  * @file matf32.h
  *
  * Single header to include all matrix related functions.
- *
+ * 
+ * Last modified: 3 Aug 2025
+ *          By: Andrea Pineda
  */
 
 #ifndef ROBOTAT_MATF32_H_
@@ -24,8 +26,12 @@ extern "C" {
 #endif
 
 // ====================================================================================================
-// Utility functions (previously math_util.h/.c)
+// 1. Base utility functions
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 1.1. Float-based operations
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Find the dot product of two vectors, pointed by p_srca and p_srcb, of the same size.
@@ -134,9 +140,11 @@ norm(float* p_src, int row, int column);
 void
 scale(float* p_src, uint16_t length, float scalar, float* p_dst);
 
-// ---------------------------------------------
-// Miscellaneous
-// ---------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// 1.2. Miscellaneous functions
+// ----------------------------------------------------------------------------------------------------
+
 /**
  * @brief   Size-aware matrix copy.
  *
@@ -244,6 +252,13 @@ is_equal_margin(float a, float b)
 }
 
 
+/**
+ * @brief   Checks if input is greater or lesser than given bound.
+ * 
+ * @param[in]   num     Value to check
+ * 
+ * @return Returns FLT_MAX or -FLT_MAX depending on input value.
+ */
 static inline float
 inf_bound(float num)
 {
@@ -262,9 +277,15 @@ inf_bound(float num)
 void
 zero_patch(float* p_a, uint16_t length);
 
+
+
 // ====================================================================================================
-// matf32 def. functions (previously matf32_def.h/.c)
+// 2. matf32: Matrix definitions
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 2.1. Structs
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief Floating point matrix data structure.
@@ -297,10 +318,9 @@ typedef enum
 } err_status_t;
 
 
-// ====================================================================================================
-// Util functions directly related to the matf32 datatype
-// ====================================================================================================
-
+// ----------------------------------------------------------------------------------------------------
+// 2.2. Utility functions for the matf32 structs
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Constructor for the floating point matrix data structure.
@@ -325,6 +345,7 @@ matf32_init(matf32_t* const instance, uint16_t num_rows, uint16_t num_cols, floa
  */
 void
 matf32_print(const matf32_t* p_src);
+
 
 /**
  * @brief   Prints error status to console.
@@ -493,9 +514,9 @@ matf32_reshape_safe(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
 }
 
 
-// ====================================================================================================
-// Sub-matrix operattions
-// ====================================================================================================
+// ----------------------------------------------------------------------------------------------------
+// 2.3. Submatrix operations for the matf32 structs
+// ----------------------------------------------------------------------------------------------------
 
 // hacer vesion indice progra y version indice matematico
 
@@ -531,10 +552,10 @@ matf32_set_row(matf32_t* const p_dst, uint16_t row, float val);
 void 
 matf32_set_col(matf32_t* const p_dst, uint16_t col, float val);
 
-// ====================================================================================================
-// Special matrix initializations
-// ====================================================================================================
 
+// ----------------------------------------------------------------------------------------------------
+// 2.4. Special matrix initializations
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Sets a matrix structure to the identity matrix.
@@ -594,8 +615,10 @@ matf32_ones(matf32_t* const p_dst);
 void
 matf32_randn(matf32_t* const p_dst, float mu, float sigma);
 
+
+
 // ====================================================================================================
-// Matrix check functions (previously matf32_check.h/.c)
+// 3. Check functions for matf32 structs
 // ====================================================================================================
 
 /**
@@ -716,9 +739,15 @@ matf32_check_hessenberg_upper(const matf32_t* const p_mat);
 bool
 matf32_check_hessenberg_lower(const matf32_t* const p_mat);
 
+
+
 // ====================================================================================================
-// Matrix and vector operations (previously matf32_math.h/.c)
+// 4. Matrix operations based on matf32 structs
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 4.1. Matrix and vector operations
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Calculates the frobenius norm of a matrix.
@@ -887,9 +916,10 @@ matf32_vecpremul(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
 void
 matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst);
 
-// ====================================================================================================
-// Array of matrices operations
-// ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 4.2. Array of matrices operations
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Adds an array of matrices sequentially. The size of all matrices must be the same.
@@ -935,6 +965,13 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  */
 err_status_t
 matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.3. Matrix factorization/decomposition methods
+// ----------------------------------------------------------------------------------------------------
+
+// I could move matf32_cholesky, matf32_qr and matf32_lu from linsolve.h to here.
 
 #ifdef __cplusplus
 }
