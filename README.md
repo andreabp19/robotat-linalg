@@ -3,7 +3,7 @@ Low-level C library for numerical computation aimed at applications in optimizat
 
 # About this Repository
 
-Here you will find all of the robotat-linalg numerical computation libraries (matf32, linsolve and quadprog), additional control and robotics libraries implementing the numerical computation libraries and all of the projects and test files in matlab and platformio for the devices used (currently only the ESP32). Also included is the matlab file for plotting results (matlab_plotting), along with the respective output files .eps for the plots, so inside that folder you can find the most recent test values used in the .m file and check the plots yourself.
+Here you will find all of the robotat-linalg numerical computation libraries (matf32, linsolve and quadprog), additional control and robotics libraries implementing the numerical computation libraries and all of the projects and test files in matlab and platformio for the devices used (currently only the ESP32). Also included are the files for plotting results (inside the folder matlab_plotting), along with the respective output files .eps for the plots, so inside that folder you can find the most recent test values used in the .m file and check the plots yourself.
 
 # Structure of robotat-linalg
 
