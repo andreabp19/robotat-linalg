@@ -3,7 +3,7 @@ Low-level C library for numerical computation aimed at applications in optimizat
 
 # About this Repository
 
-Description under development.
+Here you will find all of the robotat-linalg numerical computation libraries (matf32, linsolve and quadprog), additional control and robotics libraries implementing the numerical computation libraries and all of the projects and test files in matlab and platformio for the devices used (currently only the ESP32). Also included is the matlab file for plotting results (matlab_plotting), along with the respective output files .eps for the plots, so inside that folder you can find the most recent test values used in the .m file and check the plots yourself.
 
 # Structure of robotat-linalg
 
@@ -23,17 +23,17 @@ robotat_linalg.h | to import matf32.h, linsolve.h and quadprog.h, robotat_contro
 
 # History and Purpose
 
-Robotat-Linalg has been in development at the Universidad del Valle de Guatemala (UVG) as part of undergraduate thesis projects in 2022 (see Previous Versions below) and now in 2025 (this repository). The 2022 version developed the matf32.h library files, linsolve.h and quadprog.h and validated some functions. The version currently developed and documented in this repository focuses on validating all of the functions in the aformentioned files, validating and adding some algorithms in robotat_control.h and developing and validating the robotat_robotics.h library.
+Robotat-Linalg has been in development at the Universidad del Valle de Guatemala (UVG) as part of undergraduate thesis projects in 2022 (see Previous Versions below) and now in 2025 (this repository). The 2022 version developed the matf32.h library files, linsolve.h and quadprog.h and validated some functions. The current version (2025) is currently under development and focuses on testing and validating the functions in the aforementioned files, in addition to those in robotat_control.h, and developing and validating the robotat_robotics.h library.
 
-The purpose of this library is to be implemented in microcontrollers, such as the ESP32, that are used in the robotics laboratory Robotat of the UVG, while being flexible enough to be used in any microcontroller so that more embedded applications are developed with control and robotics.
+The purpose of this library is to be implemented in microcontrollers, such as the ESP32, that are used in the robotics laboratory Robotat of the UVG in order to develop embedded applications for courses, projects and more. In addition to that, the library is designed to be adaptable to any other microcontroller, so that applications can be expanded to other devices such as Arduino and more.
 
 # Validation of the Libraries
 
-Section under development.
+Validation of matf32, linsolve and quadprog are done by comparing the result and time of execution for the different functions with respect to their matlab equivalents. This is currently a work in progress, so documentation and files will be updated accordingly. The same strategy is used for the robotics library, as it is compared against matlab using the Robotics Toolbox by Peter Corke, as the functions implemented are based on the latter. And the same approach will be used for the control library.
 
 # Documentation
 
-Under development.
+To be developed in doxygen or similar.
 
 # Previous Versions
 
