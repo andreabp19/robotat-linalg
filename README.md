@@ -29,7 +29,7 @@ The purpose of this library is to be implemented in microcontrollers, such as th
 
 # Validation of the Libraries
 
-Validation of matf32, linsolve and quadprog are done by comparing the result and time of execution for the different functions with respect to their matlab equivalents. This is currently a work in progress, so documentation and files will be updated accordingly. The same strategy is used for the robotics library, as it is compared against matlab using the Robotics Toolbox by Peter Corke, as the functions implemented are based on the latter. And the same approach will be used for the control library.
+Validation of matf32, linsolve and quadprog are done by comparing the result and time of execution for the different functions with respect to their matlab equivalents (functions when possible or manually recreating them when necessary). This is currently a work in progress, so documentation and files will be updated accordingly. The same strategy is used for the robotics library, as it is compared against matlab using the Robotics Toolbox by Peter Corke, as the functions implemented are based on the latter. And the same approach will be used for the control library.
 
 # Documentation
 
