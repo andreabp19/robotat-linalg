@@ -23,7 +23,7 @@ robotat_linalg.h | to import matf32.h, linsolve.h and quadprog.h, robotat_contro
 
 # History and Purpose
 
-Robotat-Linalg has been in development at the Universidad del Valle de Guatemala (UVG) as part of undergraduate thesis projects in 2022 (see Previous Versions below) and now in 2025 (this repository). The 2022 version developed the matf32.h library files, linsolve.h and quadprog.h and validated some functions. The current version (2025) is currently under development and focuses on testing and validating the functions in the aforementioned files, in addition to those in robotat_control.h, and developing and validating the robotat_robotics.h library.
+Robotat-Linalg has been in development at the Universidad del Valle de Guatemala (UVG) as part of undergraduate thesis projects in 2022 (see Previous Versions below) and now in 2025 (this repository). The 2022 version developed the matf32, linsolve and quadprog libraries and validated some functions. The current version (2025) is currently under development and focuses on testing and validating the functions in the aforementioned files, in addition to those in robotat_control.h, and developing and validating the robotat_robotics.h library.
 
 The purpose of this library is to be implemented in microcontrollers, such as the ESP32, that are used in the robotics laboratory Robotat of the UVG in order to develop embedded applications for courses, projects and more. In addition to that, the library is designed to be adaptable to any other microcontroller, so that applications can be expanded to other devices such as Arduino and more.
 
