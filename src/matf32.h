@@ -357,6 +357,16 @@ matf32_print(const matf32_t* p_src);
 void
 err_status_print(err_status_t err);
 
+/**
+ * @brief   Calculates conditioning number of a matrix
+ * 
+ * @param[in]   p_src   Input matrix
+ * @param[in]   p_cond  Points to float to store conditioning number
+ * 
+ * @return  None
+ */
+void 
+matf32_cond(matf32_t* const p_src, float* p_cond);
 
 /**
  * @brief   Gets an specific element from a matrix.
@@ -512,7 +522,6 @@ matf32_reshape_safe(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
     else
         return MATH_SIZE_MISMATCH;
 }
-
 
 // ----------------------------------------------------------------------------------------------------
 // 2.3. Submatrix operations for the matf32 structs
