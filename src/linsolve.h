@@ -3,12 +3,9 @@
  * 
  * Linear solvers based on matf32 datatype.
  * 
- * Modified 3 Aug 2025
- *      By: Andrea Pineda | Changed function names to start with linsolve and end with matf32.
- *                          Exception: matf32_cholesky, matf32_lu and matf32_qr, because I don't know
- *                          if it would be better to move those to matf32.h as they only calculate the
- *                          factorizations, while linsolve_cholesky_matf32 solves a linear system with
- *                          the cholesky method, for example.
+ * Modified 4 Aug 2025
+ *      By: Andrea Pineda | Adjusted some function names and moved matf32_qr, matf32_lu and matf32_cholesky
+ *                          to matf32, to keep the operations there so that here is only the implementation.
  */
 
 #ifndef ROBOTAT_LINSOLVE_H_
@@ -60,7 +57,7 @@ linsolve_print_method(linsolve_method_t lsm);
  *              LU :            LU factorization.
  */
 linsolve_method_t
-linsolve_get_method_matf32(const matf32_t* const p_a);
+linsolve_get_method(const matf32_t* const p_a);
 
 
 // ====================================================================================================
@@ -81,7 +78,7 @@ linsolve_get_method_matf32(const matf32_t* const p_a);
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linsolve_forward_subs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_fwdsubs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -97,22 +94,8 @@ linsolve_forward_subs_matf32(const matf32_t* const p_l, const matf32_t* const p_
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linsolve_backward_subs_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_bwdsubs_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
 
-
-// Maybe move this to matf32.h
-/**
- * @brief   Calculates the Cholesky decomposition of a matrix.
- *
- * @param[in]           p_a    Points to matrix to factorize.
- * @param[in,out]       p_c    Points to lower triangular factorized matrix.
- *
- * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
- */
-err_status_t
-matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 
 /**
  * @brief   Pending
@@ -122,29 +105,9 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 err_status_t
 linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
 
-// Maybe move this to matf32.h
-/**
- * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
- * such that PA = LU.
- *
- * @param[in]       p_a   Points to square matrix to decompose.
- * @param[in, out]  p_l     Points to the lower result of the decomposition.
- * @param[in, out]  p_u     Points to the upper of the decomposition.
- *
- * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
- *              MATH_SINGULAR :         Matrix is singular.
- */
-err_status_t
-matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u);
 
 err_status_t
 matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
-
-// Maybe move this to matf32.h
-err_status_t
-matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
 
 
 /**

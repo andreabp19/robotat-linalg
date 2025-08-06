@@ -748,7 +748,17 @@ matf32_check_hessenberg_upper(const matf32_t* const p_mat);
 bool
 matf32_check_hessenberg_lower(const matf32_t* const p_mat);
 
-
+/**
+ * @brief Checks if a matrix is symmetric positive definite.
+ * 
+ * @param[in]   p_mat   Points to matrix to check.
+ * 
+ * @return Execution status
+ *              true  :     Matrix is symmetric positive definite
+ *              false :     Matrix is not symmetric positive definite (cannot perform cholesky)
+ */
+bool
+matf32_check_symmposdef(const matf32_t* const p_mat);
 
 // ====================================================================================================
 // 4. Matrix operations based on matf32 structs
@@ -980,7 +990,44 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 // 4.3. Matrix factorization/decomposition methods
 // ----------------------------------------------------------------------------------------------------
 
-// I could move matf32_cholesky, matf32_qr and matf32_lu from linsolve.h to here.
+// Maybe move this to matf32.h
+err_status_t
+matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
+
+
+// Maybe move this to matf32.h
+/**
+ * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
+ * such that PA = LU.
+ *
+ * @param[in]       p_a   Points to square matrix to decompose.
+ * @param[in, out]  p_l     Points to the lower result of the decomposition.
+ * @param[in, out]  p_u     Points to the upper of the decomposition.
+ *
+ * @return  Execution status
+ *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SINGULAR :         Matrix is singular.
+ */
+err_status_t
+matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u);
+
+
+// Maybe move this to matf32.h
+/**
+ * @brief   Calculates the Cholesky decomposition of a matrix.
+ *
+ * @param[in]           p_a    Points to matrix to factorize.
+ * @param[in,out]       p_c    Points to lower triangular factorized matrix.
+ *
+ * @return  Execution status
+ *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ */
+err_status_t
+matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
+
+
 
 #ifdef __cplusplus
 }

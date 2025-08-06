@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 3 Aug 2025
+ * Last Modified: 4 Aug 2025
  *      By: Andrea Pineda
  *
  * Single to include all matrix related functions, combining them from all previously four files of matf32: matf32_def, matf32_check, matf32_math, math_util
@@ -633,6 +633,31 @@ matf32_check_hessenberg_lower(const matf32_t* const p_mat)
 }
 
 
+bool
+matf32_check_symmposdef(const matf32_t* const p_mat)
+{
+    err_status_t status;
+
+    float temp_data[MAX_MAT_SIZE];
+    matf32_t temp;
+
+    matf32_init(&temp, p_mat->num_rows, p_mat->num_cols, temp_data);
+    matf32_zeros(&temp);
+    
+    if (!matf32_check_symmetric(p_mat))
+    {
+        return false;
+    }
+    
+    status = matf32_cholesky(p_mat, &temp);
+
+    if (MATH_DECOMPOSITION_FAILURE == status)
+    {
+        return false;
+    }
+
+    return true;
+}
 
 // ====================================================================================================
 // 4. Matrix operations based on matf32 structs
@@ -1135,9 +1160,270 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 // 4.3. Matrix factorization/decomposition methods
 // ----------------------------------------------------------------------------------------------------
 
-// I could move matf32_cholesky, matf32_qr and matf32_lu from linsolve.h to here.
+// https://www.cs.cornell.edu/~bindel/class/cs6210-f09/lec18.pdf
+// update to use matf32 vectors instead of array of floats
+err_status_t
+matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
+{
+    // add size checks
+    // size(A) == size(R)
+
+    float* p_a_data = p_a->p_data;
+    float* p_q_data = p_q->p_data;
+    float* p_r_data = p_r->p_data;
+
+    uint16_t rows = p_a->num_rows;
+    uint16_t cols = p_a->num_cols;
+
+    uint16_t min_size = rows < cols? rows : cols;
+
+    // init Q and R
+    matf32_eye(p_q);
+    matf32_copy(p_a, p_r);
+
+    float normx = 0;
+    float u1 = 0;
+    float tau = 0;
+
+    // init temp vector
+    float temp_v[rows];
+    float w_vec[rows];
+    float w_tau_vec[rows];
+    float temp_n[rows];
 
 
+    // sub matrix from R will always be smaller than R
+    float rsub_data[rows*cols];
+    matf32_t r_sub;
+    matf32_init(&r_sub, rows, cols, rsub_data);
+
+    float rtemp_data[rows*cols];
+    matf32_t r_sub_temp;
+    matf32_init(&r_sub_temp, rows, cols, rtemp_data);
+    matf32_zeros(&r_sub_temp);
+
+    // sub matrix from Q will always be smaller than Q
+    float qsub_data[rows*rows];
+    matf32_t q_sub;
+    matf32_init(&q_sub, rows, rows, qsub_data);
+    matf32_zeros(&q_sub);
+
+    float qtemp_data[rows*rows];
+    matf32_t q_sub_temp;
+    matf32_init(&q_sub_temp, rows, rows, qtemp_data);
+    matf32_zeros(&q_sub_temp);
+
+    for (uint16_t i = 0; i < min_size; ++i)
+    {
+        zeros(temp_v, rows, 1);
+        zeros(w_vec, rows, 1);
+
+        //printf("v:\n");
+        for (uint16_t j = i; j < rows; ++j)
+        {
+            temp_v[j-i] = p_r_data[j*cols + i];
+            //printf("%i,%i: %f\n", j, i, temp_v[j-i]);
+        }
+
+        normx = norm(temp_v, rows, 1);
+        //printf("norm: %f\n\n", normx);
+
+        u1 = p_r_data[i*cols + i] + sign(p_r_data[i*cols + i])*normx;
+
+        //printf("w:\n");
+        for (uint16_t j = 0; j < rows-i; ++j)
+        {
+            w_vec[j] = temp_v[j]/u1;
+            //printf("%f\n", w_vec[j]);
+        }
+        w_vec[0] = 1;
+
+        tau = sign(p_r_data[i*cols + i]) * u1 / normx;
+
+        // tau*w
+        scale(w_vec, rows-i, tau, w_tau_vec);
+
+        //R(i:end,:)
+        matf32_reshape(&r_sub, rows-i, cols);
+        matf32_reshape(&r_sub_temp, rows-i, cols);
+        matf32_submatrix_copy(p_r, &r_sub, i, 0, 0, 0, rows-i, cols);
+
+        // w'Rsub
+        matf32_vecpremul(&r_sub, w_vec, temp_n);
+
+        //(tau*w)*(w'*Rsub)
+        matf32_vecmul_col_row(w_tau_vec, temp_n, &r_sub_temp);
+        //matf32_print(&r_sub_temp);
+
+        // Rsub -= (tau*w)*(w'*Rsub)
+        matf32_sub(&r_sub, &r_sub_temp, &r_sub);
+
+        matf32_submatrix_copy(&r_sub, p_r, 0, 0, i, 0, rows-i, cols);
+
+
+        // Calculate Q
+        matf32_reshape(&q_sub, rows, rows-i);
+        matf32_reshape(&q_sub_temp, rows, rows-i);
+        matf32_submatrix_copy(p_q, &q_sub, 0, i, 0, 0, rows, rows-i);
+
+        // Qsub*w
+        matf32_vecposmul(&q_sub, w_vec, temp_n);
+
+        //(Qsub*w)*(tau*w)'
+        matf32_vecmul_col_row(temp_n, w_tau_vec, &q_sub_temp);
+
+        // Qsub -= (Qsub*w)*(tau*w)'
+        matf32_sub(&q_sub, &q_sub_temp, &q_sub);
+
+        matf32_submatrix_copy(&q_sub, p_q, 0, 0, 0, i, rows, rows-i);
+
+    }
+
+}
+
+
+// doolittle algoritm
+err_status_t
+matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
+{
+// If p_l and p_u are not the same size as the input matrix, return mismatch
+#ifdef MATH_MATRIX_CHECK 
+    if (!matf32_is_same_size(p_a, p_l) || !matf32_is_same_size(p_a, p_u))
+    {
+        return MATH_SIZE_MISMATCH;
+    }
+#endif
+
+    float* p_a_data = p_a->p_data;
+    float* p_l_data = p_l->p_data;
+    float* p_u_data = p_u->p_data;
+
+    // Get number of rows and, as all matrices are square, rows = number of columns as well.
+    uint16_t rows = p_a->num_rows;
+
+    // i = count rows
+    for (uint16_t i = 0; i < rows; ++i)
+    {
+        // j = count columns
+        // As this are triangular matrices, j covers only the values to modify, the others remain equal to 0
+        for (uint16_t j = i; j < rows; ++j)
+        {
+            float sum = 0;
+
+            // This loop is skipped when i = 0, excluding the cells below the first pivot, which is correct.
+            // Increases loops execute by one per pivot, which goes accoding to the triangular shape.
+            for (uint16_t k = 0; k < i; ++k)
+            {
+                // Value to be substracted to generate the next cell in U
+                // Multiplies row-col of L and U, excluding the values in the diagonal
+                sum += p_l_data[i*rows + k] * p_u_data[k*rows + j];
+            }
+
+            // Counts row-wise (0, 1, 2, etc.), then next row and repeat
+            p_u_data[i*rows + j] = p_a_data[i*rows + j] - sum;
+        }
+
+        for (uint16_t j = i; j < rows; ++j)
+        {
+            // Assigns all diagonal values as 1, both in L and U
+            if (i == j)
+            {
+                p_l_data[i*rows + i] = 1;
+                p_u_data[i*rows + i] = 1;
+                continue;
+            }
+
+            float sum = 0;
+            for (uint16_t k = 0; k < i; ++k)
+            {
+                // Value to be substracted to generate the next cell in L
+                // Multiplies row-col of L and U, excluding the values in the diagonal.
+                sum += p_l_data[j*rows + k] * p_u_data[k*rows + i];
+            }
+
+            // Counts column-wise (0, 3, 6, etc.), then next column and repeat.
+            p_l_data[j*rows + i] = (p_a_data[j*rows + i] - sum) / p_u_data[i*rows + i];
+        }
+    }
+
+    return MATH_SUCCESS;
+}
+
+
+// https://www.math.umd.edu/~petersd/401/cholesk.pdf
+// revise later ----> revised
+err_status_t
+matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
+{
+#ifdef MATH_MATRIX_CHECK
+    if (!matf32_check_square_matrix(p_a) || !matf32_check_symmetric(p_a))
+    {
+        return MATH_ARGUMENT_ERROR;
+    }
+
+    // add check for definite positive
+
+    if (!matf32_is_same_size(p_a, p_c))
+    {
+        return MATH_SIZE_MISMATCH;
+    }
+#endif
+
+    err_status_t status;
+
+    float* p_data_a = p_a->p_data;
+    float* p_data_c = p_c->p_data;
+
+    uint16_t size = p_a->num_cols;
+
+    float temp_v[size];
+
+    float sum = 0;
+    float dot = 0;
+
+    for (uint16_t i = 0; i < p_a->num_rows; ++i)
+    {
+        for (uint16_t j = 0; j < p_a->num_cols; ++j)
+        {
+            if (i == j)
+            {
+                // sum = A(j,j) - v'*v
+                // Executes starting from i = 1
+                sum = p_data_a[i*size + i];
+                for (int16_t k = 0; k < i; ++k)
+                {
+                    sum -= p_data_c[k*size + i] * p_data_c[k*size + i];
+                }
+
+                if (sum <= 0.0)
+                {
+                    return MATH_DECOMPOSITION_FAILURE;
+                }
+
+                p_data_c[i*size + i] = sqrtf(sum);
+            }
+            else if (i < j)
+            {
+                dot = 0;
+
+                // Added the sum that was lacking from the referenced pdf in the comments above
+                for (int16_t k = 0; k < i; ++k)
+                {
+                    dot += p_data_c[k*size + i] * p_data_c[k*size + j];
+                }
+
+                p_data_c[i*size + j] = (p_data_a[i*size + j] - dot)/p_data_c[i*size + i];
+
+                // The pdf gives an upper triangular cholesky, so to make it combined into a square, assign the lower triangle values to their respective mirrored values.
+                p_data_c[j*size + i] = p_data_c[i*size + j];
+            }
+        }
+    }
+
+    zero_patch(p_data_c, size*size);
+
+    return MATH_SUCCESS;
+}
 
 
 
