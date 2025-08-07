@@ -5,21 +5,34 @@ Low-level C library for numerical computation aimed at applications in optimizat
 
 Here you will find all of the robotat-linalg numerical computation libraries (matf32, linsolve and quadprog), additional control and robotics libraries implementing the numerical computation libraries and all of the projects and test files in matlab and platformio for the devices used (currently only the ESP32). Also included are the files for plotting results (inside the folder matlab_plotting), along with the respective output files .eps for the plots, so inside that folder you can find the most recent test values used in the .m file and check the plots yourself.
 
-# Structure of robotat-linalg
+# List of Files
 
-*constants.h | constant values to be used throughout the libraries, for example: maximum matrix and vector sizes.
+* constants.h: constant values to be used throughout the libraries, for example: maximum matrix and vector sizes.
 
-*matf32.h | linear algebra and matrix operations, including: addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, etc.
+* matf32.h: linear algebra library
+    * auxiliary operations with floats (mean, set, randn, zeros, ones, etc.)
+    * matrix definitions: based on a special struct (matf32_t)
+    * matrix operations: addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, set, etc.
+    * check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite.
 
-*linsolve.h | methods for solving linear systems of the form Ax = b, including: forwards and backward substitution, Cholesky, LU, QR and functions to determine automatically which method to use and solve the system.
+* linsolve.h: linear solver for Ax = b systems, implementing the following matrix decomposition methods:
+    * forwards and backward substitution
+    * Cholesky
+    * LU
+    * QR
 
-*quadprog.h | quadratic programming functions, with direct methods for equality-constrained quadratic programs (QPs) and an active-set method for solving inequality-constrained QPs (still not tested).
+* quadprog.h: quadratic solver por equality constrained quadratic programs (QPs), implementing the linsolve library
 
-*robotat_control.h | control algorithms such as PID discretizations (Forward and Backward Euler, Pure Discrete and Tustin, ZOH is not implemented yet), state space LTI and non-linear systems and Kalman filters.
+* robotat_control.h: control algorithms
+    * PID discretizations (Forward and Backward Euler, Pure Discrete and Tustin, ZOH is not implemented yet)
+    * state spaces
+    * Kalman filter
 
-*robotat_robotics.h | robotics algorithms based on the Matlab Robotics Toolbox by Peter Corke, including reference frame and pose calculations and quaternions (still in development).
+* robotat_robotics.h: robotics algorithms based on the Matlab Robotics Toolbox by Peter Corke
+    * Reference frame structures and pose calculations
+    * quaternion structures and operations (still in development).
 
-*robotat_linalg.h | to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h so that all can be used when importing this only file.
+* robotat_linalg.h: to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h
 
 # History and Purpose
 
