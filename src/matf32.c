@@ -3,10 +3,10 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 4 Aug 2025
+ * Last Modified: 6 Aug 2025
  *      By: Andrea Pineda
  *
- * Single to include all matrix related functions, combining them from all previously four files of matf32: matf32_def, matf32_check, matf32_math, math_util
+ * Single file to include all matrix related functions, combining them from all previously four files of matf32: matf32_def, matf32_check, matf32_math, math_util
  *
  */
 
@@ -634,7 +634,7 @@ matf32_check_hessenberg_lower(const matf32_t* const p_mat)
 
 
 bool
-matf32_check_symmposdef(const matf32_t* const p_mat)
+matf32_check_symposdef(const matf32_t* const p_mat)
 {
     err_status_t status;
 
@@ -1286,7 +1286,6 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
 {
-// If p_l and p_u are not the same size as the input matrix, return mismatch
 #ifdef MATH_MATRIX_CHECK 
     if (!matf32_is_same_size(p_a, p_l) || !matf32_is_same_size(p_a, p_u))
     {
@@ -1298,50 +1297,36 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
     float* p_l_data = p_l->p_data;
     float* p_u_data = p_u->p_data;
 
-    // Get number of rows and, as all matrices are square, rows = number of columns as well.
     uint16_t rows = p_a->num_rows;
 
-    // i = count rows
     for (uint16_t i = 0; i < rows; ++i)
     {
-        // j = count columns
-        // As this are triangular matrices, j covers only the values to modify, the others remain equal to 0
         for (uint16_t j = i; j < rows; ++j)
         {
             float sum = 0;
-
-            // This loop is skipped when i = 0, excluding the cells below the first pivot, which is correct.
-            // Increases loops execute by one per pivot, which goes accoding to the triangular shape.
             for (uint16_t k = 0; k < i; ++k)
             {
-                // Value to be substracted to generate the next cell in U
-                // Multiplies row-col of L and U, excluding the values in the diagonal
                 sum += p_l_data[i*rows + k] * p_u_data[k*rows + j];
             }
 
-            // Counts row-wise (0, 1, 2, etc.), then next row and repeat
             p_u_data[i*rows + j] = p_a_data[i*rows + j] - sum;
         }
 
         for (uint16_t j = i; j < rows; ++j)
         {
-            // Assigns all diagonal values as 1, both in L and U
             if (i == j)
             {
                 p_l_data[i*rows + i] = 1;
-                p_u_data[i*rows + i] = 1;
+                //p_u_data[i*rows + i] = 1;
                 continue;
             }
 
             float sum = 0;
             for (uint16_t k = 0; k < i; ++k)
             {
-                // Value to be substracted to generate the next cell in L
-                // Multiplies row-col of L and U, excluding the values in the diagonal.
                 sum += p_l_data[j*rows + k] * p_u_data[k*rows + i];
             }
 
-            // Counts column-wise (0, 3, 6, etc.), then next column and repeat.
             p_l_data[j*rows + i] = (p_a_data[j*rows + i] - sum) / p_u_data[i*rows + i];
         }
     }
@@ -1414,8 +1399,12 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
 
                 p_data_c[i*size + j] = (p_data_a[i*size + j] - dot)/p_data_c[i*size + i];
 
-                // The pdf gives an upper triangular cholesky, so to make it combined into a square, assign the lower triangle values to their respective mirrored values.
-                p_data_c[j*size + i] = p_data_c[i*size + j];
+                // If you need the cholesky decomposition in square form, uncomment this and comment the next line
+                // In that case, modify the linsolve_cholesky_matf32 function to extract the upper triangular
+                //p_data_c[j*size + i] = p_data_c[i*size + j];
+
+                // Turn lower triangular values to zero to ensure it's upper triangular
+                p_data_c[j*size + i] = 0;
             }
         }
     }

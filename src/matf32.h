@@ -293,7 +293,7 @@ zero_patch(float* p_a, uint16_t length);
  * Used for readability and compatibility with ARM's CMSIS-DSP library.
  */
 typedef struct
-{
+{ 
     uint16_t num_rows;  /**< Number of rows of the matrix. */
     uint16_t num_cols;  /**< Number of columns of the matrix. */
     float* p_data;      /**< Points to the data of the matrix. */
@@ -758,7 +758,7 @@ matf32_check_hessenberg_lower(const matf32_t* const p_mat);
  *              false :     Matrix is not symmetric positive definite (cannot perform cholesky)
  */
 bool
-matf32_check_symmposdef(const matf32_t* const p_mat);
+matf32_check_symposdef(const matf32_t* const p_mat);
 
 // ====================================================================================================
 // 4. Matrix operations based on matf32 structs

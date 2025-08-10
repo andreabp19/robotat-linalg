@@ -78,7 +78,7 @@ linsolve_get_method(const matf32_t* const p_a);
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linsolve_fwdsubs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_forward_substitution_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -94,7 +94,7 @@ linsolve_fwdsubs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, ma
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linsolve_bwdsubs_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_backward_substitution_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**

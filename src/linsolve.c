@@ -1,7 +1,7 @@
 /**
  * @file linsolve.c
  * 
- * Modified 3 Aug 2025
+ * Last modified 6 Aug 2025
  *      By: Andrea Pineda
  */
 
@@ -44,26 +44,26 @@ linsolve_print_method(linsolve_method_t lsm)
 linsolve_method_t
 linsolve_get_method(const matf32_t* const p_a)
 {
+    // Solve with QR if matrix is not square
     if (!matf32_check_square_matrix(p_a))
     {
         return QR;
     }
 
-    // triangular matrix
+    // Solve with Forward Substitution if matrix is lower triangular
     if (matf32_check_triangular_lower(p_a))
     {
         return FORWARD_SUBS;
     }
 
+    // Solve with Backward Substitution if matrix is upper triangular
     if (matf32_check_triangular_upper(p_a))
     {
         return BACKWARD_SUBS;
     }
 
-    // definite positive matrix
-    // TODO: add check for definite positive
-    // cholesky only should be used on postive definite
-    if (matf32_check_symmetric(p_a) && false)
+    // Solve with Cholesky if matrix is symmetric positive definite
+    if (matf32_check_symposdef(p_a))
     {
         return CHOLESKY;
     }
@@ -75,7 +75,7 @@ linsolve_get_method(const matf32_t* const p_a)
 
 
 err_status_t
-linsolve_fwdsubs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
+linsolve_forward_substitution_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_lower(p_l))
@@ -110,7 +110,7 @@ linsolve_fwdsubs_matf32(const matf32_t* const p_l, const matf32_t* const p_b, ma
 
 
 err_status_t
-linsolve_bwdsubs_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
+linsolve_backward_substitution_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_upper(p_u))
@@ -161,11 +161,11 @@ linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
     switch (method)
     {
         case FORWARD_SUBS:
-            return linsolve_fwdsubs_matf32(p_a, p_b, p_x);
+            return linsolve_forward_substitution_matf32(p_a, p_b, p_x);
             break;
 
         case BACKWARD_SUBS:
-            return linsolve_bwdsubs_matf32(p_a, p_b, p_x);
+            return linsolve_backward_substitution_matf32(p_a, p_b, p_x);
             break;
 
         case CHOLESKY:
@@ -180,7 +180,6 @@ linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
             {
                 return status;
             }
-
 
             status = linsolve_cholesky_matf32(&m1, p_b, p_x);
 
@@ -224,14 +223,14 @@ matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const mat
     matf32_init(&y, p_l->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    status = linsolve_fwdsubs_matf32(p_l, p_b, &y);
+    status = linsolve_forward_substitution_matf32(p_l, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
         return status;
     }
 
-    status = linsolve_bwdsubs_matf32(p_u, &y, p_x);
+    status = linsolve_backward_substitution_matf32(p_u, &y, p_x);
 
     return status;
 }
@@ -246,7 +245,10 @@ linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32
     matf32_init(&y, p_c->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    status = linsolve_fwdsubs_matf32(p_c, p_b, &y);
+    // Assuming the cholesky decomposition arrives as an upper triangular as matf32_cholesky gives it out by default
+    matf32_trans(p_c, p_c);
+
+    status = linsolve_forward_substitution_matf32(p_c, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
@@ -255,7 +257,7 @@ linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32
 
     matf32_trans(p_c, p_c);
 
-    status = linsolve_bwdsubs_matf32(p_c, &y, p_x);
+    status = linsolve_backward_substitution_matf32(p_c, &y, p_x);
 
     return status;
 }
