@@ -2,25 +2,28 @@
 /**
  * @file robotat_robotics.c
  * @author Andrea Pineda
- * @date created 19 Jul. 2025
+ * @date created 19 Jul. 2025, last modified 10 Aug 2025
  * 
  * Robotics algorithms
  */
 
 #include "robotat_robotics.h"
 
-// OPERATIONS
-
-// crear función trotx, troty, trotz para afectar toda la matriz de transformacion homogenea
-
 /* TO-DO: cuaterniones
-- definir cuaternion
 - matriz de rotación a cuaternion
 - transformacion homogenea a cuaternion y viceversa
 - multiplicacion de cuaterniones
 - inversa de cuaterniones
 - aplicacion de rotacion a un vector directamente en cuaterniones
 */
+
+// DONE :D
+// crear función trotx, troty, trotz para afectar toda la matriz de transformacion homogenea
+// definir cuaternion
+
+// ====================================================================================================
+// 1. Reference frame and point initializations
+// ====================================================================================================
 
 void
 rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
@@ -54,6 +57,11 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
 }
 
 
+
+// ====================================================================================================
+// 2. Homogeneous transformation matrix operations
+// ====================================================================================================
+
 void
 rob_transl(rob_frame_t* p_F, matf32_t* p_v)
 {
@@ -67,7 +75,7 @@ rob_transl(rob_frame_t* p_F, matf32_t* p_v)
 
 
 void
-rob_rotx(rob_frame_t* p_F, float* p_theta) // esto es trotx
+rob_rotx(rob_frame_t* p_F, float* p_theta)
 {
     /**
      *  Rotation Matrix X-axis
@@ -104,9 +112,6 @@ rob_rotx(rob_frame_t* p_F, float* p_theta) // esto es trotx
     matf32_set(p_R, 2, 3, neg_sin_theta);
     matf32_set(p_R, 3, 2, sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
-
-    // Set rotation matrix in the homogeneous transformation matrix
-    matf32_submatrix_copy(p_R, p_T, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
 }
 
 
@@ -148,9 +153,6 @@ rob_roty(rob_frame_t* p_F, float* p_theta)
     matf32_set(p_R, 2, 2, 1);
     matf32_set(p_R, 3, 1, neg_sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
-
-    // Set rotation matrix in the homogeneous transformation matrix
-    matf32_submatrix_copy(p_R, p_T, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
 }
 
 
@@ -192,9 +194,39 @@ rob_rotz(rob_frame_t* p_F, float* p_theta)
     matf32_set(p_R, 2, 1, sin_theta);
     matf32_set(p_R, 2, 2, cos_theta);
     matf32_set(p_R, 3, 3, 1);
+}
+
+
+void
+rob_trotx(rob_frame_t* p_F, float* p_theta)
+{
+    // Generate x rotation matrix
+    rob_rotx(p_F, p_theta);
 
     // Set rotation matrix in the homogeneous transformation matrix
-    matf32_submatrix_copy(p_R, p_T, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
+    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+}
+
+
+void
+rob_troty(rob_frame_t* p_F, float* p_theta)
+{
+    // Generate x rotation matrix
+    rob_roty(p_F, p_theta);
+
+    // Set rotation matrix in the homogeneous transformation matrix
+    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+}
+
+
+void
+rob_trotz(rob_frame_t* p_F, float* p_theta)
+{
+    // Generate x rotation matrix
+    rob_rotz(p_F, p_theta);
+
+    // Set rotation matrix in the homogeneous transformation matrix
+    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 }
 
 
@@ -241,9 +273,7 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
      *      - apply transformation
      *      - repeat previous steps for the following axis
      */
-    
-    // A correction: add two more angle arguments, one for each rotation, otherwise all axis will be rotated exactly the same angle.
-
+   
     switch(euler_tag)
     {
         case XYX:
@@ -389,7 +419,28 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
     }
 }
 
-// UTILITY FUNCTIONS
+
+
+// ====================================================================================================
+// 3. Quaternion operations
+// ====================================================================================================
+
+void
+rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k)
+{
+    // Set quaternion pointers to values
+    p_q->p_s = p_s;
+    p_q->p_i = p_i;
+    p_q->p_j = p_j;
+    p_q->p_k = p_k;
+}
+
+
+
+
+// ====================================================================================================
+// 3. Utility functions (printing, angle conversions, etc.)
+// ====================================================================================================
 
 float
 deg2rad(float* p_theta)
@@ -487,3 +538,31 @@ rob_angle_units_print(bool angle_units)
     }
 }
 
+// This three are still not tested
+rob_status_t
+rob_isrot(matf32_t* p_R)
+{
+    if (p_R->num_rows != 3 && p_R->num_cols != 3)
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+}
+
+rob_status_t
+rob_ishomog(matf32_t* p_T)
+{
+    if (p_T->num_rows != 4 && p_T->num_cols != 4)
+    {
+        return HOMOG_SIZE_MISMATCH;
+    }
+}
+
+rob_status_t
+rob_isvec(matf32_t* p_v)
+{
+    // Defined as a column vector for convenience for all operations
+    if (p_v->num_rows != 3 && p_v->num_cols != 1)
+    {
+        return VEC_SIZE_MISMATCH;
+    }
+}

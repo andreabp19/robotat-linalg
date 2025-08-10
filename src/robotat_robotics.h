@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.h
  * @author Andrea Pineda
- * @date created 19 Jul. 2025
+ * @date created 19 Jul. 2025, last modified 10 Aug 2025
  *
  * Robotics algorithms
 */
@@ -86,6 +86,16 @@ extern "C" {
 
 
 /**
+ * @brief   List of possible status or errors
+ */
+typedef enum
+{
+    ROT_SIZE_MISMATCH,
+    HOMOG_SIZE_MISMATCH,
+    VEC_SIZE_MISMATCH
+} rob_status_t;
+
+/**
  * @brief   Enumerates list for matrix tags.
  */
 typedef enum
@@ -139,8 +149,8 @@ typedef struct
  */
 typedef struct
 {
-    const matf32_t* p_R;    /** Real number s of the quaternion*/
-    const matf32_t* p_t;    /** Imaginary number i of the quaternion*/
+    const matf32_t* p_s;    /** Real number s of the quaternion*/
+    const matf32_t* p_i;    /** Imaginary number i of the quaternion*/
     const matf32_t* p_j;    /** Imaginary number j of the quaternion*/
     const matf32_t* p_k;    /** Imaginary number k of the quaternion*/
 } rob_quat_t;
@@ -221,7 +231,21 @@ rob_frame_tags_print(rob_frame_tags_t tags);
 // Quaternion functions
 // ====================================================================================================
 
-// TODO
+/**
+ * @brief   Quaternion struct initialization
+ * 
+ * @param[in]   p_q     Pointer to quaternion struct
+ * @param[in]   p_s     Pointer to real element of the quaternion
+ * @param[in]   p_i     Pointer to imaginary element i of the quaternion
+ * @param[in]   p_j     Pointer to imaginary element j of the quaternion
+ * @param[in]   p_k     Pointer to imaginary element k of the quaternion
+ * 
+ * @return None
+ */
+void
+rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k);
+
+
 
 // ====================================================================================================
 // Homogeneous transform functions
@@ -241,7 +265,7 @@ void
 rob_transl(rob_frame_t* p_F, matf32_t* p_v);
 
 /**
- * @brief   Applies rotation in the x axis.
+ * @brief   Generates rotation in the x axis.
  * 
  * @param[in,out]   p_F         Pointer to reference frame struct.
  * @param[in]       p_theta     Points to the value of degrees by which to rotate the frame.
@@ -252,7 +276,7 @@ void
 rob_rotx(rob_frame_t* p_F, float* p_theta);
 
 /**
- * @brief   Applies rotation in the y axis.
+ * @brief   Generates rotation in the y axis.
  * 
  * @param[in,out]   p_F         Pointer to reference frame struct.
  * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
@@ -263,7 +287,7 @@ void
 rob_roty(rob_frame_t* p_F, float* p_theta);
 
 /**
- * @brief   Applies rotation in the z axis.
+ * @brief   Generates rotation in the z axis.
  * 
  * @param[in,out]   p_F         Pointer to reference frame struct.
  * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
@@ -272,6 +296,39 @@ rob_roty(rob_frame_t* p_F, float* p_theta);
  */
 void
 rob_rotz(rob_frame_t* p_F, float* p_theta);
+
+/**
+ * @brief   Applies x rotation matrix to the homogeneous transformation matrix T
+ * 
+ * @param[in,out]   p_F         Pointer to reference frame struct.
+ * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_trotx(rob_frame_t* p_F, float* p_theta);
+
+/**
+ * @brief   Applies y rotation matrix to the homogeneous transformation matrix T
+ * 
+ * @param[in,out]   p_F         Pointer to reference frame struct.
+ * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_troty(rob_frame_t* p_F, float* p_theta);
+
+/**
+ * @brief   Applies z rotation matrix to the homogeneous transformation matrix T
+ * 
+ * @param[in,out]   p_F         Pointer to reference frame struct.
+ * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_trotz(rob_frame_t* p_F, float* p_theta);
 
 /**
  * @brief   Applies the homogeneous transformation to calculate the pose.
@@ -333,9 +390,9 @@ rad2deg(float* p_theta);
  * 
  * @param[in]   p_R     Points to matrix to be checked.
  * 
- * @return None
+ * @return rob_status_t
  */
-void
+rob_status_t
 rob_isrot(matf32_t* p_R);
 
 /**
@@ -343,9 +400,9 @@ rob_isrot(matf32_t* p_R);
  * 
  * @param[in]   p_T     Points to matrix to be checked.
  * 
- * @return None
+ * @return rob_status_t
  */
-void
+rob_status_t
 rob_ishomog(matf32_t* p_T);
 
 /**
@@ -353,9 +410,9 @@ rob_ishomog(matf32_t* p_T);
  * 
  * @param[in]   p_v     Points to vector to be checked (matrix, 1x3 or 3x1);
  * 
- * @return None
+ * @return rob_status_t
  */
-void
+rob_status_t
 rob_isvec(matf32_t* p_v);
 
 #ifdef __cplusplus
