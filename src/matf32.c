@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 6 Aug 2025
+ * Last Modified: 11 Aug 2025
  *      By: Andrea Pineda
  *
  * Single file to include all matrix related functions, combining them from all previously four files of matf32: matf32_def, matf32_check, matf32_math, math_util

@@ -51,11 +51,6 @@ extern "C" {
 /**
  *  ADDED IN THE .h BUT NOT FINISHED IN THE .c
  *  - inversa de T
- *  - inicializar cuaternion
- *  - imprimir cuaternion
- *  - rob_ishomog = revisar si T es una matriz 4x4 o 4x4xN (incluir dentro de rob_frame_init para verificar dimensiones)
- *  - rob_isrot = revisar si R es una matriz 3x3 o 3x3xN.
- *  - rob_isvec = revisar si un vector tiene 3 elementos (columna o fila) = para revisar dimensiones del vector de coordenadas
  *  */ 
 
 
@@ -75,6 +70,11 @@ extern "C" {
  * - completar init de un punto de referencia, ejemplo A_p o B_p, para poder hacer después la función apply transform que corresponde a: A_p = A_T_B * B_p;
  * - funcion apply_transform: input de un vector y una matriz. mas eficiente multiplicar los valores directamente, sin funciones de matf32.
  * - funciones para generar matrices de rotacion para angulos de euler. Por ejemplo XYZ, ZYZ, etc. 
+ * - rob_ishomog = revisar si T es una matriz 4x4 o 4x4xN (incluir dentro de rob_frame_init para verificar dimensiones)
+ * - rob_isrot = revisar si R es una matriz 3x3 o 3x3xN.
+ * - rob_isvec = revisar si un vector tiene 3 elementos (columna o fila) = para revisar dimensiones del vector de coordenadas
+ * - inicializar cuaternion
+ * - imprimir cuaternion
  */
 
 
@@ -149,10 +149,10 @@ typedef struct
  */
 typedef struct
 {
-    const matf32_t* p_s;    /** Real number s of the quaternion*/
-    const matf32_t* p_i;    /** Imaginary number i of the quaternion*/
-    const matf32_t* p_j;    /** Imaginary number j of the quaternion*/
-    const matf32_t* p_k;    /** Imaginary number k of the quaternion*/
+    float* p_s;    /** Real number s of the quaternion*/
+    float* p_i;    /** Imaginary number i of the quaternion*/
+    float* p_j;    /** Imaginary number j of the quaternion*/
+    float* p_k;    /** Imaginary number k of the quaternion*/
 } rob_quat_t;
 
 // ====================================================================================================
@@ -245,6 +245,66 @@ rob_frame_tags_print(rob_frame_tags_t tags);
 void
 rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k);
 
+/**
+ * @brief   Add two quaternions
+ * 
+ * @param[in]   p_srcq1    Pointer to the first quaternion
+ * @param[in]   p_srcq2    Pointer to the second quaternion
+ * @param[out]  p_dstq     Pointer to the destination quaternion
+ * 
+ * @return  None
+ */
+void
+rob_quat_add(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq);
+
+
+/**
+ * @brief   Substract two quaternions
+ * 
+ * @param[in]   p_srcq1    Pointer to the first quaternion
+ * @param[in]   p_srcq2    Pointer to the second quaternion
+ * @param[out]  p_dstq     Pointer to the destination quaternion
+ * 
+ * @return  None
+ */
+void
+rob_quat_sub(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq);
+
+
+/**
+ * @brief   Multiplies a quaternion by a scalar
+ * 
+ * @param[in]   p_srcq  Pointer to the first quaternion
+ * @param[in]   p_c     Float to multiply with
+ * @param[out]  p_dstq  Pointer to the destination quaternion
+ * 
+ * @return  None
+ */
+void
+rob_quat_scale(const rob_quat_t* p_srcq, const float p_c, rob_quat_t* p_dstq);
+
+
+/**
+ * @brief   Multiplies two quaternions
+ * 
+ * @param[in]   p_srcq1    Pointer to the first quaternion
+ * @param[in]   p_srcq2    Pointer to the second quaternion
+ * @param[out]  p_dstq     Pointer to the destination quaternion
+ * 
+ * @return  None
+ */
+void
+rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq);
+
+
+/**
+ * @brief   Prints a quaternion as formatted text
+ * 
+ * @param[in]   p_srcq    Pointer to the quaternion to print
+ * @return  None
+ */
+void
+rob_quat_print(const rob_quat_t* p_srcq);
 
 
 // ====================================================================================================

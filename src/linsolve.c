@@ -68,7 +68,17 @@ linsolve_get_method(const matf32_t* const p_a)
         return CHOLESKY;
     }
 
-    // add method for hessenberg?
+    // Add check for hermitian matrices
+    // This should be checked before the Cholesky and LU factorizations,
+    // based on matlab's linear solver diagram.
+
+    // Add method for hessenberg?
+
+    // Add method for tridiagonal matrices
+
+    // Add method for permuted triangular matrices
+
+    // Add method for solving if the conditioning number of the matrix is to high
 
     return LU; //general square solver
 }

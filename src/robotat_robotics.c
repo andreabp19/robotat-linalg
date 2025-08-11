@@ -12,14 +12,17 @@
 /* TO-DO: cuaterniones
 - matriz de rotación a cuaternion
 - transformacion homogenea a cuaternion y viceversa
-- multiplicacion de cuaterniones
 - inversa de cuaterniones
 - aplicacion de rotacion a un vector directamente en cuaterniones
 */
 
-// DONE :D
-// crear función trotx, troty, trotz para afectar toda la matriz de transformacion homogenea
-// definir cuaternion
+/** DONE :D
+* crear función trotx, troty, trotz para afectar toda la matriz de transformacion homogenea
+* definir cuaternion
+* multiplicacion de cuaterniones
+* add rob_quat_print() to print quaternions (formatted to identify the real and imaginary parts)
+* 
+*/
 
 // ====================================================================================================
 // 1. Reference frame and point initializations
@@ -428,7 +431,6 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 void
 rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k)
 {
-    // Set quaternion pointers to values
     p_q->p_s = p_s;
     p_q->p_i = p_i;
     p_q->p_j = p_j;
@@ -436,7 +438,75 @@ rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k)
 }
 
 
+void
+rob_quat_add(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
+{
+    *p_dstq->p_s = *p_srcq1->p_s + *p_srcq2->p_s;
+    *p_dstq->p_i = *p_srcq1->p_i + *p_srcq2->p_i;
+    *p_dstq->p_j = *p_srcq1->p_j + *p_srcq2->p_j;
+    *p_dstq->p_k = *p_srcq1->p_k + *p_srcq2->p_k;
+}
 
+
+void
+rob_quat_sub(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
+{
+    *p_dstq->p_s = *p_srcq1->p_s - *p_srcq2->p_s;
+    *p_dstq->p_i = *p_srcq1->p_i - *p_srcq2->p_i;
+    *p_dstq->p_j = *p_srcq1->p_j - *p_srcq2->p_j;
+    *p_dstq->p_k = *p_srcq1->p_k - *p_srcq2->p_k;
+}
+
+
+void
+rob_quat_scale(const rob_quat_t* p_srcq1, const float p_c, rob_quat_t* p_dstq)
+{
+    *p_dstq->p_s = *p_srcq1->p_s*(p_c);
+    *p_dstq->p_i = *p_srcq1->p_i*(p_c);
+    *p_dstq->p_j = *p_srcq1->p_j*(p_c);
+    *p_dstq->p_k = *p_srcq1->p_k*(p_c);
+}
+
+
+void
+rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
+{
+    /**
+     * Quaternion multiplication -> Hamilton product
+     * 
+     * For two given quaternions:   a1 + b1*i + c1*j + d1*k
+     *                              a2 + b2*i + c2*j + d2*k
+     * 
+     * This gives the product as:       (a1*a2 - b1*b2 - c1*c2 - d1*d2)
+     *                              +   (a1*b2 + b1*a2 + c1*d2 - d1+c2)i
+     *                              +   (a1*c2 - b1*d2 + c1*a2 + d1*b2)j
+     *                              +   (a1*d2 + b1*c2 - c1*b2 + d1*a2)k
+     * 
+     * For the notation of rob_quat_t quaternions:      (p_s1*p_s2 - p_i1*p_i2 - p_j1*p_j2 - p_k1*p_k2)
+     *                                              +   (p_s1*p_i2 + p_i1*p_s2 + p_j1*p_k2 - p_k1*p_j2)  (corresponds to i)
+     *                                              +   (p_s1*p_j2 - p_i1*p_k2 + p_j1*p_s2 + p_k1*p_i2)  (corresponds to j)
+     *                                              +   (p_s1*p_k2 + p_i1*p_j2 - p_j1*p_i2 + p_k1*p_s2)  (corresponds to k)
+     * 
+     */
+
+    // Pointers to values of the first quaternion
+    const float* p_s1 = p_srcq1->p_s;
+    const float* p_i1 = p_srcq1->p_i;
+    const float* p_j1 = p_srcq1->p_j;
+    const float* p_k1 = p_srcq1->p_k;
+
+    // Pointers to values of the second quaternion
+    const float* p_s2 = p_srcq2->p_s;
+    const float* p_i2 = p_srcq2->p_i;
+    const float* p_j2 = p_srcq2->p_j;
+    const float* p_k2 = p_srcq2->p_k;
+
+    // Element by element multiplication following the deduction above
+    *p_dstq->p_s = *p_s1*(*p_s2) - *p_i1*(*p_i2) - *p_j1*(*p_j2) - *p_k1*(*p_k2);
+    *p_dstq->p_i = *p_s1*(*p_i2) + *p_i1*(*p_s2) + *p_j1*(*p_k2) - *p_k1*(*p_j2);
+    *p_dstq->p_j = *p_s1*(*p_j2) - *p_i1*(*p_k2) + *p_j1*(*p_s2) + *p_k1*(*p_i2);
+    *p_dstq->p_k = *p_s1*(*p_k2) + *p_i1*(*p_j2) - *p_j1*(*p_i2) + *p_k1*(*p_s2);
+}
 
 // ====================================================================================================
 // 3. Utility functions (printing, angle conversions, etc.)
@@ -538,6 +608,17 @@ rob_angle_units_print(bool angle_units)
     }
 }
 
+
+void
+rob_quat_print(const rob_quat_t* p_srcq)
+{
+    printf("\n-------------------------\n");
+    printf("QUATERNION\n");
+    printf("-------------------------\n");
+    printf("%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
+}
+
+
 // This three are still not tested
 rob_status_t
 rob_isrot(matf32_t* p_R)
@@ -566,3 +647,4 @@ rob_isvec(matf32_t* p_v)
         return VEC_SIZE_MISMATCH;
     }
 }
+
