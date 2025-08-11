@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.c
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 10 Aug 2025
+ * @date created 19 Jul. 2025, last modified 11 Aug 2025
  * 
  * Robotics algorithms
  */
@@ -65,6 +65,10 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
 // 2. Homogeneous transformation matrix operations
 // ====================================================================================================
 
+// ----------------------------------------------------------------------------------------------------
+// 2.1. Set translation
+// ----------------------------------------------------------------------------------------------------
+
 void
 rob_transl(rob_frame_t* p_F, matf32_t* p_v)
 {
@@ -76,6 +80,9 @@ rob_transl(rob_frame_t* p_F, matf32_t* p_v)
     matf32_submatrix_copy(p_v, p_T, 0, 0, 0, p_R->num_cols, p_v->num_rows, p_v->num_cols);
 }
 
+// ----------------------------------------------------------------------------------------------------
+// 2.2. Generate and set rotation matrices
+// ----------------------------------------------------------------------------------------------------
 
 void
 rob_rotx(rob_frame_t* p_F, float* p_theta)
@@ -232,6 +239,10 @@ rob_trotz(rob_frame_t* p_F, float* p_theta)
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 2.3. Applying transformations and rotation sequences
+// ----------------------------------------------------------------------------------------------------
 
 void
 rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
@@ -425,8 +436,12 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 
 
 // ====================================================================================================
-// 3. Quaternion operations
+// 3. Quaternions
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 3.1. Quaternion initialization
+// ----------------------------------------------------------------------------------------------------
 
 void
 rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k)
@@ -437,6 +452,10 @@ rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k)
     p_q->p_k = p_k;
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 3.2. Quaternion operations
+// ----------------------------------------------------------------------------------------------------
 
 void
 rob_quat_add(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
@@ -508,9 +527,15 @@ rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
     *p_dstq->p_k = *p_s1*(*p_k2) + *p_i1*(*p_j2) - *p_j1*(*p_i2) + *p_k1*(*p_s2);
 }
 
+
+
 // ====================================================================================================
-// 3. Utility functions (printing, angle conversions, etc.)
+// 4. Utility functions (printing, angle conversions, etc.)
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 4.1. Angle units conversions
+// ----------------------------------------------------------------------------------------------------
 
 float
 deg2rad(float* p_theta)
@@ -525,6 +550,10 @@ rad2deg(float* p_theta)
     return *p_theta = *p_theta*(float)(180/M_PI);
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 4.2. Print functions
+// ----------------------------------------------------------------------------------------------------
 
 void
 rob_frame_print(rob_frame_t* p_F)
@@ -612,14 +641,39 @@ rob_angle_units_print(bool angle_units)
 void
 rob_quat_print(const rob_quat_t* p_srcq)
 {
-    printf("\n-------------------------\n");
-    printf("QUATERNION\n");
-    printf("-------------------------\n");
-    printf("%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
+    printf("\n%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
 }
 
 
-// This three are still not tested
+void
+rob_status_print(rob_status_t rob_status)
+{
+    switch(rob_status)
+    {
+        case ROB_SUCCESS:
+            printf("ROB_SUCCESS\n");
+            break;
+
+        case ROT_SIZE_MISMATCH:
+            printf("ROT_SIZE_MISMATCH\n");
+            break;
+        
+        case HOMOG_SIZE_MISMATCH:
+            printf("HOMOG_SIZE_MISMATCH\n");
+            break;
+
+        case VEC_SIZE_MISMATCH:
+            printf("VEC_SIZE_MISMATCH\n");
+            break;
+    }
+}
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.3. Check functions
+// ----------------------------------------------------------------------------------------------------
+
+// Verified that these work
 rob_status_t
 rob_isrot(matf32_t* p_R)
 {
@@ -627,7 +681,10 @@ rob_isrot(matf32_t* p_R)
     {
         return ROT_SIZE_MISMATCH;
     }
+
+    return ROB_SUCCESS;
 }
+
 
 rob_status_t
 rob_ishomog(matf32_t* p_T)
@@ -636,7 +693,10 @@ rob_ishomog(matf32_t* p_T)
     {
         return HOMOG_SIZE_MISMATCH;
     }
+
+    return ROB_SUCCESS;
 }
+
 
 rob_status_t
 rob_isvec(matf32_t* p_v)
@@ -646,5 +706,7 @@ rob_isvec(matf32_t* p_v)
     {
         return VEC_SIZE_MISMATCH;
     }
+
+    return ROB_SUCCESS;
 }
 

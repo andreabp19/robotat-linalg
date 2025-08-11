@@ -44,7 +44,6 @@ extern "C" {
 // leer acerca de "uniones" en lenguaje c para cuaterniones: operar tanto a nivel de matrices como de elementos específicos.
 // Precheckear dimensiones de la matriz de transformacion homogenea en el init.
 // Comparar resultado y tiempo de operación de las funciones con equivalentes de Robotics Toolbox en Matlab (exceptuando prints, inits, etc. de esos solo ver respuesta y medir tiempo por referencia).
-// Want to add a rob_status_t, equivalent to the err_status_t in matf32 but for the robotics library. This will replace the void in the function type of the operations.
 
 
 
@@ -75,6 +74,7 @@ extern "C" {
  * - rob_isvec = revisar si un vector tiene 3 elementos (columna o fila) = para revisar dimensiones del vector de coordenadas
  * - inicializar cuaternion
  * - imprimir cuaternion
+ * - add a rob_status_t, equivalent to the err_status_t in matf32, this will replace the void in the function type of some operations.
  */
 
 
@@ -90,6 +90,7 @@ extern "C" {
  */
 typedef enum
 {
+    ROB_SUCCESS,
     ROT_SIZE_MISMATCH,
     HOMOG_SIZE_MISMATCH,
     VEC_SIZE_MISMATCH
@@ -444,6 +445,16 @@ deg2rad(float* p_theta);
  */
 float
 rad2deg(float* p_theta);
+
+/**
+ * @brief   Prints rob_status_t messages
+ * 
+ * @param[in]   rob_status  Error status value to print
+ * 
+ * @return None
+ */
+void
+rob_status_print(rob_status_t rob_status);
 
 /**
  * @brief    Check if a matrix is 3x3 to be a rotation matrix
