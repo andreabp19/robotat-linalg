@@ -16,12 +16,13 @@ Here you will find all of the robotat-linalg numerical computation libraries (ma
     * check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite.
 
 * linsolve.h: linear solver for Ax = b systems, implementing the following matrix decomposition methods:
-    * forwards and backward substitution
+    * Forward Substitution
+    * Backward Substitution
     * Cholesky
     * LU
     * QR
 
-* quadprog.h: quadratic solver por equality constrained quadratic programs (QPs), implementing the linsolve library
+* quadprog.h: quadratic solver for equality constrained quadratic programs (QPs), implementing the linsolve library.
 
 * robotat_control.h: control algorithms
     * PID discretizations (Forward and Backward Euler, Pure Discrete and Tustin, ZOH is not implemented yet)
@@ -42,7 +43,7 @@ Test files are organized first by library and then by device. For example, in th
       * matf32_test_esp32
       * matf32_test_matlab
     
-The results exported from each file are saved and then plotted using MATLAB, all of which can be found in the matlab_plotting folder (the script for plotting and the exportes .eps files organized in folders, by library).
+The results exported from each file are saved and then plotted using MATLAB, all of which can be found in the matlab_plotting folder (the script for plotting and the exported .eps files organized in folders, by library).
 
 # Testing and Validation of the Libraries
 
