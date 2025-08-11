@@ -299,6 +299,41 @@ rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
 
 
 /**
+ * @brief   Calculates the conjugate of a quaternion
+ * 
+ * @param[in]   p_srcq  Pointer to a quaternion
+ * @param[out]  p_dstq  Pointer to the quaternion struct to save the conjugate
+ * 
+ * @return None
+ */
+void
+rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
+
+/**
+ * @brief   Calculates the norm of a quaternion
+ * 
+ * @param[in]   p_srcq  Pointer to a quaternion
+ * @param[out]  p_norm  Float to save the norm of the quaternion
+ * 
+ * @return None
+ */
+void
+rob_quat_norm(const rob_quat_t* p_srcq, float* p_norm);
+
+
+/**
+ * @brief   Calculates the inverse of a quaternion
+ * 
+ * @param[in]   p_srcq  Pointer to a quaternion
+ * @param[out]  p_dstq  Pointer to save the inverse of the quaternion
+ * 
+ * @return None
+ */
+void
+rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
+
+
+/**
  * @brief   Prints a quaternion as formatted text
  * 
  * @param[in]   p_srcq    Pointer to the quaternion to print
@@ -306,7 +341,6 @@ rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
  */
 void
 rob_quat_print(const rob_quat_t* p_srcq);
-
 
 // ====================================================================================================
 // Homogeneous transform functions

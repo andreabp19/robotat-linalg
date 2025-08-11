@@ -12,7 +12,6 @@
 /* TO-DO: cuaterniones
 - matriz de rotación a cuaternion
 - transformacion homogenea a cuaternion y viceversa
-- inversa de cuaterniones
 - aplicacion de rotacion a un vector directamente en cuaterniones
 */
 
@@ -21,7 +20,7 @@
 * definir cuaternion
 * multiplicacion de cuaterniones
 * add rob_quat_print() to print quaternions (formatted to identify the real and imaginary parts)
-* 
+* inversa de cuaterniones
 */
 
 // ====================================================================================================
@@ -528,6 +527,41 @@ rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
 }
 
 
+void
+rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
+{
+    *p_dstq->p_s = *p_srcq->p_s;
+    *p_dstq->p_i = *p_srcq->p_i * (-1.0);
+    *p_dstq->p_j = *p_srcq->p_j * (-1.0);
+    *p_dstq->p_k = *p_srcq->p_k * (-1.0);
+}
+
+void
+rob_quat_norm(const rob_quat_t* p_srcq, float* p_norm)
+{
+    *p_norm = sqrt((*p_srcq->p_s)*(*p_srcq->p_s) + (*p_srcq->p_i)*(*p_srcq->p_i) + (*p_srcq->p_j)*(*p_srcq->p_j) + (*p_srcq->p_k)*(*p_srcq->p_k));
+}
+
+void
+rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
+{
+    float q_norm = 0;
+    float q_norm_squared = 0;
+
+    float q_conj_data[4] = {0, 0, 0, 0};
+    rob_quat_t q_conj;
+    rob_quat_init(&q_conj, &q_conj_data[0], &q_conj_data[1], &q_conj_data[2], &q_conj_data[3]);
+
+    rob_quat_conj(p_srcq, &q_conj);
+    rob_quat_norm(p_srcq, &q_norm);
+
+    q_norm_squared = q_norm*q_norm;
+
+    *p_dstq->p_s = *q_conj.p_s / q_norm_squared;
+    *p_dstq->p_i = *q_conj.p_i / q_norm_squared;
+    *p_dstq->p_j = *q_conj.p_j / q_norm_squared;
+    *p_dstq->p_k = *q_conj.p_k / q_norm_squared;
+}
 
 // ====================================================================================================
 // 4. Utility functions (printing, angle conversions, etc.)
