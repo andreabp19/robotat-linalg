@@ -29,8 +29,9 @@ Here you will find all of the robotat-linalg numerical computation libraries (ma
     * Kalman filter
 
 * robotat_robotics.h: robotics algorithms based on the Matlab Robotics Toolbox by Peter Corke
-    * Reference frame structures and pose calculations
-    * quaternion structures and operations (still in development).
+    * Reference frame structures
+    * Homogeneous transformation matrix operations (generating and setting rotation matrices, setting coordinate vectors, applying homogeneous transformations, applying euler angles)
+    * quaternion structures and operations (addition, substraction, quaternion-scalar and quaternion-quaternion multiplication, conjugate, norm and inverse).
 
 * robotat_linalg.h: to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h
 
