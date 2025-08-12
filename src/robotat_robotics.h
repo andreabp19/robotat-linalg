@@ -122,7 +122,7 @@ typedef enum
     YXZ,
     ZXY,
     ZYX
-} rob_euler_angles_t;
+} rob_angle_sequences_t;
 
 /**
  * @brief   Homogeneneous transformation matrix construct for reference frames' pose calcultions
@@ -318,7 +318,7 @@ rob_inv_transform(rob_frame_t* const p_F, const matf32_t* const p_p);
  * @return None
  */
 void
-rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float phi, float theta, float psi, bool angle_units);
+rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t euler_tag, float phi, float theta, float psi, bool angle_units);
 
 
 
@@ -483,7 +483,7 @@ rob_quat_print(const rob_quat_t* p_srcq);
  * @return None
  */
 void 
-rob_rpy2r(float roll, float pitch, float yaw, rob_euler_angles_t rpy_tag, bool angle_units, matf32_t* p_R);
+rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R);
 
 /**
  * @brief   Converts roll-pitch-yaw sequence angles to an homogeneous transformation matrix

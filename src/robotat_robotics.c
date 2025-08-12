@@ -266,7 +266,7 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 // I think, that after reading the code of rpy2tr, it can be changed to calculate a single rotation matrix
 // and then apply the angles, but I have to check that. I feel the current version of this function is inefficient
 void
-rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float phi, float theta, float psi, bool angle_units)
+rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t euler_tag, float phi, float theta, float psi, bool angle_units)
 {
     /**
      *  Switch-case to execute transformations based onthe euler_tag introduced
@@ -567,7 +567,7 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 // ----------------------------------------------------------------------------------------------------
 
 void
-rob_rpy2r(float roll, float pitch, float yaw, rob_euler_angles_t rpy_tag, bool angle_units, matf32_t* p_R)
+rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R)
 {
     /**
      * Rotation for roll-pitch-yaw angles, which correspond to Z, Y, X axes rotations, respectively.
