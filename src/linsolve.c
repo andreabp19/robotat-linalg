@@ -1,7 +1,7 @@
 /**
  * @file linsolve.c
  * 
- * Last modified 6 Aug 2025
+ * Last modified 11 Aug 2025
  *      By: Andrea Pineda
  */
 

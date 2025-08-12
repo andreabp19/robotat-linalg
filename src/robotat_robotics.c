@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.c
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 11 Aug 2025
+ * @date created 19 Jul. 2025, last modified 12 Aug 2025
  * 
  * Robotics algorithms
  */
