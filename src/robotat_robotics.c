@@ -10,8 +10,8 @@
 #include "robotat_robotics.h"
 
 /* TO-DO: cuaterniones
-- matriz de rotación a cuaternion
-- transformacion homogenea a cuaternion y viceversa
+- cuaternión a matriz de rotación
+- cuaternión a transformación homogénea
 - aplicacion de rotacion a un vector directamente en cuaterniones
 - inversa de la transformación homogénea?
 - Si me da tiempo, añadir las operaciones: tr2rpy, tr2eul, etc. para complementar las que ya puse.
@@ -24,7 +24,9 @@
 * multiplicacion de cuaterniones
 * add rob_quat_print() to print quaternions (formatted to identify the real and imaginary parts)
 * inversa de cuaterniones
-- Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
+* Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
+* matriz de rotación a cuaternion
+* transformacion homogenea a cuaternion
 */
 
 // ====================================================================================================
@@ -802,6 +804,12 @@ rob_r2q(matf32_t* p_R, rob_quat_t* p_uq)
     *p_uq->p_k = uq_k;
 }
 
+
+void 
+rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq)
+{
+    rob_r2q(p_F->p_R, p_uq);
+}
 
 // ====================================================================================================
 // 5. Utility functions (printing, angle conversions, etc.)
