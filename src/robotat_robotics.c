@@ -357,32 +357,32 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
         // --------------------------------------------------
 
         case XYZ:
-            rob_rpy2r(phi, theta, psi, angle_sequence, 0, p_F->p_R);
+            rob_rpy2tr(phi, theta, psi, angle_sequence, 0, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case XZY:
-            rob_rpy2r(phi, theta, psi, angle_sequence, 0, p_F->p_R);
+            rob_rpy2tr(phi, theta, psi, angle_sequence, 0, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YZX:
-            rob_rpy2r(phi, theta, psi, angle_sequence, 0, p_F->p_R);
+            rob_rpy2tr(phi, theta, psi, angle_sequence, 0, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YXZ:
-            rob_rpy2r(phi, theta, psi, angle_sequence, 0, p_F->p_R);
+            rob_rpy2tr(phi, theta, psi, angle_sequence, 0, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZXY:
-            rob_rpy2r(phi, theta, psi, angle_sequence, 0, p_F->p_R);
+            rob_rpy2tr(phi, theta, psi, angle_sequence, 0, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZYX:
-            rob_rpy2r(phi, theta, psi, angle_sequence, 0, p_F->p_R);
+            rob_rpy2tr(phi, theta, psi, angle_sequence, 0, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;    
     }
@@ -609,7 +609,17 @@ rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
 }
 
 
+void
+rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F)
+{
+    /**
+     * 1. Execute rob_rpy2r to generate rotation matrix based on a roll-pitch-yaw sequence
+     * 2. Assign the calculated rotation matrix to the homogeneous transformation matrix in the frame p_F
+     */
 
+    rob_rpy2r(roll, pitch, yaw, rpy_tag, angle_units, p_F->p_R);
+    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+}
 
 // ====================================================================================================
 // 5. Utility functions (printing, angle conversions, etc.)

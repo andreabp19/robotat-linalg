@@ -473,12 +473,12 @@ rob_quat_print(const rob_quat_t* p_srcq);
 /**
  * @brief   Converts roll-pitch-yaw sequence angles to a rotation matrix
  * 
- * @param[in]   roll            roll angle
- * @param[in]   pitch           pitch angle
- * @param[in]   yaw             yaw angle
- * @param[in]   rpy_tag         roll-pitch-yaw sequence enum tag
- * @param[in]   angle_units     radians or degrees indicator
- * @param[in,out]  p_F          pointer to reference frame where the rotation matrix is
+ * @param[in]       roll            roll angle
+ * @param[in]       pitch           pitch angle
+ * @param[in]       yaw             yaw angle
+ * @param[in]       rpy_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       angle_units     radians or degrees indicator
+ * @param[in,out]   p_R             pointer to reference frame where the rotation matrix is
  *  
  * @return None
  */
@@ -488,15 +488,17 @@ rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
 /**
  * @brief   Converts roll-pitch-yaw sequence angles to an homogeneous transformation matrix
  * 
- * @param[in]   roll    roll angle
- * @param[in]   pitch   pitch angle
- * @param[in]   yaw     yaw angle
- * @param[out]  p_F     pointer reference frame where the rotation matrix is
+ * @param[in]       roll            roll angle
+ * @param[in]       pitch           pitch angle
+ * @param[in]       yaw             yaw angle
+ * @param[in]       rpy_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       angle_units     radians or degrees indicator
+ * @param[in,out]   p_F             pointer reference frame where the rotation matrix is
  * 
  * @return None     
  */
 void
-rob_rpy2tr(float roll, float pitch, float yaw, matf32_t* p_F);
+rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F);
 
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Homogeneous Transformation and Quaternion Conversions
