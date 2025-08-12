@@ -27,15 +27,10 @@
 extern "C" {
 #endif
 
-// ====================================================================================================
-// Data structures, enums and type definitions
-// ====================================================================================================
-
 // ----- TODO -----
 
 // PENDING TO ADD IN THE .h
-// funciones para generar secuencias de rotación eje-angulo, angulos de euler-cuaterniones, viceversa, todas las operaciones con cuaterniones.
-// cuidado con las singularidades en todas estas operaciones.
+// cuidado con las singularidades en todas estas operaciones (ej. gimbal lock).
 // combinar o multiplicar transformaciones para comprobar si se están realizando bien entre fuente-destino
 // Documentación:
 //  - documentacion en github, doxygen, explicar cómo usar y dejar unos ejemplos de cómo usar la librería - digerible para estudiantes y publicación
@@ -84,6 +79,9 @@ extern "C" {
  * - Added deg2rad() and rad2deg() functions for degrees to rad conversion and viceversa.
  */
 
+// ====================================================================================================
+// 0. Data structures, enums and type definitions
+// ====================================================================================================
 
 /**
  * @brief   List of possible status or errors
@@ -150,17 +148,17 @@ typedef struct
  */
 typedef struct
 {
-    float* p_s;    /** Real number s of the quaternion*/
-    float* p_i;    /** Imaginary number i of the quaternion*/
-    float* p_j;    /** Imaginary number j of the quaternion*/
-    float* p_k;    /** Imaginary number k of the quaternion*/
+    float* p_s;    /** Real number s of the quaternion */
+    float* p_i;    /** Imaginary number i of the quaternion */
+    float* p_j;    /** Imaginary number j of the quaternion */
+    float* p_k;    /** Imaginary number k of the quaternion */
 } rob_quat_t;
 
 // ====================================================================================================
 // Function prototypes
 // ====================================================================================================
 // ====================================================================================================
-// Reference frame init and print functions
+// 1. Reference frame and point initializations
 // ====================================================================================================
 
 /**
@@ -192,45 +190,145 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, ro
 void
 rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_tag);
 
-/**
- * @brief   Prints the data and configurations of a reference frame.
- * 
- * @param[in]   p_F     Pointer to reference matrix.
- * 
- * @return None
- */
-void
-rob_frame_print(rob_frame_t* p_F);
 
-/**
- * @brief   Prints a point's data and configurations to use with it.
- * 
- * @param[in]   p_p     Pointer to a given point.
- * 
- * @return None
- */
-void
-rob_refpoint_print(rob_point_t* const p_p);
-
-/**
- * @brief   Prints text corresponding to the tags in rob_angle_unit_tags_t.
- */
-void
-rob_angle_units_print(bool angle_units);
-
-/**
- * @brief   Prints text corresponding to the tags in rob_frame_tags_t.
- * 
- * @param[in]   frame_tags  Frame tags enum
- * 
- * @return None
- */
-void
-rob_frame_tags_print(rob_frame_tags_t tags);
 
 // ====================================================================================================
-// Quaternion functions
+// 2. Homogeneous transformation matrix operations
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 2.1. Set translation
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Set coordinates vector in the homogeneous transformation matrix
+ * 
+ * @param[in,out]   p_F     Points to the reference frame struct
+ * @param[in]       p_v     Points to the coordinates vector to be implemented
+ * 
+ * @return  err_status_t
+ */
+void
+rob_transl(rob_frame_t* p_F, matf32_t* p_v);
+
+// ----------------------------------------------------------------------------------------------------
+// 2.2. Generate and set rotation matrices
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Generates rotation in the x axis.
+ * 
+ * @param[in,out]   p_R         Pointer to rotation matrix.
+ * @param[in]       p_theta     Points to the value of degrees by which to rotate the frame.
+ * 
+ * @return err_status_t
+ */
+void
+rob_rotx(matf32_t* p_R, float theta, bool angle_units);
+
+/**
+ * @brief   Generates rotation in the y axis.
+ * 
+ * @param[in,out]   p_R         Pointer to rotation matrix.
+ * @param[in]       theta       Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_roty(matf32_t* p_R, float theta, bool angle_units);
+
+/**
+ * @brief   Generates rotation in the z axis.
+ * 
+ * @param[in,out]   p_R         Pointer to rotation matrix
+ * @param[in]       theta       Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_rotz(matf32_t* p_R, float theta, bool angle_units);
+
+/**
+ * @brief   Applies x rotation matrix to the homogeneous transformation matrix T
+ * 
+ * @param[in,out]   p_F         Pointer to reference frame struct.
+ * @param[in]       theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_trotx(rob_frame_t* p_F, float theta, bool angle_units);
+
+/**
+ * @brief   Applies y rotation matrix to the homogeneous transformation matrix T
+ * 
+ * @param[in,out]   p_F         Pointer to reference frame struct.
+ * @param[in]       theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_troty(rob_frame_t* p_F, float theta, bool angle_units);
+
+/**
+ * @brief   Applies z rotation matrix to the homogeneous transformation matrix T
+ * 
+ * @param[in,out]   p_F         Pointer to reference frame struct.
+ * @param[in]       theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
+ * 
+ * @return None
+ */
+void
+rob_trotz(rob_frame_t* p_F, float theta, bool angle_units);
+
+// ----------------------------------------------------------------------------------------------------
+// 2.3. Applying transformations and rotation sequences
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Applies the homogeneous transformation to calculate the pose.
+ * 
+ * @param[in]   p_F     Pointer to reference frame struct to work with.
+ * @param[in]   p_srcp  Coordinates vector with reference to original frame.
+ * @param[out]  p_dstp  Coordinates vector to the new frame of reference.
+ * 
+ * @return None
+ */
+void
+rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
+
+/**
+ * @brief   Applies inverse of the homogeneous transformation of the pose.
+ * 
+ * @param[in,out]   p_F     Pointer to reference frame struct.
+ * 
+ * @return None
+ */
+void
+rob_inv_transform(rob_frame_t* const p_F, const matf32_t* const p_p);
+
+/**
+ * @brief   Apply transforms based on Euler angles sequences.
+ * 
+ * @param[in]   p_F         Points to reference frame struct to work with.  
+ * @param[in]   p_srcp      Pointss to reference point for the frame to transform from.
+ * @param[out]  p_dstp      Points to reference point with respect to the new frame.
+ * @param[in]   euler_tag   Tag to indicate the rotation sequence to apply, for example: XYZ, ZYZ, etc.
+ * 
+ * @return None
+ */
+void
+rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float phi, float theta, float psi, bool angle_units);
+
+
+
+// ====================================================================================================
+// 3. Quaternions
+// ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 3.1. Quaternion initialization
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Quaternion struct initialization
@@ -245,6 +343,11 @@ rob_frame_tags_print(rob_frame_tags_t tags);
  */
 void
 rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 3.2. Quaternion operations
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Add two quaternions
@@ -342,127 +445,73 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
 void
 rob_quat_print(const rob_quat_t* p_srcq);
 
-// ====================================================================================================
-// Homogeneous transform functions
-// ====================================================================================================
 
-// TODO: Make an equivalent of err_status_t for this functions. Something like: rob_status_t, and then change the function return type from void to rob_status_t.
+// ----------------------------------------------------------------------------------------------------
+// 3.3. Unitary Quaternions
+// ----------------------------------------------------------------------------------------------------
 
-/**
- * @brief   Set coordinates vector in the homogeneous transformation matrix
- * 
- * @param[in,out]   p_F     Points to the reference frame struct
- * @param[in]       p_v     Points to the coordinates vector to be implemented
- * 
- * @return  err_status_t
- */
-void
-rob_transl(rob_frame_t* p_F, matf32_t* p_v);
 
-/**
- * @brief   Generates rotation in the x axis.
- * 
- * @param[in,out]   p_F         Pointer to reference frame struct.
- * @param[in]       p_theta     Points to the value of degrees by which to rotate the frame.
- * 
- * @return err_status_t
- */
-void
-rob_rotx(rob_frame_t* p_F, float* p_theta);
+// Pending
 
-/**
- * @brief   Generates rotation in the y axis.
- * 
- * @param[in,out]   p_F         Pointer to reference frame struct.
- * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
- * 
- * @return None
- */
-void
-rob_roty(rob_frame_t* p_F, float* p_theta);
-
-/**
- * @brief   Generates rotation in the z axis.
- * 
- * @param[in,out]   p_F         Pointer to reference frame struct.
- * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
- * 
- * @return None
- */
-void
-rob_rotz(rob_frame_t* p_F, float* p_theta);
-
-/**
- * @brief   Applies x rotation matrix to the homogeneous transformation matrix T
- * 
- * @param[in,out]   p_F         Pointer to reference frame struct.
- * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
- * 
- * @return None
- */
-void
-rob_trotx(rob_frame_t* p_F, float* p_theta);
-
-/**
- * @brief   Applies y rotation matrix to the homogeneous transformation matrix T
- * 
- * @param[in,out]   p_F         Pointer to reference frame struct.
- * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
- * 
- * @return None
- */
-void
-rob_troty(rob_frame_t* p_F, float* p_theta);
-
-/**
- * @brief   Applies z rotation matrix to the homogeneous transformation matrix T
- * 
- * @param[in,out]   p_F         Pointer to reference frame struct.
- * @param[in]       p_theta     Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
- * 
- * @return None
- */
-void
-rob_trotz(rob_frame_t* p_F, float* p_theta);
-
-/**
- * @brief   Applies the homogeneous transformation to calculate the pose.
- * 
- * @param[in]   p_F     Pointer to reference frame struct to work with.
- * @param[in]   p_srcp  Coordinates vector with reference to original frame.
- * @param[out]  p_dstp  Coordinates vector to the new frame of reference.
- * 
- * @return None
- */
-void
-rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
-
-/**
- * @brief   Applies inverse of the homogeneous transformation of the pose.
- * 
- * @param[in,out]   p_F     Pointer to reference frame struct.
- * 
- * @return None
- */
-void
-rob_inv_transform(rob_frame_t* const p_F, const matf32_t* const p_p);
-
-/**
- * @brief   Apply transforms based on Euler angles sequences.
- * 
- * @param[in]   p_F         Points to reference frame struct to work with.  
- * @param[in]   p_srcp      Pointss to reference point for the frame to transform from.
- * @param[out]  p_dstp      Points to reference point with respect to the new frame.
- * @param[in]   euler_tag   Tag to indicate the rotation sequence to apply, for example: XYZ, ZYZ, etc.
- * 
- * @return None
- */
-void
-rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float* p_phi, float* p_theta, float* p_psi);
 
 // ====================================================================================================
-// Utility functions
+// 4. Conversions between Homogeneous Transformations and Quaternions
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 4.1. Roll-Pitch-Yaw and Rotation Matrices Conversions
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * TODO
+ * rpy2r: roll-pitch-yaw angles to rotation matrix
+ * rpy2tr: roll-pitch-yaw angles to homogeneous transformation matrix
+ * 
+ */
+
+
+/**
+ * @brief   Converts roll-pitch-yaw sequence angles to a rotation matrix
+ * 
+ * @param[in]   roll            roll angle
+ * @param[in]   pitch           pitch angle
+ * @param[in]   yaw             yaw angle
+ * @param[in]   rpy_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]   angle_units     radians or degrees indicator
+ * @param[in,out]  p_F          pointer to reference frame where the rotation matrix is
+ *  
+ * @return None
+ */
+void 
+rob_rpy2r(float roll, float pitch, float yaw, rob_euler_angles_t rpy_tag, bool angle_units, matf32_t* p_R);
+
+/**
+ * @brief   Converts roll-pitch-yaw sequence angles to an homogeneous transformation matrix
+ * 
+ * @param[in]   roll    roll angle
+ * @param[in]   pitch   pitch angle
+ * @param[in]   yaw     yaw angle
+ * @param[out]  p_F     pointer reference frame where the rotation matrix is
+ * 
+ * @return None     
+ */
+void
+rob_rpy2tr(float roll, float pitch, float yaw, matf32_t* p_F);
+
+// ----------------------------------------------------------------------------------------------------
+// 4.2. Homogeneous Transformation and Quaternion Conversions
+// ----------------------------------------------------------------------------------------------------
+
+
+
+
+// ====================================================================================================
+// 5. Utility functions (printing, angle unit conversions, etc.)
+// ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 5.1. Angle units conversions
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Converts degrees to radians.
@@ -480,6 +529,11 @@ deg2rad(float* p_theta);
 float
 rad2deg(float* p_theta);
 
+
+// ----------------------------------------------------------------------------------------------------
+// 5.2. Print functions
+// ----------------------------------------------------------------------------------------------------
+
 /**
  * @brief   Prints rob_status_t messages
  * 
@@ -489,6 +543,47 @@ rad2deg(float* p_theta);
  */
 void
 rob_status_print(rob_status_t rob_status);
+
+/**
+ * @brief   Prints the data and configurations of a reference frame.
+ * 
+ * @param[in]   p_F     Pointer to reference matrix.
+ * 
+ * @return None
+ */
+void
+rob_frame_print(rob_frame_t* p_F);
+
+/**
+ * @brief   Prints a point's data and configurations to use with it.
+ * 
+ * @param[in]   p_p     Pointer to a given point.
+ * 
+ * @return None
+ */
+void
+rob_refpoint_print(rob_point_t* const p_p);
+
+/**
+ * @brief   Prints text corresponding to the tags in rob_angle_unit_tags_t.
+ */
+void
+rob_angle_units_print(bool angle_units);
+
+/**
+ * @brief   Prints text corresponding to the tags in rob_frame_tags_t.
+ * 
+ * @param[in]   frame_tags  Frame tags enum
+ * 
+ * @return None
+ */
+void
+rob_frame_tags_print(rob_frame_tags_t tags);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 5.3. Check functions
+// ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief    Check if a matrix is 3x3 to be a rotation matrix
@@ -508,7 +603,7 @@ rob_isrot(matf32_t* p_R);
  * @return rob_status_t
  */
 rob_status_t
-rob_ishomog(matf32_t* p_T);
+rob_ishom(matf32_t* p_T);
 
 /**
  * @brief   Check if a vector has 3 elements to be used as coordinates vector in the homogeneous transformation matrix
@@ -519,6 +614,8 @@ rob_ishomog(matf32_t* p_T);
  */
 rob_status_t
 rob_isvec(matf32_t* p_v);
+
+// Add checks for quaternions and unit quaternions?
 
 #ifdef __cplusplus
 }

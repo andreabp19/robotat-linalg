@@ -13,6 +13,8 @@
 - matriz de rotación a cuaternion
 - transformacion homogenea a cuaternion y viceversa
 - aplicacion de rotacion a un vector directamente en cuaterniones
+- inversa de la transformación homogénea?
+- Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
 */
 
 /** DONE :D
@@ -84,7 +86,7 @@ rob_transl(rob_frame_t* p_F, matf32_t* p_v)
 // ----------------------------------------------------------------------------------------------------
 
 void
-rob_rotx(rob_frame_t* p_F, float* p_theta)
+rob_rotx(matf32_t* p_R, float theta, bool angle_units)
 {
     /**
      *  Rotation Matrix X-axis
@@ -93,13 +95,10 @@ rob_rotx(rob_frame_t* p_F, float* p_theta)
      *  | 0 sin(theta)  cos(theta) |
      */
 
-    matf32_t* p_R = p_F->p_R;
-    matf32_t* p_T = p_F->p_T;
-
-    float rads = *p_theta*M_PI/180;
+    float rads = theta*M_PI/180;
 
     // Check if the input angle is in radians or degrees
-    switch(p_F->angle_units)
+    switch(angle_units)
     {
         case 0: // RADIANS
             break;
@@ -110,8 +109,8 @@ rob_rotx(rob_frame_t* p_F, float* p_theta)
     }
 
     // Calculate sin, cos and -sin
-    float cos_theta = cosf(*p_theta*M_PI/180);
-    float sin_theta = sinf(*p_theta*M_PI/180);
+    float cos_theta = cosf(theta*M_PI/180);
+    float sin_theta = sinf(theta*M_PI/180);
     float neg_sin_theta = sin_theta*(-1);
 
     // Set values in the rotation matrix
@@ -125,7 +124,7 @@ rob_rotx(rob_frame_t* p_F, float* p_theta)
 
 
 void
-rob_roty(rob_frame_t* p_F, float* p_theta)
+rob_roty(matf32_t* p_R, float theta, bool angle_units)
 {
     /**
      *  Rotation Matrix Y-axis
@@ -134,13 +133,10 @@ rob_roty(rob_frame_t* p_F, float* p_theta)
      *  |-sin(theta)  0  cos(theta)|
      */
 
-    matf32_t* p_R = p_F->p_R;
-    matf32_t* p_T = p_F->p_T;
-
-    float rads = *p_theta*M_PI/180;
+    float rads = theta*M_PI/180;
 
     // Check if the input angle is in radians or degrees
-    switch(p_F->angle_units)
+    switch(angle_units)
     {
         case 0: // RADIANS
             break;
@@ -151,8 +147,8 @@ rob_roty(rob_frame_t* p_F, float* p_theta)
     }
 
     // Calculate sin, cos and -sin
-    float cos_theta = cosf(*p_theta*M_PI/180);
-    float sin_theta = sinf(*p_theta*M_PI/180);
+    float cos_theta = cosf(theta*M_PI/180);
+    float sin_theta = sinf(theta*M_PI/180);
     float neg_sin_theta = sin_theta*(-1);
 
     // Set values in the rotation matrix
@@ -166,7 +162,7 @@ rob_roty(rob_frame_t* p_F, float* p_theta)
 
 
 void
-rob_rotz(rob_frame_t* p_F, float* p_theta)
+rob_rotz(matf32_t* p_R, float theta, bool angle_units)
 {
     /**
      *  Rotation Matrix Z-axis
@@ -175,13 +171,10 @@ rob_rotz(rob_frame_t* p_F, float* p_theta)
      *  |     0           0      1 |
      */
 
-    matf32_t* p_R = p_F->p_R;
-    matf32_t* p_T = p_F->p_T;
-
-    float rads = *p_theta*M_PI/180;
+    float rads = theta*M_PI/180;
 
     // Check if the input angle is in radians or degrees
-    switch(p_F->angle_units)
+    switch(angle_units)
     {
         case 0: // RADIANS
             break;
@@ -192,8 +185,8 @@ rob_rotz(rob_frame_t* p_F, float* p_theta)
     }
 
     // Calculate sin, cos and -sin
-    float cos_theta = cosf(*p_theta*M_PI/180);
-    float sin_theta = sinf(*p_theta*M_PI/180);
+    float cos_theta = cosf(theta*M_PI/180);
+    float sin_theta = sinf(theta*M_PI/180);
     float neg_sin_theta = sin_theta*(-1);
 
     // Set values in the rotation matrix
@@ -207,34 +200,28 @@ rob_rotz(rob_frame_t* p_F, float* p_theta)
 
 
 void
-rob_trotx(rob_frame_t* p_F, float* p_theta)
+rob_trotx(rob_frame_t* p_F, float theta, bool angle_units)
 {
-    // Generate x rotation matrix
-    rob_rotx(p_F, p_theta);
-
-    // Set rotation matrix in the homogeneous transformation matrix
+    // Generate x rotation matrix, then set into the homogeneous transformation matrix
+    rob_rotx(p_F->p_R, theta, angle_units);
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 }
 
 
 void
-rob_troty(rob_frame_t* p_F, float* p_theta)
+rob_troty(rob_frame_t* p_F, float theta, bool angle_units)
 {
-    // Generate x rotation matrix
-    rob_roty(p_F, p_theta);
-
-    // Set rotation matrix in the homogeneous transformation matrix
+    // Generate x rotation matrix, then set into the homogeneous transformation matrix
+    rob_roty(p_F->p_R, theta, angle_units);
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 }
 
 
 void
-rob_trotz(rob_frame_t* p_F, float* p_theta)
+rob_trotz(rob_frame_t* p_F, float theta, bool angle_units)
 {
-    // Generate x rotation matrix
-    rob_rotz(p_F, p_theta);
-
-    // Set rotation matrix in the homogeneous transformation matrix
+    // Generate x rotation matrix, then set into the homogeneous transformation matrix
+    rob_rotz(p_F->p_R, theta, angle_units);
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 }
 
@@ -275,8 +262,11 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 }
 
 
+// Change this to a more efficient version
+// I think, that after reading the code of rpy2tr, it can be changed to calculate a single rotation matrix
+// and then apply the angles, but I have to check that. I feel the current version of this function is inefficient
 void
-rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float* p_phi, float* p_theta, float* p_psi)
+rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_euler_angles_t euler_tag, float phi, float theta, float psi, bool angle_units)
 {
     /**
      *  Switch-case to execute transformations based onthe euler_tag introduced
@@ -292,19 +282,19 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
         case XYX:
             // X
             //printf("ROTX:\n");
-            rob_rotx(p_F, p_phi);
+            rob_rotx(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             //matf32_print(p_F->p_T);
             //matf32_print(p_dstp->p_v);
             // Y
             //printf("ROTY:\n");
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             //matf32_print(p_F->p_T);
             //matf32_print(p_dstp->p_v);
             // X
             //printf("ROTX:\n");
-            rob_rotx(p_F, p_psi);
+            rob_rotx(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             //matf32_print(p_F->p_T);
             //matf32_print(p_dstp->p_v);
@@ -312,125 +302,128 @@ rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 
         case XZX:
             // X
-            rob_rotx(p_F, p_phi);
+            rob_rotx(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_psi);
+            rob_rotx(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YXY:
             // Y
-            rob_roty(p_F, p_phi);
+            rob_roty(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_psi);
+            rob_roty(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZXZ:
             // Z
-            rob_rotz(p_F, p_phi);
+            rob_rotz(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_psi);
+            rob_rotz(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZYZ:
             // Z
-            rob_rotz(p_F, p_phi);
+            rob_rotz(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_psi);
+            rob_rotz(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case XYZ:
             // X
-            rob_rotx(p_F, p_phi);
+            rob_rotx(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_psi);
+            rob_rotz(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case XZY:
             // X
-            rob_rotx(p_F, p_phi);
+            rob_rotx(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_psi);
+            rob_roty(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YZX:
             // Y
-            rob_roty(p_F, p_phi);
+            rob_roty(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_theta);
+            rob_rotz(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_psi);
+            rob_rotx(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case YXZ:
             // Y
-            rob_roty(p_F, p_phi);
+            rob_roty(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Z
-            rob_rotz(p_F, p_psi);
+            rob_rotz(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZXY:
             // Z
-            rob_rotz(p_F, p_phi);
+            rob_rotz(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_theta);
+            rob_rotx(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_psi);
+            rob_roty(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
         case ZYX:
             // Z
-            rob_rotz(p_F, p_phi);
+            rob_rotz(p_F->p_R, phi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // Y
-            rob_roty(p_F, p_theta);
+            rob_roty(p_F->p_R, theta, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             // X
-            rob_rotx(p_F, p_psi);
+            rob_rotx(p_F->p_R, psi, angle_units);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;    
     }
 }
+
+
+// Inverse of T?
 
 
 
@@ -563,12 +556,101 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
     *p_dstq->p_k = *q_conj.p_k / q_norm_squared;
 }
 
+
+
 // ====================================================================================================
-// 4. Utility functions (printing, angle conversions, etc.)
+// 4. Conversions between Homogeneous Transformations and Quaternions
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
-// 4.1. Angle units conversions
+// 4.1. Roll-Pitch-Yaw and Rotation Matrices Conversions
+// ----------------------------------------------------------------------------------------------------
+
+void
+rob_rpy2r(float roll, float pitch, float yaw, rob_euler_angles_t rpy_tag, bool angle_units, matf32_t* p_R)
+{
+    /**
+     * Rotation for roll-pitch-yaw angles, which correspond to Z, Y, X axes rotations, respectively.
+     * So: roll: Z, pitch: Y, yaw: X
+     * Options: XYZ, XZY, YXZ, YZX, ZXY, ZYX
+     * 
+     * Steps:
+     * - Generate rotation matrices for each angle
+     * - Multiply the rotation matrices
+     * - Assign the result to the rotation matrix of the reference frame
+     */
+
+    float R_roll_data[MAX_MAT_SIZE];
+    matf32_t R_roll;
+
+    float R_pitch_data[MAX_MAT_SIZE];
+    matf32_t R_pitch;
+
+    float R_yaw_data[MAX_MAT_SIZE];
+    matf32_t R_yaw;
+
+    float temp_R_data[MAX_MAT_SIZE];
+    matf32_t temp_R;
+
+    matf32_init(&R_roll, 3, 3, R_roll_data);
+    matf32_init(&R_pitch, 3, 3, R_pitch_data);
+    matf32_init(&R_yaw, 3, 3, R_yaw_data);
+    matf32_init(&temp_R, 3, 3, temp_R_data);
+
+    // Generate rotation matrices for roll-pitch-yaw as indicated by the desired sequence.
+    switch (rpy_tag)
+    {
+        case XYZ:
+            rob_rotx(&R_yaw, yaw, angle_units);
+            rob_roty(&R_pitch, pitch, angle_units);
+            rob_rotz(&R_roll, roll, angle_units);
+            break;
+
+        case XZY:
+            rob_rotx(&R_yaw, yaw, angle_units);
+            rob_rotz(&R_pitch, pitch, angle_units);
+            rob_roty(&R_roll, roll, angle_units);
+            break;
+
+        case YXZ:
+            rob_roty(&R_yaw, yaw, angle_units);
+            rob_rotx(&R_pitch, pitch, angle_units);
+            rob_rotz(&R_roll, roll, angle_units);
+            break;
+
+        case YZX:
+            rob_roty(&R_yaw, yaw, angle_units);
+            rob_rotz(&R_pitch, pitch, angle_units);
+            rob_rotx(&R_roll, roll, angle_units);
+            break;
+
+        case ZXY:
+            rob_rotz(&R_yaw, yaw, angle_units);
+            rob_rotx(&R_pitch, pitch, angle_units);
+            rob_roty(&R_roll, roll, angle_units);
+            break;
+
+        case ZYX:
+            rob_rotz(&R_yaw, yaw, angle_units);
+            rob_roty(&R_pitch, pitch, angle_units);
+            rob_rotx(&R_roll, roll, angle_units);
+            break;
+    }
+
+    // Multiply the generated rotation matrices in the order: R_yaw * R_pitch * R_roll, then save to p_R
+    matf32_mul(&R_yaw, &R_pitch, &temp_R);
+    matf32_mul(&temp_R, &R_roll, p_R);
+}
+
+
+
+
+// ====================================================================================================
+// 5. Utility functions (printing, angle conversions, etc.)
+// ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 5.1. Angle units conversions
 // ----------------------------------------------------------------------------------------------------
 
 float
@@ -586,7 +668,7 @@ rad2deg(float* p_theta)
 
 
 // ----------------------------------------------------------------------------------------------------
-// 4.2. Print functions
+// 5.2. Print functions
 // ----------------------------------------------------------------------------------------------------
 
 void
@@ -704,7 +786,7 @@ rob_status_print(rob_status_t rob_status)
 
 
 // ----------------------------------------------------------------------------------------------------
-// 4.3. Check functions
+// 5.3. Check functions
 // ----------------------------------------------------------------------------------------------------
 
 // Verified that these work
@@ -721,7 +803,7 @@ rob_isrot(matf32_t* p_R)
 
 
 rob_status_t
-rob_ishomog(matf32_t* p_T)
+rob_ishom(matf32_t* p_T)
 {
     if (p_T->num_rows != 4 && p_T->num_cols != 4)
     {
