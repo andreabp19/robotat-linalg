@@ -318,7 +318,7 @@ rob_inv_transform(rob_frame_t* const p_F, const matf32_t* const p_p);
  * @return None
  */
 void
-rob_apply_euler_angles(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t euler_tag, float phi, float theta, float psi, bool angle_units);
+rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t angle_sequence, float phi, float theta, float psi, bool angle_units);
 
 
 
