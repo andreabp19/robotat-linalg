@@ -486,7 +486,7 @@ void
 rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R);
 
 /**
- * @brief   Converts roll-pitch-yaw sequence angles to an homogeneous transformation matrix
+ * @brief   Applies roll-pitch-yaw sequence angles to an homogeneous transformation matrix
  * 
  * @param[in]       roll            roll angle
  * @param[in]       pitch           pitch angle
@@ -501,11 +501,38 @@ void
 rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F);
 
 // ----------------------------------------------------------------------------------------------------
-// 4.2. Homogeneous Transformation and Quaternion Conversions
+// 4.2. Euler Angles and Rotation Matrices Conversions
 // ----------------------------------------------------------------------------------------------------
 
+/**
+ * @brief   Converts euler angles sequence to a rotation matrix
+ * 
+ * @param[in]       phi             phi angle
+ * @param[in]       theta           theta angle
+ * @param[in]       psi             psi angle
+ * @param[in]       eul_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       angle_units     radians or degrees indicator
+ * @param[in,out]   p_R             pointer to reference frame where the rotation matrix is
+ *  
+ * @return None
+ */
+void 
+rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R);
 
-
+/**
+ * @brief   Applies Euler angle sequence to an homogeneous transformation matrix
+ * 
+ * @param[in]       phi            roll angle
+ * @param[in]       theta           pitch angle
+ * @param[in]       psi             yaw angle
+ * @param[in]       eul_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       angle_units     radians or degrees indicator
+ * @param[in,out]   p_F             pointer reference frame where the rotation matrix is
+ * 
+ * @return None     
+ */
+void
+rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, rob_frame_t* p_F);
 
 // ====================================================================================================
 // 5. Utility functions (printing, angle unit conversions, etc.)
