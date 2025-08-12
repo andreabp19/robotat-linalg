@@ -358,14 +358,30 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 // ----------------------------------------------------------------------------------------------------
 
 void
-rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k)
+rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k)
 {
-    p_q->p_s = p_s;
-    p_q->p_i = p_i;
-    p_q->p_j = p_j;
-    p_q->p_k = p_k;
+    p_q->p_s = q_s;
+    p_q->p_i = q_i;
+    p_q->p_j = q_j;
+    p_q->p_k = q_k;
 }
 
+void
+rob_unitquat_init(rob_quat_t* p_uq, float* q_s, float* q_i, float* q_j, float* q_k)
+{
+    p_uq->p_s = q_s;
+    p_uq->p_i = q_i;
+    p_uq->p_j = q_j;
+    p_uq->p_k = q_k;
+
+    float uq_norm = 0;
+    rob_quat_norm(p_uq, &uq_norm);
+
+    *p_uq->p_s = *p_uq->p_s / uq_norm;
+    *p_uq->p_i = *p_uq->p_i / uq_norm;
+    *p_uq->p_j = *p_uq->p_j / uq_norm;
+    *p_uq->p_k = *p_uq->p_k / uq_norm; 
+}
 
 // ----------------------------------------------------------------------------------------------------
 // 3.2. Quaternion operations
@@ -452,9 +468,11 @@ rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 }
 
 void
-rob_quat_norm(const rob_quat_t* p_srcq, float* p_norm)
+rob_quat_norm(const rob_quat_t* p_srcq, float* q_norm)
 {
-    *p_norm = sqrt((*p_srcq->p_s)*(*p_srcq->p_s) + (*p_srcq->p_i)*(*p_srcq->p_i) + (*p_srcq->p_j)*(*p_srcq->p_j) + (*p_srcq->p_k)*(*p_srcq->p_k));
+    // Add check for very small numbers that could cause division by zero errors
+
+    *q_norm = sqrt((*p_srcq->p_s)*(*p_srcq->p_s) + (*p_srcq->p_i)*(*p_srcq->p_i) + (*p_srcq->p_j)*(*p_srcq->p_j) + (*p_srcq->p_k)*(*p_srcq->p_k));
 }
 
 void
@@ -784,7 +802,7 @@ rob_angle_units_print(bool angle_units)
 void
 rob_quat_print(const rob_quat_t* p_srcq)
 {
-    printf("\n%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
+    printf("\n\n%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
 }
 
 

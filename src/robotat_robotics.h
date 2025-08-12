@@ -148,10 +148,10 @@ typedef struct
  */
 typedef struct
 {
-    float* p_s;    /** Real number s of the quaternion */
-    float* p_i;    /** Imaginary number i of the quaternion */
-    float* p_j;    /** Imaginary number j of the quaternion */
-    float* p_k;    /** Imaginary number k of the quaternion */
+    float* p_s;     /** Real number s of the quaternion */
+    float* p_i;     /** Imaginary number i of the quaternion */
+    float* p_j;     /** Imaginary number j of the quaternion */
+    float* p_k;     /** Imaginary number k of the quaternion */
 } rob_quat_t;
 
 // ====================================================================================================
@@ -333,17 +333,30 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 /**
  * @brief   Quaternion struct initialization
  * 
- * @param[in]   p_q     Pointer to quaternion struct
- * @param[in]   p_s     Pointer to real element of the quaternion
- * @param[in]   p_i     Pointer to imaginary element i of the quaternion
- * @param[in]   p_j     Pointer to imaginary element j of the quaternion
- * @param[in]   p_k     Pointer to imaginary element k of the quaternion
+ * @param[in,out]   p_q     Pointer to quaternion struct
+ * @param[in]   q_s     Real element of the quaternion
+ * @param[in]   q_i     Imaginary element i of the quaternion
+ * @param[in]   q_j     Imaginary element j of the quaternion
+ * @param[in]   q_k     Imaginary element k of the quaternion
  * 
  * @return None
  */
 void
-rob_quat_init(rob_quat_t* p_q, float* p_s, float* p_i, float* p_j, float* p_k);
+rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k);
 
+/**
+ * @brief   Quaternion struct initialization
+ * 
+ * @param[in,out]   p_uq    Pointer to quaternion struct
+ * @param[in]   q_s     Real element of the quaternion
+ * @param[in]   q_i     Imaginary element i of the quaternion
+ * @param[in]   q_j     Imaginary element j of the quaternion
+ * @param[in]   q_k     Imaginary element k of the quaternion
+ * 
+ * @return None
+ */
+void
+rob_unitquat_init(rob_quat_t* p_uq, float* q_s, float* q_i, float* q_j, float* q_k);
 
 // ----------------------------------------------------------------------------------------------------
 // 3.2. Quaternion operations
@@ -416,12 +429,12 @@ rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
  * @brief   Calculates the norm of a quaternion
  * 
  * @param[in]   p_srcq  Pointer to a quaternion
- * @param[out]  p_norm  Float to save the norm of the quaternion
+ * @param[out]  q_norm  Float to save the norm of the quaternion
  * 
  * @return None
  */
 void
-rob_quat_norm(const rob_quat_t* p_srcq, float* p_norm);
+rob_quat_norm(const rob_quat_t* p_srcq, float* q_norm);
 
 
 /**
@@ -461,14 +474,6 @@ rob_quat_print(const rob_quat_t* p_srcq);
 // ----------------------------------------------------------------------------------------------------
 // 4.1. Roll-Pitch-Yaw and Rotation Matrices Conversions
 // ----------------------------------------------------------------------------------------------------
-
-/**
- * TODO
- * rpy2r: roll-pitch-yaw angles to rotation matrix
- * rpy2tr: roll-pitch-yaw angles to homogeneous transformation matrix
- * 
- */
-
 
 /**
  * @brief   Converts roll-pitch-yaw sequence angles to a rotation matrix
