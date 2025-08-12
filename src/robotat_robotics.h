@@ -468,11 +468,11 @@ rob_quat_print(const rob_quat_t* p_srcq);
 
 
 // ====================================================================================================
-// 4. Conversions between Homogeneous Transformations and Quaternions
+// 4. Conversions between Homogeneous Transformations, Rotation Matrices, Angles and Quaternions
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
-// 4.1. Roll-Pitch-Yaw and Rotation Matrices Conversions
+// 4.1. Roll-Pitch-Yaw Angles to Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
 /**
@@ -506,7 +506,7 @@ void
 rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F);
 
 // ----------------------------------------------------------------------------------------------------
-// 4.2. Euler Angles and Rotation Matrices Conversions
+// 4.2. Euler Angles to Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
 /**
@@ -538,6 +538,35 @@ rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
  */
 void
 rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, rob_frame_t* p_F);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.3. Rotation Matrices and Homogeneous Transformations to Quaternions
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Converts a rotation matrix into a quaternion
+ * 
+ * @param[in]       p_R     Points to rotation matrix
+ * @param[out]      p_q     Points to quaternion
+ * 
+ * @return None
+ */
+void
+rob_r2q(matf32_t* p_R, rob_quat_t* p_uq);
+
+
+/**
+ * @brief   Converts homogeneous transformation matrix into a quaternion
+ * 
+ * @param[in]       p_F     Points to reference frame struct where the homogeneouse transformation matrix is.
+ * @param[in,out]   p_q     Points to quaternion
+ * 
+ * @return None
+ */
+void
+rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq);
+
 
 // ====================================================================================================
 // 5. Utility functions (printing, angle unit conversions, etc.)

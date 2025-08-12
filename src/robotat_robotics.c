@@ -14,7 +14,8 @@
 - transformacion homogenea a cuaternion y viceversa
 - aplicacion de rotacion a un vector directamente en cuaterniones
 - inversa de la transformación homogénea?
-- Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
+- Si me da tiempo, añadir las operaciones: tr2rpy, tr2eul, etc. para complementar las que ya puse.
+- Añadir checkeos para manejar/anticipar quaterniones iguales a 0 para evitar divisiones entre 0
 */
 
 /** DONE :D
@@ -23,6 +24,7 @@
 * multiplicacion de cuaterniones
 * add rob_quat_print() to print quaternions (formatted to identify the real and imaginary parts)
 * inversa de cuaterniones
+- Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
 */
 
 // ====================================================================================================
@@ -688,6 +690,117 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, boo
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 4.3. Rotation Matrices and Homogeneous Transformations to Quaternions
+// ----------------------------------------------------------------------------------------------------
+
+void
+rob_r2q(matf32_t* p_R, rob_quat_t* p_uq)
+{
+    float diag_1 = p_R->p_data[0];
+    float diag_2 = p_R->p_data[4];
+    float diag_3 = p_R->p_data[8];
+
+    float sgn = 0;
+    
+    float kx = 0;
+    float kx1 = 0;
+
+    float ky = 0;
+    float ky1 = 0;
+    
+    float kz = 0;
+    float kz1 = 0;
+
+    float uq_s = 0;
+    float uq_i = 0;
+    float uq_j = 0;
+    float uq_k = 0;
+
+    float v_norm = 0;
+
+    uq_s = sqrt((diag_1 + diag_2 + diag_3)+1.0)/2.0;
+
+    kx = p_R->p_data[7] - p_R->p_data[5];
+    ky = p_R->p_data[2] - p_R->p_data[6];
+    kz = p_R->p_data[3] - p_R->p_data[1];
+
+    // Check for the max diagonal value of the rotation matrix.
+    // In case two are equal and max, then it will pick the first ocurrence (that's why it's >= instead of >)
+    if (diag_1 >= diag_2 && diag_1 >= diag_3)       // diag_1 is the max diagonal value
+    {
+        kx1 = p_R->p_data[0] - p_R->p_data[4] - p_R->p_data[8] + 1;
+        ky1 = p_R->p_data[3] + p_R->p_data[1];
+        kz1 = p_R->p_data[6] + p_R->p_data[2];
+
+        if (kx > 0)
+        {
+            sgn = 1;
+        }
+        else if (kx < 0)
+        {
+            sgn = -1;
+        }
+        else
+        {
+            sgn = 0;
+        }
+    }
+    else if (diag_2 >= diag_1 && diag_2 >= diag_3)  // diag 2 is the max diagonal value
+    {
+        kx1 = p_R->p_data[3] + p_R->p_data[1];
+        ky1 = p_R->p_data[4] - p_R->p_data[0] - p_R->p_data[8] + 1;
+        kz1 = p_R->p_data[7] + p_R->p_data[5];
+
+        if (ky > 0)
+        {
+            sgn = 1;
+        }
+        else if (ky < 0)
+        {
+            sgn = -1;
+        }
+        else
+        {
+            sgn = 0;
+        }
+    }
+    else if (diag_3 >= diag_1 && diag_3 >= diag_2)  // diag_3 is the max diagonal value
+    {
+        kx1 = p_R->p_data[6] + p_R->p_data[2];
+        ky1 = p_R->p_data[7] + p_R->p_data[5];
+        kz1 = p_R->p_data[8] - p_R->p_data[0] - p_R->p_data[4] + 1;
+
+        if (kz > 0)
+        {
+            sgn = 1;
+        }
+        else if (kz < 0)
+        {
+            sgn = -1;
+        }
+        else
+        {
+            sgn = 0;
+        }
+    }
+
+    uq_i = kx + sgn*kx1;
+    uq_j = ky + sgn*ky1;
+    uq_k = kz + sgn*kz1;
+
+    v_norm = sqrt(uq_i*uq_i + uq_j*uq_j + uq_k*uq_k);
+
+    uq_i = uq_i * sqrt(1 - (uq_s*uq_s)) / v_norm;
+    uq_j = uq_j * sqrt(1 - (uq_s*uq_s)) / v_norm;
+    uq_k = uq_k * sqrt(1 - (uq_s*uq_s)) / v_norm;
+
+    *p_uq->p_s = uq_s;
+    *p_uq->p_i = uq_i;
+    *p_uq->p_j = uq_j;
+    *p_uq->p_k = uq_k;
+}
 
 
 // ====================================================================================================
