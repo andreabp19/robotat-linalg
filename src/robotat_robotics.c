@@ -280,12 +280,12 @@ void
 rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t angle_sequence, float phi, float theta, float psi, bool angle_units)
 {
     /**
-     *  Switch-case to execute transformations based onthe angle_sequence introduced
+     * Switch-case to execute transformations based on the angle_sequence introduced
      *  
-     *  For each case, sequence goes as follows:
-     *      - rotate first axis,
-     *      - apply transformation
-     *      - repeat previous steps for the following axis
+     * For each case:
+     * - Check angle_sequences (XYX, XYZ, etc.)
+     * - Call appropiate function: rob_eul2tr for euler angles (XYX, YZY, etc.) or rob_rpy2tr (XYZ, YZX. etc)
+     * - Apply transform (solve for p_A = F_AB_T * p_B)
      */
    
     switch(angle_sequence)
@@ -305,6 +305,11 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
             break;
 
         case YXY:
+            rob_eul2tr(phi, theta, psi, angle_sequence, angle_units, p_F);
+            rob_apply_transform(p_F, p_srcp, p_dstp);
+            break;
+
+        case YZY:
             rob_eul2tr(phi, theta, psi, angle_sequence, angle_units, p_F);
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
