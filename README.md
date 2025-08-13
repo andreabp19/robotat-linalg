@@ -11,7 +11,7 @@ Here you will find all of the robotat-linalg numerical computation libraries (ma
 
 * matf32.h: linear algebra library
     * auxiliary operations with floats (mean, set, randn, zeros, ones, etc.)
-    * matrix definitions: based on a special struct (matf32_t)
+    * matrix definitions: based on a custom struct (matf32_t)
     * matrix operations: addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, set, etc.
     * check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite.
 
@@ -26,7 +26,7 @@ Here you will find all of the robotat-linalg numerical computation libraries (ma
 
 * robotat_control.h: control algorithms
     * PID discretizations (Forward and Backward Euler, Pure Discrete and Tustin, ZOH is not implemented yet)
-    * state spaces
+    * State space representations for LTI and non-linear systems
     * Kalman filter
 
 * robotat_robotics.h: robotics algorithms based on the Matlab Robotics Toolbox by Peter Corke
