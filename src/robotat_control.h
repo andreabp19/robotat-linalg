@@ -4,6 +4,9 @@
  * @brief 
  * @version 0.1
  * @date 2021-08-12
+ * 
+ * Last modified: 12 Aug 2025
+ *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
  *
@@ -19,7 +22,14 @@
 #include <float.h>
 #include <string.h>
 #include <stdarg.h>
-#include "robotat_linalg.h"
+//#include "robotat_linalg.h"
+#include "matf32.h"
+#include "linsolve.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 // ====================================================================================================
 // Data structures, enums and type definitions
@@ -54,15 +64,15 @@ typedef enum
  */
 typedef struct
 {
-    float kp;       /**< Proportional gain. */
-    float ki;       /**< Integral gain. */
-    float kd;       /**< Derivative gain. */
-    float e_k_1;    /**< Last error. */
-    float u_k_1;    /**< Last controller output. */
-    float i_min;    /**< Lower integrator saturation threshold. */
-    float i_max;    /**< Upper integrator saturation threshold. */
-    float tau;      /**< Time constant of the derivative HPF. */
-    float dt;       /**< Sampling period. */
+    float kp;                       /**< Proportional gain. */
+    float ki;                       /**< Integral gain. */
+    float kd;                       /**< Derivative gain. */
+    float e_k_1;                    /**< Last error. */
+    float u_k_1;                    /**< Last controller output. */
+    float i_min;                    /**< Lower integrator saturation threshold. */
+    float i_max;                    /**< Upper integrator saturation threshold. */
+    float tau;                      /**< Time constant of the derivative HPF. */
+    float dt;                       /**< Sampling period. */
     ctr_discretizations_t pid_alg;  /**< Specifies the discretization scheme to be used. */
 } ctr_pid_t;
 
@@ -90,14 +100,14 @@ typedef struct
  */
 typedef struct
 {
-    matf32_t* state;        /**< State at the current time step (used for simulation/integration). */
-    uint16_t state_dim;     /**< Number of state variables. This is redundant but we'll keep it for completeness. */
-    uint16_t input_dim;     /**< Number of inputs/actuators/controls. */
-    uint16_t output_dim;    /**< Number of outputs/measurements. */
-    err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*);      /** System dynamics. */
-    err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*);       /** System outputs. */
-    float dt;               /**< Sampling period (for discrete time systems). */
-    bool is_continuous;     /**< System time domain specification. */
+    matf32_t* state;                                                                /**< State at the current time step (used for simulation/integration). */
+    uint16_t state_dim;                                                             /**< Number of state variables. This is redundant but we'll keep it for completeness. */
+    uint16_t input_dim;                                                             /**< Number of inputs/actuators/controls. */
+    uint16_t output_dim;                                                            /**< Number of outputs/measurements. */
+    err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*);    /** System dynamics. */
+    err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*);     /** System outputs. */
+    float dt;                                                                       /**< Sampling period (for discrete time systems). */
+    bool is_continuous;                                                             /**< System time domain specification. */
 } ctr_sys_nonlin_t;
 
 
@@ -107,19 +117,22 @@ typedef struct
 typedef struct
 {
     ctr_sys_lti_t* sys;     /**< LTI system model(has to be discrete time). */
-    matf32_t* F;        /**< Coupling matrix for the process noise. */
-    matf32_t* Qw;       /**< Process noise covariance matrix. */
-    matf32_t* Qv;       /**< Measurement noise covariance matrix. */
-    matf32_t* xhat;     /**< State estimate. */
-    matf32_t* P;        /**< Estimation covariance matrix. */
+    matf32_t* F;            /**< Coupling matrix for the process noise. */
+    matf32_t* Qw;           /**< Process noise covariance matrix. */
+    matf32_t* Qv;           /**< Measurement noise covariance matrix. */
+    matf32_t* xhat;         /**< State estimate. */
+    matf32_t* P;            /**< Estimation covariance matrix. */
 } ctr_kalman_t;
+
 
 
 // ====================================================================================================
 // Public function prototypes
 // ====================================================================================================
-// PID Control
 // ====================================================================================================
+// 1. PID Control
+// ====================================================================================================
+
 /**
  * @brief   Initializes a PID controller structure.
  * 
@@ -185,9 +198,11 @@ float
 ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k);
 
 
+
 // ====================================================================================================
-// State space representation
+// 2. State Space Representation
 // ====================================================================================================
+
 /**
  * @brief   Initializes a state space LTI model.
  * 
@@ -239,9 +254,10 @@ err_status_t
 ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta);
 
 
-// ====================================================================================================
-// Linear state space controllers
-// ====================================================================================================
+// ----------------------------------------------------------------------------------------------------
+// 2.1. Linear State Space Controllers
+// ----------------------------------------------------------------------------------------------------
+
 /**
  * @brief   Updates/computes the linear state feedback controller u = -K * (x - xss) + uss.
  *
@@ -260,8 +276,9 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 
 
 // ====================================================================================================
-// Linear time-varying, discrete time Kalman filter
+// 3. Kalman Filter (Linear time-varying, discrete time)
 // ====================================================================================================
+
 /**
  * @brief   Initializes a linear, time-varying Kalman filter structure.
  * 
@@ -305,6 +322,59 @@ ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
 }
 
 
+// ====================================================================================================
+// 4. Utility functions
+// ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 4.1. Printing functions
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Prints the ctr_pid_t struct data in formatted text
+ * 
+ * @param[in]   p_pid   Pointer to the pid to print
+ * 
+ * @return None
+ */
+void 
+ctr_pid_print(ctr_pid_t* const p_pid);
+
+/**
+ * @brief   Prints the elements of ctr_discretizations_t
+ * 
+ * @param[in]   pid_alg     Enumerate list of discretization algorithms
+ * 
+ * @return None
+ */
+void
+ctr_discretizations_print(ctr_discretizations_t pid_ag);
+
+/**
+ * @brief   Prints the ctr_sys_lti_t struct in formatted text
+ * 
+ * @param[in]   p_sys_lti   Pointer to the struct to print
+ * 
+ * @return None
+ */
+void 
+ctr_sys_lti_print(ctr_sys_lti_t* p_sys_lti);
+
+/**
+ * @brief   Prints the elements of ctr_kalman_t
+ * 
+ * @param[in]   p_kalman    Pointer to the struct to print
+ * 
+ * @return None
+ */
+void
+ctr_kalman_print(ctr_kalman_t* p_kalman);
+
+// ====================================================================================================
+// TODO Notes
+// ====================================================================================================
+
+
 // TODO:
 // 1. Nonlinear system linearization
 // 2. Nonlinear system discretization
@@ -317,5 +387,9 @@ ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
 //kalman_predict(ctr_kalman_t* const kf, float* const inputs);
 //err_status_t
 //kalman_correct(ctr_kalman_t* const kf, float* const measurements);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ROBOTAT_CONTROL_H_ */

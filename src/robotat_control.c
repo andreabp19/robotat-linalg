@@ -15,8 +15,10 @@ static matf32_t m5;
 // ====================================================================================================
 // Public function definitions
 // ====================================================================================================
-// PID Control
 // ====================================================================================================
+// 1. PID Control
+// ====================================================================================================
+
 void
 ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizations_t pid_alg, bool set_i_limits, ...)
 {
@@ -40,18 +42,18 @@ ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizat
 		pid->tau = -1;  // Use ideal differentiator
 		if (set_i_limits)
 		{
-			pid->i_min = (float) va_arg(ap, float);
-			pid->i_max = (float) va_arg(ap, float);
+			pid->i_min = (float) va_arg(ap, double);
+			pid->i_max = (float) va_arg(ap, double);
 		}
 	}
 	else
 	{
-		pid->dt = (float) va_arg(ap, float);
-		pid->tau = (float) va_arg(ap, float);
+		pid->dt = (float) va_arg(ap, double);
+		pid->tau = (float) va_arg(ap, double);
 		if (set_i_limits)
 		{
-			pid->i_min = (float) va_arg(ap, float);
-			pid->i_max = (float) va_arg(ap, float);
+			pid->i_min = (float) va_arg(ap, double);
+			pid->i_max = (float) va_arg(ap, double);
 		}
 	}
 	va_end(ap);
@@ -109,9 +111,15 @@ ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k)
 }
 
 
+
 // ====================================================================================================
-// State space representation
+// 2. State space representation
 // ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 2.1. LTI State Space
+// ----------------------------------------------------------------------------------------------------
+
 err_status_t
 ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time, ctr_sys_lti_t* const sys) 
 {
@@ -222,6 +230,10 @@ ctr_sys_lti_init(ctr_sys_lti_t* const sys, matf32_t* const state, matf32_t* cons
 	return MATH_SUCCESS;
 }
 
+
+// ----------------------------------------------------------------------------------------------------
+// 2.2. Non-linear State Space
+// ----------------------------------------------------------------------------------------------------
 
 // NOTE: change matf32_size_check to matf32_is_correct_size for readability, maybe add matf32_is_colvector
 err_status_t
@@ -361,9 +373,10 @@ ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const 
 }
 
 
-// ====================================================================================================
-// Linear state space controllers
-// ====================================================================================================
+// ----------------------------------------------------------------------------------------------------
+// 2.3. Linear State Space Controllers
+// ----------------------------------------------------------------------------------------------------
+
 err_status_t
 ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, const matf32_t* xss, const matf32_t* uss)
 {
@@ -388,8 +401,9 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 
 
 // ====================================================================================================
-// Linear time-varying, discrete time Kalman filter
+// 3. Kalman Filter (Linear time-varying, discrete time)
 // ====================================================================================================
+
 err_status_t
 ctr_kalman_init(ctr_kalman_t* const kf, ctr_sys_lti_t* const sys, matf32_t* F, matf32_t* Qw, matf32_t* Qv, matf32_t* const xhat, matf32_t* const P)
 {
@@ -447,12 +461,12 @@ ctr_kalman_predict(ctr_kalman_t* const kf, const matf32_t* inputs)
 	matf32_trans(kf->sys->A, At); // A^T
 	matf32_trans(kf->F, Ft); // F^T
 
-	const matf32_t* const APAt[] = {kf->sys->A, kf->P, At};
+	const matf32_t* APAt[] = {kf->sys->A, kf->P, At};
 	matf32_arr_mul(APAt, 3, kf->P); // A[k] * P[k-1|k-1]) * A[k]'
 
 	matf32_t* const tmpmat = &m1;
 	matf32_reshape(tmpmat, dim_xhat, dim_xhat); 
-	const matf32_t* const FQwFt[] = {kf->F, kf->Qw, Ft};
+	const matf32_t* FQwFt[] = {kf->F, kf->Qw, Ft};
 	matf32_arr_mul(FQwFt, 3, tmpmat); // F[k] * Qw[k-1]) * F[k]'
 
 	matf32_add(kf->P, tmpmat, kf->P); // P[k|k-1] = A[k] * P[k-1|k-1] * A[k]' + F[k] * Qw[k-1] * F[k]'
@@ -484,7 +498,7 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 	matf32_init(Si, dim_y, dim_y, m3data); // S^-1: dim(y) x dim(y)
 
 	matf32_trans(kf->sys->C, Ct); // C^T
-	const matf32_t* const CPCt[] = { kf->sys->C, kf->P, Ct };
+	const matf32_t* CPCt[] = { kf->sys->C, kf->P, Ct };
 	matf32_arr_mul(CPCt, 3, S); // C[k] * P[k|k-1] * C[k]'
 	matf32_add(S, kf->Qv, S); // S[k] = C[k] * P[k|k-1] * C[k]' + Qv[k]
 	err_status_t status = matf32_inv(S, Si); // S[k]^-1
@@ -496,7 +510,7 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 	matf32_t* const L = &m2;
 	matf32_reshape(L, dim_xhat, dim_y); // L: dim(xhat) x dim(y)
 
-	const matf32_t* const PCtSi[] = { kf->P, Ct, Si };
+	const matf32_t* PCtSi[] = { kf->P, Ct, Si };
 	matf32_arr_mul(PCtSi, 3, L); // L[k] = P[k|k-1] * C[k]' * S[k]^-1
 
 	// Update the estimate covariance matrix
@@ -634,3 +648,120 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 //
 //	return MATH_SUCCESS;
 //}
+
+
+
+// ====================================================================================================
+// 4. Utility functions
+// ====================================================================================================
+
+// ----------------------------------------------------------------------------------------------------
+// 4.1. Printing functions
+// ----------------------------------------------------------------------------------------------------
+
+void 
+ctr_pid_print(ctr_pid_t* const p_pid)
+{
+	printf("\n-------------------------\n");
+	printf("PID\n");
+	printf("-------------------------\n");
+
+	printf("kp     : %.9f\n", p_pid->kp);
+	printf("ki     : %.9f\n", p_pid->ki);
+	printf("kd     : %.9f\n", p_pid->kd);
+	printf("e_k_1  : %.9f\n", p_pid->e_k_1);
+	printf("u_k_1  : %.9f\n", p_pid->u_k_1);
+	printf("i_min  : %.9f\n", p_pid->i_min);
+	printf("i_max  : %.9f\n", p_pid->i_max);
+	printf("tau    : %.9f\n", p_pid->tau);
+	printf("dt     : %.9f\n", p_pid->dt);
+	
+	printf("pid_alg: ");
+	ctr_discretizations_print(PURE_DISCRETE);
+
+	printf("-------------------------\n\n");
+}
+
+void
+ctr_discretizations_print(ctr_discretizations_t pid_alg)
+{
+	switch (pid_alg)
+	{
+		case PURE_DISCRETE:
+			printf("PURE_DISCRETE\n");
+			break;
+
+		case FWD_EULER:
+			printf("FWD_EULER\n");
+			break;
+
+		case BWD_EULER:
+			printf("BWD_EULER\n");
+			break;
+
+		case TUSTIN:
+			printf("TUSTIN\n");
+			break;
+
+		case ZOH:
+			printf("ZOH\n");
+			break;
+
+		case RK4:
+			printf("RK4\n");
+			break;
+	}
+}
+
+void 
+ctr_sys_lti_print(ctr_sys_lti_t* p_sys_lti)
+{
+	printf("\n-------------------------\n");
+	printf("LTI State Space System\n");
+	printf("-------------------------\n");
+
+	matf32_print(p_sys_lti->state);
+	
+	printf("dt: %.9f\n", p_sys_lti->dt);
+	printf("state_dim: %.9f\n", p_sys_lti->state_dim);
+	printf("input_dim: %.9f\n", p_sys_lti->input_dim);
+	printf("output_dim: %.9f\n", p_sys_lti->output_dim);
+	printf("is_continuous: %i\n\n", p_sys_lti->is_continuous);
+
+	printf("A:\n");
+	matf32_print(p_sys_lti->A);
+	printf("B:\n");
+	matf32_print(p_sys_lti->B);
+	printf("C:\n");
+	matf32_print(p_sys_lti->C);
+	printf("D:\n");
+	matf32_print(p_sys_lti->D);
+
+	printf("-------------------------\n\n");
+}
+
+void
+ctr_kalman_print(ctr_kalman_t* p_kalman)
+{
+	printf("\n---------------------------------------------------------------------------\n");
+	printf("Kalman Filter\n");
+	printf("---------------------------------------------------------------------------\n");
+
+	ctr_sys_lti_print(p_kalman->sys);
+
+	printf("F:\n");
+	matf32_print(p_kalman->F);
+	printf("Qw:\n");
+	matf32_print(p_kalman->Qw);
+	printf("Qv:\n");
+	matf32_print(p_kalman->Qv);
+	printf("xhat:\n");
+	matf32_print(p_kalman->xhat);
+	printf("P:\n");
+	matf32_print(p_kalman->P);
+
+	printf("---------------------------------------------------------------------------\n\n");
+}
+
+
+//

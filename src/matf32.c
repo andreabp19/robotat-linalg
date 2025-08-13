@@ -331,9 +331,10 @@ err_status_print(err_status_t err)
 void matf32_cond(matf32_t* const p_src, float* p_cond)
 {
     float temp_data[MAX_MAT_SIZE];
-    matf32_t temp;
+    matf32_t const temp;
 
     matf32_init(&temp, p_src->num_rows, p_src->num_cols, temp_data);
+
     matf32_inv(p_src, &temp);
 
     *p_cond = norm(p_src->p_data, p_src->num_rows, p_src->num_cols) * norm(temp.p_data, temp.num_rows, temp.num_cols);
