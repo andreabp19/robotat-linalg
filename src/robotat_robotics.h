@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.h
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 12 Aug 2025
+ * @date created 19 Jul. 2025, last modified 13 Aug 2025
  *
  * Robotics algorithms
 */
@@ -472,15 +472,41 @@ rob_quat_print(const rob_quat_t* p_srcq);
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
-// 4.1. Roll-Pitch-Yaw Angles to Rotation Matrices and Homogeneous Transformations
+// 4.1. Rotation Matrix <--> Homogeneous Transformations
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Assigns a rotation matrix to an homogeneous transformation matrix
+ * 
+ * @param[in]   p_R     Points to a rotation matrix
+ * @param[out]  p_F     Points to a reference frame structure
+ * 
+ * @return None
+ */
+void
+rob_r2tr(matf32_t* p_R, rob_frame_t* p_F);
+
+/**
+ * @brief   Converts an homogeneous transformation matrix to a rotation matrix
+ * 
+ * @param[in]   p_F     Points to a reference frame structure
+ * @param[out]  p_R     Points to a rotation matrix
+ * 
+ * @return None
+ */
+void
+rob_tr2r(rob_frame_t* p_F, matf32_t* p_R);
+
+// ----------------------------------------------------------------------------------------------------
+// 4.2. Roll-Pitch-Yaw Angles -> Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Converts roll-pitch-yaw sequence angles to a rotation matrix
  * 
- * @param[in]       roll            roll angle
- * @param[in]       pitch           pitch angle
- * @param[in]       yaw             yaw angle
+ * @param[in]       roll            roll angle (Z axis)
+ * @param[in]       pitch           pitch angle (Y axis)
+ * @param[in]       yaw             yaw angle (X axis)
  * @param[in]       rpy_tag         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_R             pointer to reference frame where the rotation matrix is
@@ -493,9 +519,9 @@ rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
 /**
  * @brief   Applies roll-pitch-yaw sequence angles to an homogeneous transformation matrix
  * 
- * @param[in]       roll            roll angle
- * @param[in]       pitch           pitch angle
- * @param[in]       yaw             yaw angle
+ * @param[in]       roll            roll angle (Z axis)
+ * @param[in]       pitch           pitch angle (Y axis)
+ * @param[in]       yaw             yaw angle (X axis)
  * @param[in]       rpy_tag         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_F             pointer reference frame where the rotation matrix is
@@ -505,8 +531,9 @@ rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
 void
 rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F);
 
+
 // ----------------------------------------------------------------------------------------------------
-// 4.2. Euler Angles to Rotation Matrices and Homogeneous Transformations
+// 4.3. Euler Angles -> Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
 /**
@@ -527,9 +554,9 @@ rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
 /**
  * @brief   Applies Euler angle sequence to an homogeneous transformation matrix
  * 
- * @param[in]       phi            roll angle
- * @param[in]       theta           pitch angle
- * @param[in]       psi             yaw angle
+ * @param[in]       phi             phi angle
+ * @param[in]       theta           theta angle
+ * @param[in]       psi             psi angle
  * @param[in]       eul_tag         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_F             pointer reference frame where the rotation matrix is
@@ -541,31 +568,138 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, boo
 
 
 // ----------------------------------------------------------------------------------------------------
-// 4.3. Rotation Matrices and Homogeneous Transformations to Quaternions
+// 4.4. Rotation Matrices and Homogeneous Transformations -> Quaternions
 // ----------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Converts a rotation matrix into a quaternion
  * 
  * @param[in]       p_R     Points to rotation matrix
- * @param[out]      p_q     Points to quaternion
+ * @param[out]      p_uq    Points to a unit quaternion
  * 
  * @return None
  */
 void
 rob_r2q(matf32_t* p_R, rob_quat_t* p_uq);
 
-
 /**
  * @brief   Converts homogeneous transformation matrix into a quaternion
  * 
  * @param[in]       p_F     Points to reference frame struct where the homogeneouse transformation matrix is.
- * @param[in,out]   p_q     Points to quaternion
+ * @param[in,out]   p_uq    Points to unit quaternion
  * 
  * @return None
  */
 void
 rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.5. Roll-Pitch-Yaw and Euler Angles -> Quaternions
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Converts a roll-pitch-yaw sequence into a quaternion
+ * 
+ * @param[in]       roll        Roll angle (Z axis)
+ * @param[in]       pitch       Pitch angle (Y axis)
+ * @param[in]       yaw         Yaw angle (X asis)
+ * @param[in]       rpy_tag     Enumerate element to indicate the rotation sequence
+ * @param[in]       angle_units Boolean to indicate radians or degrees
+ * @param[in]       p_R         Points to a rotation matrix
+ * @param[out]      p_uq        Points to a unit quaternion
+ * 
+ * @return None
+ */
+void
+rob_rpy2q(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
+
+
+/**
+ * @brief   Converts an euler angle sequence into a quaternion
+ * 
+ * @param[in]       phi         Phi angle
+ * @param[in]       theta       Theta angle
+ * @param[in]       psi         Psi angle
+ * @param[in]       eul_tag     Enumerate element to indicate the rotation sequence
+ * @param[in]       angle_units Boolean to indicate radians or degrees
+ * @param[in]       p_R         Points to a rotation matrix
+ * @param[out]      p_uq        Points to a unit quaternion
+ * 
+ * @return None
+ */
+void
+rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.6. Rotation Matrices and Homogeneous Transformations -> Roll-Pitch-Yaw and Euler Angles 
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Converts a rotation matrix to roll-pitch-yaw angles
+ * 
+ */
+// Pending, this one seems to be the most difficult because robotics toolbox doesn't implement all the possible sequences.
+
+
+/**
+ * @brief   Converts an homogeneous transformation matrix to roll-pitch-yaw angles
+ * 
+ */
+
+/**
+ * @brief   Converts a rotation matrix to euler angles
+ * 
+ */
+
+/**
+ * @brief   Converts an homogeneous transformation matrix to euler angles
+ * 
+ */
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.7. Quaternions -> Rotation Matrices and Homogeneous Transformations
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Converts a quaternion to a rotation matrix
+ * 
+ * @param[in]       p_uq    Points to a unit quaternion
+ * @param[out]      p_R     Points to a rotation matrix
+ * 
+ * @return None
+ */
+void
+rob_q2r(rob_quat_t* p_uq, matf32_t* p_R);
+
+/**
+ * @brief   Converts a quaternion to an homogeneous transformation matrix
+ * 
+ * @param[in]   p_uq    Points to a unit quaternion
+ * @param[out]  p_F     Points to a reference frame struct
+ * 
+ * @return None
+ */
+void
+rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F);
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.8. Quaternions -> Roll-Pitch-Yaw and Euler Angles
+// ----------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Converts a quaternion to roll-pitch-yaw angles
+ * 
+ */
+
+/**
+ * @brief   Converts a quaternion to euler angles
+ * 
+ */
+
 
 
 // ====================================================================================================

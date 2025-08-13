@@ -3,8 +3,9 @@
  * 
  * Linear solvers based on matf32 datatype.
  * 
- * Modified 11 Aug 2025
- *      By: Andrea Pineda
+ * Modified 4 Aug 2025
+ *      By: Andrea Pineda | Adjusted some function names and moved matf32_qr, matf32_lu and matf32_cholesky
+ *                          to matf32, to keep the operations there so that here is only the implementation.
  */
 
 #ifndef ROBOTAT_LINSOLVE_H_

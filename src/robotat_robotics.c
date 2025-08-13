@@ -2,20 +2,21 @@
 /**
  * @file robotat_robotics.c
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 12 Aug 2025
+ * @date created 19 Jul. 2025, last modified 13 Aug 2025
  * 
  * Robotics algorithms
  */
 
 #include "robotat_robotics.h"
 
-/* TO-DO: cuaterniones
+/* TO-DO:
 - cuaternión a matriz de rotación
 - cuaternión a transformación homogénea
 - aplicacion de rotacion a un vector directamente en cuaterniones
 - inversa de la transformación homogénea?
 - Si me da tiempo, añadir las operaciones: tr2rpy, tr2eul, etc. para complementar las que ya puse.
 - Añadir checkeos para manejar/anticipar quaterniones iguales a 0 para evitar divisiones entre 0
+- Implementar checkeos para evitar singularidades
 */
 
 /** DONE :D
@@ -29,10 +30,14 @@
 * transformacion homogenea a cuaternion
 */
 
+// I'll start adding comments above the functions to remember whether I already checked if they work or not.
+// Because there are too many functions and I don't want to risk forgetting something
+
 // ====================================================================================================
 // 1. Reference frame and point initializations
 // ====================================================================================================
 
+// Tested => Works
 void
 rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
                 rob_frame_tags_t ref_tag, rob_frame_tags_t dst_tag, bool angle_units)
@@ -54,6 +59,7 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
 }
 
 
+// Tested => Works
 void
 rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_tag)
 {
@@ -74,6 +80,7 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
 // 2.1. Set translation
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_transl(rob_frame_t* p_F, matf32_t* p_v)
 {
@@ -89,6 +96,7 @@ rob_transl(rob_frame_t* p_F, matf32_t* p_v)
 // 2.2. Generate and set rotation matrices
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_rotx(matf32_t* p_R, float theta, bool angle_units)
 {
@@ -126,7 +134,7 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 3, cos_theta);
 }
 
-
+// Tested => Works
 void
 rob_roty(matf32_t* p_R, float theta, bool angle_units)
 {
@@ -164,7 +172,7 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 3, cos_theta);
 }
 
-
+// Tested => Works
 void
 rob_rotz(matf32_t* p_R, float theta, bool angle_units)
 {
@@ -202,31 +210,31 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 3, 1);
 }
 
-
+// Tested => Works
 void
 rob_trotx(rob_frame_t* p_F, float theta, bool angle_units)
 {
     // Generate x rotation matrix, then set into the homogeneous transformation matrix
     rob_rotx(p_F->p_R, theta, angle_units);
-    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+    rob_r2tr(p_F->p_R, p_F);
 }
 
-
+// Tested => Works
 void
 rob_troty(rob_frame_t* p_F, float theta, bool angle_units)
 {
     // Generate x rotation matrix, then set into the homogeneous transformation matrix
     rob_roty(p_F->p_R, theta, angle_units);
-    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+    rob_r2tr(p_F->p_R, p_F);
 }
 
-
+// Tested => Works
 void
 rob_trotz(rob_frame_t* p_F, float theta, bool angle_units)
 {
     // Generate x rotation matrix, then set into the homogeneous transformation matrix
     rob_rotz(p_F->p_R, theta, angle_units);
-    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+    rob_r2tr(p_F->p_R, p_F);
 }
 
 
@@ -234,6 +242,7 @@ rob_trotz(rob_frame_t* p_F, float theta, bool angle_units)
 // 2.3. Applying transformations and rotation sequences
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 {
@@ -245,7 +254,7 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
      * 
      *  Dimensiones breakdown:
      *  A_p     (4x1) 
-     *  A_T_B   (4x4) -> I'll call it T in the following deduction for simplicity
+     *  F_AB_T  (4x4) -> I'll call it T in the following deduction for simplicity
      *  B_p     (4x1)
      * 
      *  A_p[1,1] = T[1,1]*B_p[1,1] + T[1,2]*B_p[2,1] + T[1,3]*B_p[3,1] + T[1,4]*B_p[4,1]
@@ -266,9 +275,7 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 }
 
 
-// Change this to a more efficient version
-// I think, that after reading the code of rpy2tr, it can be changed to calculate a single rotation matrix
-// and then apply the angles, but I have to check that. I feel the current version of this function is inefficient
+// Tested => Works
 void
 rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t angle_sequence, float phi, float theta, float psi, bool angle_units)
 {
@@ -283,9 +290,9 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
    
     switch(angle_sequence)
     {
-        // --------------------------------------------------
+        // ----------------------------------------------------------------------
         // Euler Angles Sequences
-        // --------------------------------------------------
+        // ----------------------------------------------------------------------
 
         case XYX:
             rob_eul2tr(phi, theta, psi, angle_sequence, angle_units, p_F);
@@ -312,9 +319,9 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;
 
-        // --------------------------------------------------
+        // ----------------------------------------------------------------------
         // Roll-Pitch-Yaw Sequences
-        // --------------------------------------------------
+        // ----------------------------------------------------------------------
 
         case XYZ:
             rob_rpy2tr(phi, theta, psi, angle_sequence, angle_units, p_F);
@@ -361,6 +368,7 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 // 3.1. Quaternion initialization
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k)
 {
@@ -370,6 +378,7 @@ rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k)
     p_q->p_k = q_k;
 }
 
+// Tested => Works
 void
 rob_unitquat_init(rob_quat_t* p_uq, float* q_s, float* q_i, float* q_j, float* q_k)
 {
@@ -387,10 +396,12 @@ rob_unitquat_init(rob_quat_t* p_uq, float* q_s, float* q_i, float* q_j, float* q
     *p_uq->p_k = *p_uq->p_k / uq_norm; 
 }
 
+
 // ----------------------------------------------------------------------------------------------------
 // 3.2. Quaternion operations
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_quat_add(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
 {
@@ -401,6 +412,7 @@ rob_quat_add(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
 }
 
 
+// Tested => Works
 void
 rob_quat_sub(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
 {
@@ -411,6 +423,7 @@ rob_quat_sub(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
 }
 
 
+// Tested => Works
 void
 rob_quat_scale(const rob_quat_t* p_srcq1, const float p_c, rob_quat_t* p_dstq)
 {
@@ -421,6 +434,7 @@ rob_quat_scale(const rob_quat_t* p_srcq1, const float p_c, rob_quat_t* p_dstq)
 }
 
 
+// Tested => Works
 void
 rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p_dstq)
 {
@@ -462,6 +476,7 @@ rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
 }
 
 
+// Tested => Works
 void
 rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 {
@@ -471,6 +486,8 @@ rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
     *p_dstq->p_k = *p_srcq->p_k * (-1.0);
 }
 
+
+// Tested => Works
 void
 rob_quat_norm(const rob_quat_t* p_srcq, float* q_norm)
 {
@@ -479,6 +496,8 @@ rob_quat_norm(const rob_quat_t* p_srcq, float* q_norm)
     *q_norm = sqrt((*p_srcq->p_s)*(*p_srcq->p_s) + (*p_srcq->p_i)*(*p_srcq->p_i) + (*p_srcq->p_j)*(*p_srcq->p_j) + (*p_srcq->p_k)*(*p_srcq->p_k));
 }
 
+
+// Tested => Works
 void
 rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 {
@@ -507,9 +526,32 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
-// 4.1. Roll-Pitch-Yaw and Rotation Matrices Conversions
+// 4.1. Rotation Matrix <--> Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
+
+// Tested => Works
+void
+rob_r2tr(matf32_t* p_R, rob_frame_t* p_F)
+{
+    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+}
+
+
+// Tested => Works
+void
+rob_tr2r(rob_frame_t* p_F, matf32_t* p_R)
+{
+    matf32_submatrix_copy(p_F->p_R, p_R, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
+}
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.2. Roll-Pitch-Yaw Angles -> Rotation Matrices and Homogeneous Transformations
+// ----------------------------------------------------------------------------------------------------
+
+
+// Tested => Works
 void
 rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R)
 {
@@ -587,6 +629,7 @@ rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
 }
 
 
+// Tested => Works
 void
 rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F)
 {
@@ -596,14 +639,16 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bo
      */
 
     rob_rpy2r(roll, pitch, yaw, rpy_tag, angle_units, p_F->p_R);
-    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+    rob_r2tr(p_F->p_R, p_F);
 }
 
 
 // ----------------------------------------------------------------------------------------------------
-// 4.2. Euler Angles and Rotation Matrices Conversions
+// 4.3. Euler Angles -> Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
+
+// Tested => Works
 void
 rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R)
 {
@@ -680,6 +725,8 @@ rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
     matf32_mul(&temp_R, &R_phi, p_R);
 }
 
+
+// Tested => Works
 void
 rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, rob_frame_t* p_F)
 {
@@ -689,14 +736,15 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, boo
      */
 
     rob_eul2r(phi, theta, psi, eul_tag, angle_units, p_F->p_R);
-    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+    rob_r2tr(p_F->p_R, p_F);
 }
 
 
 // ----------------------------------------------------------------------------------------------------
-// 4.3. Rotation Matrices and Homogeneous Transformations to Quaternions
+// 4.4. Rotation Matrices and Homogeneous Transformations -> Quaternions
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_r2q(matf32_t* p_R, rob_quat_t* p_uq)
 {
@@ -805,11 +853,78 @@ rob_r2q(matf32_t* p_R, rob_quat_t* p_uq)
 }
 
 
+// Tested => Works
 void 
 rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq)
 {
     rob_r2q(p_F->p_R, p_uq);
 }
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.5. Roll-Pitch-Yaw and Euler Angles -> Quaternions
+// ----------------------------------------------------------------------------------------------------
+
+void
+rob_rpy2q(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
+{
+    rob_rpy2r(roll, pitch, yaw, rpy_tag, angle_units, p_R);
+    rob_r2q(p_R, p_uq);
+}
+
+void
+rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
+{
+    rob_eul2r(phi, theta, psi, eul_tag, angle_units, p_R);
+    rob_r2q(p_R, p_uq);
+}
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.6. Rotation Matrices and Homogeneous Transformations -> Roll-Pitch-Yaw and Euler Angles 
+// ----------------------------------------------------------------------------------------------------
+
+
+
+// ----------------------------------------------------------------------------------------------------
+// 4.7. Quaternions -> Rotation Matrices and Homogeneous Transformations
+// ----------------------------------------------------------------------------------------------------
+
+void
+rob_q2r(rob_quat_t* p_uq, matf32_t* p_R)
+{
+    /**
+     * Element by element
+     * 
+     * Use notation xyz to check if I wrote it well from the reference equation, then change to:
+     * uq_s, uq_i, uq_j and uq_k
+     */
+
+    float s = *p_uq->p_s;
+    float x = *p_uq->p_i;
+    float y = *p_uq->p_j;
+    float z = *p_uq->p_k;
+
+    p_R->p_data[0] = 1 - 2*(y*y + z*z);
+    p_R->p_data[1] = 2*(x*y - s*z);
+    p_R->p_data[2] = 2*(x*z + s*y);
+    p_R->p_data[3] = 2*(x*y + s*z);
+    p_R->p_data[4] = 1 - 2*(x*x + z*z);
+    p_R->p_data[5] = 2*(y*z + s*y);
+    p_R->p_data[6] = 2*(x*z - s*y);
+    p_R->p_data[7] = 2*(y*z + s*x);
+    p_R->p_data[8] = 1 - 2*(x*x + y*y);
+}
+
+void
+rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
+{
+    rob_q2r(p_uq, p_F->p_R);
+    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+}
+
+
+
 
 // ====================================================================================================
 // 5. Utility functions (printing, angle conversions, etc.)
@@ -819,6 +934,7 @@ rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq)
 // 5.1. Angle units conversions
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 float
 deg2rad(float* p_theta)
 {
@@ -826,6 +942,7 @@ deg2rad(float* p_theta)
 }
 
 
+// Tested => Works
 float 
 rad2deg(float* p_theta)
 {
@@ -837,6 +954,7 @@ rad2deg(float* p_theta)
 // 5.2. Print functions
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_frame_print(rob_frame_t* p_F)
 {
@@ -866,6 +984,7 @@ rob_frame_print(rob_frame_t* p_F)
 }
 
 
+// Tested => Works
 void
 rob_refpoint_print(rob_point_t* p_p)
 {
@@ -880,6 +999,7 @@ rob_refpoint_print(rob_point_t* p_p)
 }
 
 
+// Tested => Works
 void
 rob_frame_tags_print(rob_frame_tags_t tags)
 {
@@ -904,6 +1024,7 @@ rob_frame_tags_print(rob_frame_tags_t tags)
 }
 
 
+// Tested => Works
 void
 rob_angle_units_print(bool angle_units)
 {
@@ -920,6 +1041,7 @@ rob_angle_units_print(bool angle_units)
 }
 
 
+// Tested => Works
 void
 rob_quat_print(const rob_quat_t* p_srcq)
 {
@@ -927,6 +1049,7 @@ rob_quat_print(const rob_quat_t* p_srcq)
 }
 
 
+// Tested => Works
 void
 rob_status_print(rob_status_t rob_status)
 {
@@ -955,7 +1078,7 @@ rob_status_print(rob_status_t rob_status)
 // 5.3. Check functions
 // ----------------------------------------------------------------------------------------------------
 
-// Verified that these work
+// Tested => Works
 rob_status_t
 rob_isrot(matf32_t* p_R)
 {
@@ -968,6 +1091,7 @@ rob_isrot(matf32_t* p_R)
 }
 
 
+// Tested => Works
 rob_status_t
 rob_ishom(matf32_t* p_T)
 {
@@ -980,6 +1104,7 @@ rob_ishom(matf32_t* p_T)
 }
 
 
+// Tested => Works
 rob_status_t
 rob_isvec(matf32_t* p_v)
 {
