@@ -689,45 +689,45 @@ rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
     switch (eul_tag)
     {
         case XYX:
-            rob_rotx(&R_psi, psi, angle_units);
-            rob_roty(&R_theta, theta, angle_units);
             rob_rotx(&R_phi, phi, angle_units);
+            rob_roty(&R_theta, theta, angle_units);
+            rob_rotx(&R_psi, psi, angle_units);
             break;
 
         case XZX:
-            rob_rotx(&R_psi, psi, angle_units);
-            rob_rotz(&R_theta, theta, angle_units);
             rob_rotx(&R_phi, phi, angle_units);
+            rob_rotz(&R_theta, theta, angle_units);
+            rob_rotx(&R_psi, psi, angle_units);
             break;
 
         case YXY:
-            rob_roty(&R_psi, psi, angle_units);
-            rob_rotx(&R_theta, theta, angle_units);
             rob_roty(&R_phi, phi, angle_units);
+            rob_rotx(&R_theta, theta, angle_units);
+            rob_roty(&R_psi, psi, angle_units);
             break;
 
         case YZY:
-            rob_roty(&R_psi, psi, angle_units);
-            rob_rotz(&R_theta, theta, angle_units);
             rob_roty(&R_phi, phi, angle_units);
+            rob_rotz(&R_theta, theta, angle_units);
+            rob_roty(&R_psi, psi, angle_units);
             break;
 
         case ZXZ:
-            rob_rotz(&R_psi, psi, angle_units);
-            rob_rotx(&R_theta, theta, angle_units);
             rob_rotz(&R_phi, phi, angle_units);
+            rob_rotx(&R_theta, theta, angle_units);
+            rob_rotz(&R_psi, psi, angle_units);
             break;
 
         case ZYZ:
-            rob_rotz(&R_psi, psi, angle_units);
-            rob_roty(&R_theta, theta, angle_units);
             rob_rotz(&R_phi, phi, angle_units);
+            rob_roty(&R_theta, theta, angle_units);
+            rob_rotz(&R_psi, psi, angle_units);
             break;
     }
 
     // Multiply the generated rotation matrices in the order: R_psi * R_theta * R_phi, then save to p_R
-    matf32_mul(&R_psi, &R_theta, &temp_R);
-    matf32_mul(&temp_R, &R_phi, p_R);
+    matf32_mul(&R_phi, &R_theta, &temp_R);
+    matf32_mul(&temp_R, &R_psi, p_R);
 }
 
 
@@ -870,12 +870,14 @@ rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq)
 // 4.5. Roll-Pitch-Yaw and Euler Angles -> Quaternions
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_rpy2q(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
 {
     rob_rpy2r(roll, pitch, yaw, rpy_tag, angle_units, p_R);
     rob_r2q(p_R, p_uq);
 }
+
 
 void
 rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
