@@ -879,6 +879,7 @@ rob_rpy2q(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
 }
 
 
+// Tested => Works
 void
 rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
 {
@@ -897,6 +898,7 @@ rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
 // 4.7. Quaternions -> Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
+// Tested => Works
 void
 rob_q2r(rob_quat_t* p_uq, matf32_t* p_R)
 {
@@ -912,22 +914,28 @@ rob_q2r(rob_quat_t* p_uq, matf32_t* p_R)
     float y = *p_uq->p_j;
     float z = *p_uq->p_k;
 
-    p_R->p_data[0] = 1 - 2*(y*y + z*z);
-    p_R->p_data[1] = 2*(x*y - s*z);
-    p_R->p_data[2] = 2*(x*z + s*y);
-    p_R->p_data[3] = 2*(x*y + s*z);
-    p_R->p_data[4] = 1 - 2*(x*x + z*z);
-    p_R->p_data[5] = 2*(y*z + s*y);
-    p_R->p_data[6] = 2*(x*z - s*y);
-    p_R->p_data[7] = 2*(y*z + s*x);
-    p_R->p_data[8] = 1 - 2*(x*x + y*y);
+    // Row 1
+    p_R->p_data[0] = 1.0 - (2.0*((y*y) + (z*z)));
+    p_R->p_data[1] = 2.0*((x*y) - (s*z));
+    p_R->p_data[2] = 2.0*((x*z) + (s*y));
+    
+    // Row 2
+    p_R->p_data[3] = 2.0*((x*y) + (s*z));
+    p_R->p_data[4] = 1.0 - (2.0*((x*x) + (z*z)));
+    p_R->p_data[5] = 2.0*((y*z) - (s*x));
+    
+    // Row 3
+    p_R->p_data[6] = 2.0*((x*z) - (s*y));
+    p_R->p_data[7] = 2.0*((y*z) + (s*x));
+    p_R->p_data[8] = 1.0 - (2.0*((x*x) + (y*y)));
 }
 
+// Tested => Works
 void
 rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
 {
     rob_q2r(p_uq, p_F->p_R);
-    matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+    rob_r2tr(p_F->p_R, p_F);
 }
 
 
