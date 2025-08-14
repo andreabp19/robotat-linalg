@@ -12,11 +12,13 @@
 /* TO-DO:
 - cuaternión a matriz de rotación
 - cuaternión a transformación homogénea
+- cuaternión a ángulos de euler y roll-pitch-yaw
 - aplicacion de rotacion a un vector directamente en cuaterniones
-- inversa de la transformación homogénea?
-- Si me da tiempo, añadir las operaciones: tr2rpy, tr2eul, etc. para complementar las que ya puse.
 - Añadir checkeos para manejar/anticipar quaterniones iguales a 0 para evitar divisiones entre 0
 - Implementar checkeos para evitar singularidades
+- Inversa de una transformación homogenea (intercambiar etiquetas y tiene formula especifica): rotación: transpuesta de la rotacion, traslación: -inversa de rotacion*vector
+- checkear las etiquetas para ver que si se está haciendo correctamente la conversión
+- craig introduction to robotics - formulas de conversion matrices de rotacion a angulos
 */
 
 /** DONE :D
@@ -29,9 +31,6 @@
 * matriz de rotación a cuaternion
 * transformacion homogenea a cuaternion
 */
-
-// I'll start adding comments above the functions to remember whether I already checked if they work or not.
-// Because there are too many functions and I don't want to risk forgetting something
 
 // ====================================================================================================
 // 1. Reference frame and point initializations
@@ -277,6 +276,45 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 
 // Tested => Works
 void
+rob_inv_transform(rob_frame_t* const p_F, matf32_t* const p_Tinv)
+{
+    /**
+     *  Tinv =  | R^T  -R^T * p |
+     *          |  0      1     |
+     */
+
+    float trans_R_data[MAX_MAT_SIZE];
+    matf32_t trans_R;
+    matf32_init(&trans_R, 3, 3, trans_R_data);
+
+    float neg_trans_R_data[MAX_MAT_SIZE];
+    matf32_t neg_trans_R;
+    matf32_init(&neg_trans_R, 3, 3, neg_trans_R_data);
+
+    float temp_data[MAX_MAT_SIZE];
+    matf32_t temp;
+    matf32_init(&temp, 3, 1, temp_data);
+
+    // Set p_Tinv to zeros, just in case
+    matf32_zeros(p_Tinv);   
+
+    matf32_trans(p_F->p_R, &trans_R);           // R'
+    matf32_scale(&trans_R, -1, &neg_trans_R);   // -R'
+    matf32_mul(&neg_trans_R, p_F->p_v, &temp);  // -R' * p
+
+    // Copy R' to Tinv
+    matf32_submatrix_copy(&trans_R, p_Tinv, 0, 0, 0, 0, trans_R.num_rows, trans_R.num_cols);
+    
+    // Copy -R' * p to Tinv
+    matf32_submatrix_copy(&temp, p_Tinv, 0, 0, 0, 3, temp.num_rows, temp.num_cols);
+
+    // Set last cell to 1
+    matf32_set(p_Tinv, 4, 4, 1);
+}
+
+
+// Tested => Works
+void
 rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t angle_sequence, float phi, float theta, float psi, bool angle_units)
 {
     /**
@@ -359,9 +397,6 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
             break;    
     }
 }
-
-
-// Inverse of T?
 
 
 
@@ -893,6 +928,39 @@ rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
 // ----------------------------------------------------------------------------------------------------
 
 
+void 
+rob_r2eul(matf32_t* p_R, bool angle_units, float* phi, float* theta, float* psi)
+{
+    /**
+     * Following the notation of the matrix as a float:
+     * 
+     *  |0 1 2|
+     *  |3 4 5|
+     *  |6 7 8|
+     * 
+     * Operate as follows:
+     *     
+     *      phi = atan2(R[5], R[2])
+     * 
+     *      sp = sin(phi)
+     *      cp = cos(phi)
+     * 
+     *      theta = atan2(cp*R[2] + sp*R[5], R[8])
+     *      psi = atan2(-sp*R[0] + cp*R[3], -sp*R[1] + cp*R[4])
+     *  
+     */
+
+    // Fix this code
+    // Add if for the case of the singularity described in the robotics toolbox documentation
+
+    *phi = atan2(p_R->p_data[5], p_R->p_data[2]);
+
+    float sp = sinf(*phi);
+    float cp = cosf(*phi);
+
+    *theta = (float)atan2(cp*p_R->p_data[2] + sp*p_R->p_data[5], p_R->p_data[8]);
+    *psi = (float)atan2((-1.0)*sp*p_R->p_data[0] + cp*p_R->p_data[3], (-1)*p_R->p_data[1] + cp*p_R->p_data[4]);
+}
 
 // ----------------------------------------------------------------------------------------------------
 // 4.7. Quaternions -> Rotation Matrices and Homogeneous Transformations
@@ -937,7 +1005,6 @@ rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
     rob_q2r(p_uq, p_F->p_R);
     rob_r2tr(p_F->p_R, p_F);
 }
-
 
 
 
@@ -1085,6 +1152,10 @@ rob_status_print(rob_status_t rob_status)
         case VEC_SIZE_MISMATCH:
             printf("VEC_SIZE_MISMATCH\n");
             break;
+
+        case TRANSFORM_FRAMES_MISMATCH:
+            printf("TRANSFORM_FRAMES_MISMATCH\n");
+            break;
     }
 }
 
@@ -1132,3 +1203,30 @@ rob_isvec(matf32_t* p_v)
     return ROB_SUCCESS;
 }
 
+
+// Tested => Works
+rob_status_t
+rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
+{
+    /**
+     * Order of operations is: A_p = A_T_B * B_p
+     * In notation of this function: p_dstp = p_F.p_T * p_dstp
+     * (where p_F.p_T is the transformation matrix of the frame F)
+     * 
+     * So check:
+     *  - If p_dstp.ref_tag == p_F.dst_tag 
+     *  - If p_F.ref_tag == p_srcp.ref_tag
+     */
+
+    if (p_dstp->ref_tag != p_F->dst_tag)
+    {
+        return TRANSFORM_FRAMES_MISMATCH;
+    }
+
+    if (p_F->ref_tag != p_srcp->ref_tag)
+    {
+        return TRANSFORM_FRAMES_MISMATCH;
+    }
+
+    return ROB_SUCCESS;
+}

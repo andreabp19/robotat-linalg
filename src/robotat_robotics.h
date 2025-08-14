@@ -91,7 +91,8 @@ typedef enum
     ROB_SUCCESS,
     ROT_SIZE_MISMATCH,
     HOMOG_SIZE_MISMATCH,
-    VEC_SIZE_MISMATCH
+    VEC_SIZE_MISMATCH,
+    TRANSFORM_FRAMES_MISMATCH
 } rob_status_t;
 
 /**
@@ -300,12 +301,13 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 /**
  * @brief   Applies inverse of the homogeneous transformation of the pose.
  * 
- * @param[in,out]   p_F     Pointer to reference frame struct.
+ * @param[in]       p_F     Pointer to reference frame struct.
+ * @param[in,out]   p_Tinv  Pointer to output matrix to save the inverse.     
  * 
  * @return None
  */
 void
-rob_inv_transform(rob_frame_t* const p_F, const matf32_t* const p_p);
+rob_inv_transform(rob_frame_t* const p_F, matf32_t* const p_Tinv);
 
 /**
  * @brief   Apply transforms based on Euler angles sequences.
@@ -459,13 +461,6 @@ void
 rob_quat_print(const rob_quat_t* p_srcq);
 
 
-// ----------------------------------------------------------------------------------------------------
-// 3.3. Unitary Quaternions
-// ----------------------------------------------------------------------------------------------------
-
-
-// Pending
-
 
 // ====================================================================================================
 // 4. Conversions between Homogeneous Transformations, Rotation Matrices, Angles and Quaternions
@@ -496,6 +491,7 @@ rob_r2tr(matf32_t* p_R, rob_frame_t* p_F);
  */
 void
 rob_tr2r(rob_frame_t* p_F, matf32_t* p_R);
+
 
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Roll-Pitch-Yaw Angles -> Rotation Matrices and Homogeneous Transformations
@@ -651,7 +647,16 @@ rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
 /**
  * @brief   Converts a rotation matrix to euler angles
  * 
+ * @param[in]   p_R             Points to a rotation matrix
+ * @param[in]   angle_units     Boolean to indicate is angles should be calculated in radians or degrees
+ * @param[out]  phi             Phi angle
+ * @param[out]  theta           Theta angle
+ * @param[out]  psi             Psi angle
+ * 
+ * @return None
  */
+void
+rob_r2eul(matf32_t* p_R, bool angle_units, float* phi, float* theta, float* psi);
 
 /**
  * @brief   Converts an homogeneous transformation matrix to euler angles
@@ -811,6 +816,18 @@ rob_ishom(matf32_t* p_T);
  */
 rob_status_t
 rob_isvec(matf32_t* p_v);
+
+/**
+ * @brief   Checks frame tags to determine if the operations were done in the right order
+ * 
+ * @param[in]   p_F     Pointer to reference frame structure
+ * @param[in]   p_srcp  Points to original reference point
+ * @param[in]   p_dstp  Points to the new reference point    
+ * 
+ * @return None
+ */
+rob_status_t
+rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 
 // Add checks for quaternions and unit quaternions?
 
