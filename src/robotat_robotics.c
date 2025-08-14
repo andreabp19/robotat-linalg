@@ -17,7 +17,6 @@
 - Añadir checkeos para manejar/anticipar quaterniones iguales a 0 para evitar divisiones entre 0
 - Implementar checkeos para evitar singularidades
 - Inversa de una transformación homogenea (intercambiar etiquetas y tiene formula especifica): rotación: transpuesta de la rotacion, traslación: -inversa de rotacion*vector
-- checkear las etiquetas para ver que si se está haciendo correctamente la conversión
 - craig introduction to robotics - formulas de conversion matrices de rotacion a angulos
 */
 
@@ -30,6 +29,7 @@
 * Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
 * matriz de rotación a cuaternion
 * transformacion homogenea a cuaternion
+* checkear las etiquetas para ver que si se está haciendo correctamente la conversión
 */
 
 // ====================================================================================================
@@ -1156,6 +1156,10 @@ rob_status_print(rob_status_t rob_status)
         case TRANSFORM_FRAMES_MISMATCH:
             printf("TRANSFORM_FRAMES_MISMATCH\n");
             break;
+
+        case NULL_QUATERNION_ERR:
+            printf("NULL_QUATERNION_ERR\n");
+            break;
     }
 }
 
@@ -1226,6 +1230,17 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
     if (p_F->ref_tag != p_srcp->ref_tag)
     {
         return TRANSFORM_FRAMES_MISMATCH;
+    }
+
+    return ROB_SUCCESS;
+}
+
+rob_status_t
+rob_check_null_quaternion(rob_quat_t* p_q)
+{
+    if (*p_q->p_s == 0.0 && *p_q->p_i == 0.0 && *p_q->p_j == 0.0 && *p_q->p_k == 0.0)
+    {
+        return NULL_QUATERNION_ERR;
     }
 
     return ROB_SUCCESS;

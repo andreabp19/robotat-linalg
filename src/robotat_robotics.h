@@ -92,7 +92,8 @@ typedef enum
     ROT_SIZE_MISMATCH,
     HOMOG_SIZE_MISMATCH,
     VEC_SIZE_MISMATCH,
-    TRANSFORM_FRAMES_MISMATCH
+    TRANSFORM_FRAMES_MISMATCH,
+    NULL_QUATERNION_ERR
 } rob_status_t;
 
 /**
@@ -830,6 +831,17 @@ rob_status_t
 rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 
 // Add checks for quaternions and unit quaternions?
+
+/**
+ * @brief   Checks if a quaternion is zero and returns an rob_status_t message
+ * 
+ * @param[in]       p_q     Pointer to quaternion or unit quaternion  
+ * 
+ * @return None
+ */
+rob_status_t
+rob_check_null_quaternion(rob_quat_t* p_q);
+
 
 #ifdef __cplusplus
 }
