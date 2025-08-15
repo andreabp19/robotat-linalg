@@ -452,16 +452,6 @@ void
 rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
 
 
-/**
- * @brief   Prints a quaternion as formatted text
- * 
- * @param[in]   p_srcq    Pointer to the quaternion to print
- * @return  None
- */
-void
-rob_quat_print(const rob_quat_t* p_srcq);
-
-
 
 // ====================================================================================================
 // 4. Conversions between Homogeneous Transformations, Rotation Matrices, Angles and Quaternions
@@ -480,7 +470,7 @@ rob_quat_print(const rob_quat_t* p_srcq);
  * @return None
  */
 void
-rob_r2tr(matf32_t* p_R, rob_frame_t* p_F);
+rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F);
 
 /**
  * @brief   Converts an homogeneous transformation matrix to a rotation matrix
@@ -491,7 +481,7 @@ rob_r2tr(matf32_t* p_R, rob_frame_t* p_F);
  * @return None
  */
 void
-rob_tr2r(rob_frame_t* p_F, matf32_t* p_R);
+rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -511,7 +501,7 @@ rob_tr2r(rob_frame_t* p_F, matf32_t* p_R);
  * @return None
  */
 void 
-rob_rpy2r(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R);
+rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R);
 
 /**
  * @brief   Applies roll-pitch-yaw sequence angles to an homogeneous transformation matrix
@@ -546,7 +536,7 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bo
  * @return None
  */
 void 
-rob_eul2r(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R);
+rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R);
 
 /**
  * @brief   Applies Euler angle sequence to an homogeneous transformation matrix
@@ -577,7 +567,7 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, boo
  * @return None
  */
 void
-rob_r2q(matf32_t* p_R, rob_quat_t* p_uq);
+rob_rot2quat(matf32_t* p_R, rob_quat_t* p_uq);
 
 /**
  * @brief   Converts homogeneous transformation matrix into a quaternion
@@ -588,7 +578,7 @@ rob_r2q(matf32_t* p_R, rob_quat_t* p_uq);
  * @return None
  */
 void
-rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq);
+rob_tr2quat(rob_frame_t* p_F, rob_quat_t* p_uq);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -609,7 +599,7 @@ rob_tr2q(rob_frame_t* p_F, rob_quat_t* p_uq);
  * @return None
  */
 void
-rob_rpy2q(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
+rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
 
 
 /**
@@ -626,7 +616,7 @@ rob_rpy2q(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, boo
  * @return None
  */
 void
-rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
+rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -657,7 +647,7 @@ rob_eul2q(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool
  * @return None
  */
 void
-rob_r2eul(matf32_t* p_R, bool angle_units, float* phi, float* theta, float* psi);
+rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t eul_tag, float* phi, float* theta, float* psi);
 
 /**
  * @brief   Converts an homogeneous transformation matrix to euler angles
@@ -678,7 +668,7 @@ rob_r2eul(matf32_t* p_R, bool angle_units, float* phi, float* theta, float* psi)
  * @return None
  */
 void
-rob_q2r(rob_quat_t* p_uq, matf32_t* p_R);
+rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R);
 
 /**
  * @brief   Converts a quaternion to an homogeneous transformation matrix
@@ -689,7 +679,7 @@ rob_q2r(rob_quat_t* p_uq, matf32_t* p_R);
  * @return None
  */
 void
-rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F);
+rob_quat2tr(rob_quat_t* p_uq, rob_frame_t* p_F);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -782,6 +772,16 @@ rob_angle_units_print(bool angle_units);
  */
 void
 rob_frame_tags_print(rob_frame_tags_t tags);
+
+
+/**
+ * @brief   Prints a quaternion as formatted text
+ * 
+ * @param[in]   p_srcq    Pointer to the quaternion to print
+ * @return  None
+ */
+void
+rob_quat_print(const rob_quat_t* p_srcq);
 
 
 // ----------------------------------------------------------------------------------------------------
