@@ -10,31 +10,10 @@
 #include "robotat_robotics.h"
 
 /* TO-DO:
-- cuaternión a matriz de rotación
-- cuaternión a transformación homogénea
-- cuaternión a ángulos de euler y roll-pitch-yaw
 - aplicacion de rotacion a un vector directamente en cuaterniones
 - Implementar checkeos para evitar singularidades
-- Inversa de una transformación homogénea (intercambiar etiquetas y tiene formula especifica): rotación: transpuesta de la rotacion, traslación: -inversa de rotacion*vector
-- craig introduction to robotics - formulas de conversion matrices de rotacion a angulos
+- Implementar checkeo de cuaterniones nulos para evitar divisiones entre 0
 */
-
-// I remember there were some operations where null quaternions could give error
-    // TODO: check which were and add the null quaternion check before the operations.
-
-/**
- * For matf32 add:
- *  - schur decomposition
- *  - schur method for calculating eigenvalues
- *  - SVD
- *  
- * For linsolve:
- *  - Debug LU
- *  - Debug QR
- *  - Add SVD
- *  - Add method for hessenberg matrices?
- * 
- */
 
 /** DONE :D
 * crear función trotx, troty, trotz para afectar toda la matriz de transformacion homogenea
@@ -47,6 +26,10 @@
 * transformacion homogenea a cuaternion
 * checkear las etiquetas para ver que si se está haciendo correctamente la conversión
 * Añadir checkeos para manejar/anticipar quaterniones iguales a 0 para evitar divisiones entre 0
+* cuaternión a matriz de rotación
+* cuaternión a transformación homogénea
+* cuaternión a ángulos de euler y roll-pitch-yaw
+* Inversa de una transformación homogénea (intercambiar etiquetas y tiene formula especifica): rotación: transpuesta de la rotacion, traslación: -inversa de rotacion*vector
 */
 
 // ====================================================================================================
@@ -150,6 +133,7 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 3, cos_theta);
 }
 
+
 // Tested => Works
 void
 rob_roty(matf32_t* p_R, float theta, bool angle_units)
@@ -187,6 +171,7 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 1, neg_sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
 }
+
 
 // Tested => Works
 void
@@ -226,6 +211,7 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 3, 1);
 }
 
+
 // Tested => Works
 void
 rob_trotx(rob_frame_t* p_F, float theta, bool angle_units)
@@ -235,6 +221,7 @@ rob_trotx(rob_frame_t* p_F, float theta, bool angle_units)
     rob_rot2tr(p_F->p_R, p_F);
 }
 
+
 // Tested => Works
 void
 rob_troty(rob_frame_t* p_F, float theta, bool angle_units)
@@ -243,6 +230,7 @@ rob_troty(rob_frame_t* p_F, float theta, bool angle_units)
     rob_roty(p_F->p_R, theta, angle_units);
     rob_rot2tr(p_F->p_R, p_F);
 }
+
 
 // Tested => Works
 void
@@ -609,8 +597,9 @@ rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R)
 
 
 // Tested => Works
+// Change the angles names to avoid confusion
 void
-rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R)
+rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R)
 {
     /**
      * Rotation for roll-pitch-yaw angles, which correspond to Z, Y, X axes rotations, respectively.
@@ -641,7 +630,7 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, b
     matf32_init(&temp_R, 3, 3, temp_R_data);
 
     // Generate rotation matrices for roll-pitch-yaw as indicated by the desired sequence.
-    switch (rpy_tag)
+    switch (rot_sequence)
     {
         case XYZ:
             rob_rotx(&R_yaw, yaw, angle_units);
@@ -688,14 +677,14 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, b
 
 // Tested => Works
 void
-rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F)
+rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, rob_frame_t* p_F)
 {
     /**
      * 1. Execute rob_rpy2rot to generate rotation matrix based on a roll-pitch-yaw sequence
      * 2. Assign the calculated rotation matrix to the homogeneous transformation matrix in the frame p_F
      */
 
-    rob_rpy2rot(roll, pitch, yaw, rpy_tag, angle_units, p_F->p_R);
+    rob_rpy2rot(roll, pitch, yaw, rot_sequence, angle_units, p_F->p_R);
     rob_rot2tr(p_F->p_R, p_F);
 }
 
@@ -704,10 +693,9 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bo
 // 4.3. Euler Angles -> Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
 
-
 // Tested => Works
 void
-rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R)
+rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R)
 {
     /**
      * Rotation for roll-pitch-yaw angles, which correspond to Z, Y, X axes rotations, respectively.
@@ -738,7 +726,7 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bo
     matf32_init(&temp_R, 3, 3, temp_R_data);
 
     // Generate rotation matrices for phi-theta-psi as indicated by the desired sequence.
-    switch (eul_tag)
+    switch (rot_sequence)
     {
         case XYX:
             rob_rotx(&R_phi, phi, angle_units);
@@ -785,14 +773,14 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bo
 
 // Tested => Works
 void
-rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, rob_frame_t* p_F)
+rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, rob_frame_t* p_F)
 {
     /**
      * 1. Execute rob_eul2rot to generate rotation matrix based on an euler angles sequence.
      * 2. Assign the calculated rotation matrix to the homogeneous transformation matrix in the frame p_F
      */
 
-    rob_eul2rot(phi, theta, psi, eul_tag, angle_units, p_F->p_R);
+    rob_eul2rot(phi, theta, psi, rot_sequence, angle_units, p_F->p_R);
     rob_rot2tr(p_F->p_R, p_F);
 }
 
@@ -924,18 +912,18 @@ rob_tr2quat(rob_frame_t* p_F, rob_quat_t* p_uq)
 
 // Tested => Works
 void
-rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
+rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
 {
-    rob_rpy2rot(roll, pitch, yaw, rpy_tag, angle_units, p_R);
+    rob_rpy2rot(roll, pitch, yaw, rot_sequence, angle_units, p_R);
     rob_rot2quat(p_R, p_uq);
 }
 
 
 // Tested => Works
 void
-rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
+rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
 {
-    rob_eul2rot(phi, theta, psi, eul_tag, angle_units, p_R);
+    rob_eul2rot(phi, theta, psi, rot_sequence, angle_units, p_R);
     rob_rot2quat(p_R, p_uq);
 }
 
@@ -946,7 +934,68 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, b
 
 // Still not fully tested
 void 
-rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t eul_tag, float* phi, float* theta, float* psi)
+rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw)
+{
+    /**
+     * Working from the matrix rotation definitions in Craig - Introduction to Robotics and comparing with Robotics Toolbox
+     * 
+     * Solving for each angle in rotation sequence, using acos, asin and atan2, to avoid divisions.
+     */
+
+    switch(rot_sequence)
+    {
+        case XYZ:
+            *roll = atan2f(-1.0*p_R->p_data[5], p_R->p_data[8]);
+            *pitch = asinf(p_R->p_data[2]);
+            *yaw = atan2f(-1.0*p_R->p_data[1], p_R->p_data[0]);
+            break;
+        
+        case XZY:
+            *roll = atan2f(p_R->p_data[7], p_R->p_data[4]);
+            *yaw = asinf(-1.0*p_R->p_data[1]);
+            *pitch = atan2f(p_R->p_data[2], p_R->p_data[6]);
+            break;
+        
+        case YXZ:
+            *pitch = atan2f(p_R->p_data[2], p_R->p_data[8]);
+            *roll = asinf(-1.0*p_R->p_data[5]);
+            *yaw = atan2f(p_R->p_data[3], p_R->p_data[4]);
+            break;
+        
+        case YZX:
+            *pitch = atan2f(-1.0*p_R->p_data[6], p_R->p_data[0]);
+            *yaw = asinf(p_R->p_data[3]);
+            *roll = atan2f(-1.0*p_R->p_data[5], p_R->p_data[4]);
+            break;
+        
+        case ZXY:
+            *yaw = atan2f(-1.0*p_R->p_data[1], p_R->p_data[4]);
+            *roll = asinf(p_R->p_data[7]);
+            *pitch = atan2f(-1.0*p_R->p_data[6], p_R->p_data[8]);
+            break;
+        
+        case ZYX:
+            *yaw = atan2f(p_R->p_data[3], p_R->p_data[0]);
+            *pitch = asinf(-1.0*p_R->p_data[6]);
+            *roll = atan2f(p_R->p_data[7], p_R->p_data[8]);
+            break;
+    }
+
+    // TODO: Add optional conversion to degrees
+}
+
+
+void
+rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw)
+{
+    rob_rot2rpy(p_F->p_R, angle_units, rot_sequence, roll, pitch, yaw);
+}
+
+
+// Still not fully tested
+// Change all rot_sequence paraments into eul_seq, and rot_sequence into rpy_seq
+void 
+rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi)
 {
     /**
      * Working from the matrix rotation definitions in Craig - Introduction to Robotics
@@ -956,7 +1005,7 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t eul_tag, floa
      * Solving for each angle in rotation sequence, using acos, asin and atan2, to avoid divisions.
      */
 
-    switch(eul_tag)
+    switch(rot_sequence)
     {
         case XYX:
             *phi = atan2f(p_R->p_data[3], -1.0*p_R->p_data[6]);
@@ -994,16 +1043,18 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t eul_tag, floa
             *psi = atan2f(p_R->p_data[7], -1.0*p_R->p_data[6]);
             break;
     }
+
+    // TODO: Add optional conversion to degrees
 }
 
 
+// Still not tested
+void
+rob_tr2eul(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi)
+{
+    rob_rot2eul(p_F->p_R, angle_units, rot_sequence, phi, theta, psi);
+}
 
-// TODO
-// rob_tr2eul
-// rob_r2rpy
-// rob_tr2rpy
-// rob_q2eul
-// rob_q2rpy
 
 // ----------------------------------------------------------------------------------------------------
 // 4.7. Quaternions -> Rotation Matrices and Homogeneous Transformations
@@ -1041,6 +1092,7 @@ rob_q2r(rob_quat_t* p_uq, matf32_t* p_R)
     p_R->p_data[8] = 1.0 - (2.0*((x*x) + (y*y)));
 }
 
+
 // Tested => Works
 void
 rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
@@ -1050,6 +1102,40 @@ rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
 }
 
 
+// ----------------------------------------------------------------------------------------------------
+// 4.8. Quaternions -> Roll-Pitch-Yaw and Euler Angles
+// ----------------------------------------------------------------------------------------------------
+
+// Still not tested
+void
+rob_quat2rpy(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw)
+{
+    float temp_R_data[MAX_MAT_SIZE];
+    matf32_t temp_R;
+    matf32_init(&temp_R, 3, 3, temp_R_data);
+
+    // Convert from quaternion to rotation matrix, save in a temporal matrix
+    rob_quat2rot(p_uq, &temp_R);
+
+    // Convert the temporal rotation matrix to rpy angles
+    rob_rot2rpy(&temp_R, angle_units, rot_sequence, roll, pitch, yaw);
+}
+
+
+// Still not tested
+void
+rob_quat2eul(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi)
+{
+    float temp_R_data[MAX_MAT_SIZE];
+    matf32_t temp_R;
+    matf32_init(&temp_R, 3, 3, temp_R_data);
+
+    // Convert from quaternion to rotation matrix, save in a temporal matrix
+    rob_quat2rot(p_uq, &temp_R);
+
+    // Convert the temporal rotation matrix to euler angles
+    rob_rot2eul(&temp_R, angle_units, rot_sequence, phi, theta, psi);
+}
 
 // ====================================================================================================
 // 5. Utility functions (printing, angle conversions, etc.)
@@ -1278,6 +1364,8 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
     return ROB_SUCCESS;
 }
 
+
+// Tested => Works
 rob_status_t
 rob_check_null_quaternion(rob_quat_t* p_q)
 {

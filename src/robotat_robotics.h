@@ -494,14 +494,14 @@ rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R);
  * @param[in]       roll            roll angle (Z axis)
  * @param[in]       pitch           pitch angle (Y axis)
  * @param[in]       yaw             yaw angle (X axis)
- * @param[in]       rpy_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       rot_sequence         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_R             pointer to reference frame where the rotation matrix is
  *  
  * @return None
  */
 void 
-rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R);
+rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R);
 
 /**
  * @brief   Applies roll-pitch-yaw sequence angles to an homogeneous transformation matrix
@@ -509,14 +509,14 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, b
  * @param[in]       roll            roll angle (Z axis)
  * @param[in]       pitch           pitch angle (Y axis)
  * @param[in]       yaw             yaw angle (X axis)
- * @param[in]       rpy_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       rot_sequence         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_F             pointer reference frame where the rotation matrix is
  * 
  * @return None     
  */
 void
-rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, rob_frame_t* p_F);
+rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, rob_frame_t* p_F);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -529,14 +529,14 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bo
  * @param[in]       phi             phi angle
  * @param[in]       theta           theta angle
  * @param[in]       psi             psi angle
- * @param[in]       eul_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       rot_sequence         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_R             pointer to reference frame where the rotation matrix is
  *  
  * @return None
  */
 void 
-rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R);
+rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R);
 
 /**
  * @brief   Applies Euler angle sequence to an homogeneous transformation matrix
@@ -544,14 +544,14 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bo
  * @param[in]       phi             phi angle
  * @param[in]       theta           theta angle
  * @param[in]       psi             psi angle
- * @param[in]       eul_tag         roll-pitch-yaw sequence enum tag
+ * @param[in]       rot_sequence         roll-pitch-yaw sequence enum tag
  * @param[in]       angle_units     radians or degrees indicator
  * @param[in,out]   p_F             pointer reference frame where the rotation matrix is
  * 
  * @return None     
  */
 void
-rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, rob_frame_t* p_F);
+rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, rob_frame_t* p_F);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -591,7 +591,7 @@ rob_tr2quat(rob_frame_t* p_F, rob_quat_t* p_uq);
  * @param[in]       roll        Roll angle (Z axis)
  * @param[in]       pitch       Pitch angle (Y axis)
  * @param[in]       yaw         Yaw angle (X asis)
- * @param[in]       rpy_tag     Enumerate element to indicate the rotation sequence
+ * @param[in]       rot_sequence     Enumerate element to indicate the rotation sequence
  * @param[in]       angle_units Boolean to indicate radians or degrees
  * @param[in]       p_R         Points to a rotation matrix
  * @param[out]      p_uq        Points to a unit quaternion
@@ -599,7 +599,7 @@ rob_tr2quat(rob_frame_t* p_F, rob_quat_t* p_uq);
  * @return None
  */
 void
-rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
+rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
 
 
 /**
@@ -608,7 +608,7 @@ rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, 
  * @param[in]       phi         Phi angle
  * @param[in]       theta       Theta angle
  * @param[in]       psi         Psi angle
- * @param[in]       eul_tag     Enumerate element to indicate the rotation sequence
+ * @param[in]       rot_sequence     Enumerate element to indicate the rotation sequence
  * @param[in]       angle_units Boolean to indicate radians or degrees
  * @param[in]       p_R         Points to a rotation matrix
  * @param[out]      p_uq        Points to a unit quaternion
@@ -616,7 +616,7 @@ rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rpy_tag, 
  * @return None
  */
 void
-rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
+rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -626,9 +626,33 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, b
 /**
  * @brief   Converts a rotation matrix to roll-pitch-yaw angles
  * 
+ * @param[in]       p_R          Points to rotation matrix
+ * @param[in]       angle_units  Degree or radians indicator
+ * @param[in]       rot_sequence      Roll-Pitch-Yaw sequence indicator
+ * @param[in,out]   roll         Roll Angle
+ * @param[in,out]   pitch        Pitch Angle
+ * @param[in,out]   yaw          Yaw Angle
+ * 
+ * @return None
  */
-// Pending, this one seems to be the most difficult because robotics toolbox doesn't implement all the possible sequences.
+void 
+rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw);
 
+
+/**
+ * @brief   Converts an homogeneous transformation matrix to roll-pitch-yaw angles
+ * 
+ * @param[in]       p_F             Points to reference frame struct
+ * @param[in]       angle_units     Degree or radians indicator
+ * @param[in]       rot_sequence         Roll-Pitch-Yaw sequence indicator
+ * @param[in,out]   roll            Roll Angle
+ * @param[in,out]   pitch           Pitch Angle
+ * @param[in,out]   yaw             Yaw Angle
+ * 
+ * @return None
+ */
+void
+rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw);
 
 /**
  * @brief   Converts an homogeneous transformation matrix to roll-pitch-yaw angles
@@ -638,21 +662,30 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t eul_tag, b
 /**
  * @brief   Converts a rotation matrix to euler angles
  * 
- * @param[in]   p_R             Points to a rotation matrix
- * @param[in]   angle_units     Boolean to indicate is angles should be calculated in radians or degrees
- * @param[out]  phi             Phi angle
- * @param[out]  theta           Theta angle
- * @param[out]  psi             Psi angle
+ * @param[in]       p_R             Points to a rotation matrix
+ * @param[in]       angle_units     Boolean to indicate if angles should be calculated in radians or degrees
+ * @param[in,out]   phi             Phi angle
+ * @param[in,out]   theta           Theta angle
+ * @param[in,out]   psi             Psi angle
  * 
  * @return None
  */
 void
-rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t eul_tag, float* phi, float* theta, float* psi);
+rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi);
 
 /**
  * @brief   Converts an homogeneous transformation matrix to euler angles
  * 
+ * @param[in]       p_F             Points to a reference frame struct
+ * @param[in]       angle_units     Boolean to indicate if angles should be calculated in radians or degrees
+ * @param[in,out]   phi             Phi angle
+ * @param[in,out]   theta           Theta angle
+ * @param[in,out]   psi             Psi angle
+ * 
+ * @return None
  */
+void
+rob_tr2eul(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi);
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -663,7 +696,7 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t eul_tag, floa
  * @brief   Converts a quaternion to a rotation matrix
  * 
  * @param[in]       p_uq    Points to a unit quaternion
- * @param[out]      p_R     Points to a rotation matrix
+ * @param[in,out]   p_R     Points to a rotation matrix
  * 
  * @return None
  */
@@ -673,8 +706,8 @@ rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R);
 /**
  * @brief   Converts a quaternion to an homogeneous transformation matrix
  * 
- * @param[in]   p_uq    Points to a unit quaternion
- * @param[out]  p_F     Points to a reference frame struct
+ * @param[in]       p_uq    Points to a unit quaternion
+ * @param[in,out]   p_F     Points to a reference frame struct
  * 
  * @return None
  */
@@ -689,12 +722,32 @@ rob_quat2tr(rob_quat_t* p_uq, rob_frame_t* p_F);
 /**
  * @brief   Converts a quaternion to roll-pitch-yaw angles
  * 
+ * @param[in]       p_uq            Points to unit quaternion
+ * @param[in]       angle_units     Radians or degrees indicator
+ * @param[in]       rot_sequence         Roll-Pitch-Yaw sequence
+ * @param[in,out]   roll            Roll Angle
+ * @param[in,out]   pitch           Pitch Angle
+ * @param[in,out]   yaw             Yaw Angle
+ * 
+ * @return None
  */
+void
+rob_quat2rpy(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw);
 
 /**
  * @brief   Converts a quaternion to euler angles
  * 
+ * @param[in]       p_uq            Points to unit quaternion
+ * @param[in]       angle_units     Radians or degrees indicator
+ * @param[in]       rot_sequence         Roll-Pitch-Yaw sequence
+ * @param[in,out]   phi             Phi Angle
+ * @param[in,out]   theta           Theta Angle
+ * @param[in,out]   psi             Psi Angle
+ * 
+ * @return None
  */
+void
+rob_quat2eul(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi);
 
 
 
