@@ -211,7 +211,7 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
  * @return  err_status_t
  */
 void
-rob_transl(rob_frame_t* p_F, matf32_t* p_v);
+rob_transl(matf32_t* p_v, rob_frame_t* p_F);
 
 // ----------------------------------------------------------------------------------------------------
 // 2.2. Generate and set rotation matrices
@@ -452,6 +452,20 @@ void
 rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
 
 
+/**
+ * @brief   Takes a quaternion and makes conversions to then apply it as an homogeneous transformation
+ * 
+ * @param[in]       p_srcq      Points to quaternion
+ * @param[in]       p_F         Points to reference frame struct
+ * @param[in]       p_srcp      Points to original reference point
+ * @param[in,out]   p_dstp      Points to destination reference point
+ * 
+ * @return None
+ */
+void
+rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
+
+
 
 // ====================================================================================================
 // 4. Conversions between Homogeneous Transformations, Rotation Matrices, Angles and Quaternions
@@ -483,6 +497,18 @@ rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F);
 void
 rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R);
 
+
+/**
+ * @brief   Assigns both a rotation matrix and translation vector to an homogeneous transformation matrix
+ * 
+ * @param[in]       p_R     Points to rotation matrix
+ * @param[in]       p_v     Points to translation vector
+ * @param[in,out]   p_F     Points to reference frame structure
+ * 
+ * @return None
+ */
+void
+rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v);
 
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Roll-Pitch-Yaw Angles -> Rotation Matrices and Homogeneous Transformations
@@ -894,6 +920,17 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
  */
 rob_status_t
 rob_check_null_quaternion(rob_quat_t* p_q);
+
+/**
+ * @brief   Checks if two quaternions are equal
+ * 
+ * @param[in]   p_q1    Points to the first quaternion to compare
+ * @param[in]   p_q2    Points to the second quaternion to compare
+ * 
+ * @return None
+ */
+bool
+rob_quat_is_equal(rob_quat_t* p_q1, rob_quat_t* p_q2);
 
 
 #ifdef __cplusplus

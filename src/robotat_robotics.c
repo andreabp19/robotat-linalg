@@ -13,6 +13,7 @@
 - aplicacion de rotacion a un vector directamente en cuaterniones
 - Implementar checkeos para evitar singularidades
 - Implementar checkeo de cuaterniones nulos para evitar divisiones entre 0
+- add rt2tr for setting both rotation matrix and translation into a reference frame
 */
 
 /** DONE :D
@@ -81,14 +82,9 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
 
 // Tested => Works
 void
-rob_transl(rob_frame_t* p_F, matf32_t* p_v)
+rob_transl(matf32_t* p_v, rob_frame_t* p_F)
 {
-    matf32_t* p_T = p_F->p_T;
-    matf32_t* p_R = p_F->p_R;
-    matf32_t* p_t = p_F->p_v;
-
-    // Set coordinates vector inside the transformation matrix
-    matf32_submatrix_copy(p_v, p_T, 0, 0, 0, p_R->num_cols, p_v->num_rows, p_v->num_cols);
+    matf32_submatrix_copy(p_v, p_F->p_T, 0, 0, 0, p_F->p_R->num_cols, p_v->num_rows, p_v->num_cols);
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -246,7 +242,7 @@ rob_trotz(rob_frame_t* p_F, float theta, bool angle_units)
 // 2.3. Applying transformations and rotation sequences
 // ----------------------------------------------------------------------------------------------------
 
-// Tested => Works
+// Tested => It's not working O.o
 void
 rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 {
@@ -271,7 +267,7 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
     float *src_data = p_srcp->p_v->p_data;
     float *dst_data = p_dstp->p_v->p_data;
     
-    // Working directly with floats, adjust indexes as necessary to fulfill the equations in the comment above.
+    // Working directly with floats, adjusting indexes as necessary to fulfill the equations in the comment above.
     dst_data[0] = T_data[0]*src_data[0] + T_data[1]*src_data[1] + T_data[2]*src_data[2] + T_data[3]*src_data[3];
     dst_data[1] = T_data[4]*src_data[0] + T_data[5]*src_data[1] + T_data[6]*src_data[2] + T_data[7]*src_data[3];
     dst_data[2] = T_data[8]*src_data[0] + T_data[9]*src_data[1] + T_data[10]*src_data[2] + T_data[11]*src_data[3];
@@ -565,6 +561,16 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 }
 
 
+// Tested => Works
+// By nature, affects only the rotation matrix, to add a translation use rob_transl() before applying the transform.
+void
+rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
+{
+    rob_quat2tr(p_srcq, p_F);
+    rob_apply_transform(p_F, p_srcp, p_dstp);
+}
+
+
 
 // ====================================================================================================
 // 4. Conversions between Homogeneous Transformations and Quaternions
@@ -590,6 +596,14 @@ rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R)
     matf32_submatrix_copy(p_F->p_R, p_R, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
 }
 
+
+// Tested => Works
+void
+rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v)
+{
+    rob_rot2tr(p_R, p_F);
+    rob_transl(p_v, p_F);
+}
 
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Roll-Pitch-Yaw Angles -> Rotation Matrices and Homogeneous Transformations
@@ -1062,7 +1076,7 @@ rob_tr2eul(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
 
 // Tested => Works
 void
-rob_q2r(rob_quat_t* p_uq, matf32_t* p_R)
+rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R)
 {
     /**
      * Element by element
@@ -1095,9 +1109,9 @@ rob_q2r(rob_quat_t* p_uq, matf32_t* p_R)
 
 // Tested => Works
 void
-rob_q2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
+rob_quat2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
 {
-    rob_q2r(p_uq, p_F->p_R);
+    rob_quat2rot(p_uq, p_F->p_R);
     rob_rot2tr(p_F->p_R, p_F);
 }
 
@@ -1375,4 +1389,15 @@ rob_check_null_quaternion(rob_quat_t* p_q)
     }
 
     return ROB_SUCCESS;
+}
+
+bool
+rob_quat_is_equal(rob_quat_t* p_q1, rob_quat_t* p_q2)
+{
+    if (*p_q1->p_s == *p_q2->p_s && *p_q1->p_i == *p_q2->p_i && *p_q1->p_j == *p_q2->p_j && *p_q1->p_k == *p_q2->p_k)
+    {
+        return true;
+    }
+
+    return false;
 }
