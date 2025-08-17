@@ -2,35 +2,16 @@
 /**
  * @file robotat_robotics.c
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 15 Aug 2025
+ * @date created 19 Jul. 2025, last modified 16 Aug 2025
  * 
- * Robotics algorithms
+ * Robotics algorithms, based on Robotics Toolbox by Peter Corke for Matlab
  */
 
 #include "robotat_robotics.h"
 
 /* TO-DO:
-- aplicacion de rotacion a un vector directamente en cuaterniones
 - Implementar checkeos para evitar singularidades
 - Implementar checkeo de cuaterniones nulos para evitar divisiones entre 0
-- add rt2tr for setting both rotation matrix and translation into a reference frame
-*/
-
-/** DONE :D
-* crear función trotx, troty, trotz para afectar toda la matriz de transformacion homogenea
-* definir cuaternion
-* multiplicacion de cuaterniones
-* add rob_quat_print() to print quaternions (formatted to identify the real and imaginary parts)
-* inversa de cuaterniones
-* Add unit quaternions. Robotics Toolbox makes the conversion between hom. transformations and quaternions through unit quaternion.
-* matriz de rotación a cuaternion
-* transformacion homogenea a cuaternion
-* checkear las etiquetas para ver que si se está haciendo correctamente la conversión
-* Añadir checkeos para manejar/anticipar quaterniones iguales a 0 para evitar divisiones entre 0
-* cuaternión a matriz de rotación
-* cuaternión a transformación homogénea
-* cuaternión a ángulos de euler y roll-pitch-yaw
-* Inversa de una transformación homogénea (intercambiar etiquetas y tiene formula especifica): rotación: transpuesta de la rotacion, traslación: -inversa de rotacion*vector
 */
 
 // ====================================================================================================
