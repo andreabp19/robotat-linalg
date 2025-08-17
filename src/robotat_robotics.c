@@ -593,7 +593,7 @@ rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F)
 void
 rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R)
 {
-    matf32_submatrix_copy(p_F->p_R, p_R, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
+    matf32_submatrix_copy(p_F->p_T, p_R, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
 }
 
 
@@ -959,33 +959,33 @@ rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
     switch(rot_sequence)
     {
         case XYZ:
-            *roll = atan2f(-1.0*p_R->p_data[5], p_R->p_data[8]);
+            *yaw = atan2f(-1.0*p_R->p_data[5], p_R->p_data[8]);
             *pitch = asinf(p_R->p_data[2]);
-            *yaw = atan2f(-1.0*p_R->p_data[1], p_R->p_data[0]);
+            *roll = atan2f(-1.0*p_R->p_data[1], p_R->p_data[0]);
             break;
         
         case XZY:
-            *roll = atan2f(p_R->p_data[7], p_R->p_data[4]);
-            *yaw = asinf(-1.0*p_R->p_data[1]);
-            *pitch = atan2f(p_R->p_data[2], p_R->p_data[6]);
+            *yaw = atan2f(p_R->p_data[7], p_R->p_data[4]);
+            *pitch = asinf(-1.0*p_R->p_data[1]);
+            *roll = atan2f(p_R->p_data[2], p_R->p_data[6]);
             break;
         
         case YXZ:
-            *pitch = atan2f(p_R->p_data[2], p_R->p_data[8]);
-            *roll = asinf(-1.0*p_R->p_data[5]);
-            *yaw = atan2f(p_R->p_data[3], p_R->p_data[4]);
+            *yaw = atan2f(p_R->p_data[2], p_R->p_data[8]);
+            *pitch = asinf(-1.0*p_R->p_data[5]);
+            *roll = atan2f(p_R->p_data[3], p_R->p_data[4]);
             break;
         
         case YZX:
-            *pitch = atan2f(-1.0*p_R->p_data[6], p_R->p_data[0]);
-            *yaw = asinf(p_R->p_data[3]);
+            *yaw = atan2f(-1.0*p_R->p_data[6], p_R->p_data[0]);
+            *pitch = asinf(p_R->p_data[3]);
             *roll = atan2f(-1.0*p_R->p_data[5], p_R->p_data[4]);
             break;
         
         case ZXY:
             *yaw = atan2f(-1.0*p_R->p_data[1], p_R->p_data[4]);
-            *roll = asinf(p_R->p_data[7]);
-            *pitch = atan2f(-1.0*p_R->p_data[6], p_R->p_data[8]);
+            *pitch = asinf(p_R->p_data[7]);
+            *roll = atan2f(-1.0*p_R->p_data[6], p_R->p_data[8]);
             break;
         
         case ZYX:
@@ -1391,10 +1391,11 @@ rob_check_null_quaternion(rob_quat_t* p_q)
     return ROB_SUCCESS;
 }
 
+// Tested => Works
 bool
 rob_quat_is_equal(rob_quat_t* p_q1, rob_quat_t* p_q2)
 {
-    if (*p_q1->p_s == *p_q2->p_s && *p_q1->p_i == *p_q2->p_i && *p_q1->p_j == *p_q2->p_j && *p_q1->p_k == *p_q2->p_k)
+    if (is_equal_margin(*p_q1->p_s, *p_q2->p_s) && is_equal_margin(*p_q1->p_i, *p_q2->p_i) && is_equal_margin(*p_q1->p_j, *p_q2->p_j) && is_equal_margin(*p_q1->p_k, *p_q2->p_k))
     {
         return true;
     }
