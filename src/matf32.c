@@ -3,18 +3,12 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 11 Aug 2025
+ * Last Modified: 18 Aug 2025
  *      By: Andrea Pineda
- *
- * Single file to include all matrix related functions, combining them from all previously four files of matf32: matf32_def, matf32_check, matf32_math, math_util
  *
  */
 
 #include "matf32.h"
-
-// DON'T CHANGE THE ORDER OF THE SECTIONS.
-// They are organized from more independent to increasingly dependent on the previous functions.
-// Moving them may lead to errors of declaration.
 
 // ====================================================================================================
 // 1. Base utility functions
@@ -331,7 +325,7 @@ err_status_print(err_status_t err)
 void matf32_cond(matf32_t* const p_src, float* p_cond)
 {
     float temp_data[MAX_MAT_SIZE];
-    matf32_t const temp;
+    matf32_t temp;
 
     matf32_init(&temp, p_src->num_rows, p_src->num_cols, temp_data);
 
@@ -1243,6 +1237,10 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
         // tau*w
         scale(w_vec, rows-i, tau, w_tau_vec);
 
+        // ------------------------------------------------------------
+        // Calculate R
+        // ------------------------------------------------------------
+
         //R(i:end,:)
         matf32_reshape(&r_sub, rows-i, cols);
         matf32_reshape(&r_sub_temp, rows-i, cols);
@@ -1260,8 +1258,11 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 
         matf32_submatrix_copy(&r_sub, p_r, 0, 0, i, 0, rows-i, cols);
 
-
+        // ------------------------------------------------------------
         // Calculate Q
+        // ------------------------------------------------------------
+
+        // Q(:,i:end)
         matf32_reshape(&q_sub, rows, rows-i);
         matf32_reshape(&q_sub_temp, rows, rows-i);
         matf32_submatrix_copy(p_q, &q_sub, 0, i, 0, 0, rows, rows-i);
@@ -1276,9 +1277,18 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
         matf32_sub(&q_sub, &q_sub_temp, &q_sub);
 
         matf32_submatrix_copy(&q_sub, p_q, 0, 0, 0, i, rows, rows-i);
-
     }
 
+    for (uint16_t i = 0; i < p_r->num_rows; ++i)
+    {
+        for(uint16_t j = 0; j < p_r->num_cols; ++j)
+        {
+            if (j < i)
+            {
+                matf32_set(p_r, i+1, j+1, 0);
+            }
+        }
+    }
 }
 
 
