@@ -3,7 +3,7 @@
  * 
  * Linear solvers based on matf32 datatype.
  * 
- * Modified 11 Aug 2025
+ * Modified 18 Aug 2025
  *      By: Andrea Pineda
  */
 
@@ -77,7 +77,7 @@ linsolve_get_method(const matf32_t* const p_a);
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linsolve_forward_substitution_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -93,7 +93,7 @@ linsolve_forward_substitution_matf32(const matf32_t* const p_l, const matf32_t* 
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
-linsolve_backward_substitution_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
+linsolve_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x);
 
 
 /**
@@ -102,11 +102,24 @@ linsolve_backward_substitution_matf32(const matf32_t* const p_u, const matf32_t*
  * 
  */
 err_status_t
-linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
 
 
+/**
+ * @brief   
+ * 
+ */
 err_status_t
-matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x);
+
+
+/**
+ * @brief   Add description
+ * 
+ * 
+ */
+err_status_t
+linsolve_LU(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
@@ -124,7 +137,7 @@ matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const mat
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-linsolve_matf32(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x);
+linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
@@ -142,7 +155,7 @@ linsolve_matf32(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
  *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
  */
 err_status_t
-linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);  
+linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);  
 
 #ifdef __cplusplus
 }

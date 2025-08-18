@@ -1,7 +1,7 @@
 /**
  * @file linsolve.c
  * 
- * Last modified 11 Aug 2025
+ * Last modified 18 Aug 2025
  *      By: Andrea Pineda
  */
 
@@ -85,7 +85,7 @@ linsolve_get_method(const matf32_t* const p_a)
 
 
 err_status_t
-linsolve_forward_substitution_matf32(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
+linsolve_forward_substitution(const matf32_t* const p_l, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_lower(p_l))
@@ -120,7 +120,7 @@ linsolve_forward_substitution_matf32(const matf32_t* const p_l, const matf32_t* 
 
 
 err_status_t
-linsolve_backward_substitution_matf32(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
+linsolve_backward_substitution(const matf32_t* const p_u, const matf32_t* const p_b, matf32_t* p_x)
 {
 #ifdef MATH_MATRIX_CHECK
     if (!matf32_check_triangular_upper(p_u))
@@ -154,28 +154,28 @@ linsolve_backward_substitution_matf32(const matf32_t* const p_u, const matf32_t*
 
 // make inline to reduce call stack?
 err_status_t
-linsolve_matf32(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
+linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
 {
     linsolve_method_t method = linsolve_get_method(p_a);
 
-    return linsolve_matf32_method(p_a, p_b, p_x, method);
+    return linsolve_method(p_a, p_b, p_x, method);
 }
 
 // TODO:
 // qr_solve
 err_status_t
-linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
+linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
 {
     err_status_t status;
 
     switch (method)
     {
         case FORWARD_SUBS:
-            return linsolve_forward_substitution_matf32(p_a, p_b, p_x);
+            return linsolve_forward_substitution(p_a, p_b, p_x);
             break;
 
         case BACKWARD_SUBS:
-            return linsolve_backward_substitution_matf32(p_a, p_b, p_x);
+            return linsolve_backward_substitution(p_a, p_b, p_x);
             break;
 
         case CHOLESKY:
@@ -191,13 +191,29 @@ linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
                 return status;
             }
 
-            status = linsolve_cholesky_matf32(&m1, p_b, p_x);
+            status = linsolve_cholesky(&m1, p_b, p_x);
 
             return status;
             break;
 
         case QR:
-            // TODO
+            
+            matf32_init(&m1, p_a->num_rows, p_a->num_rows, m1data);
+            matf32_zeros(&m1);
+
+            matf32_init(&m2, p_a->num_rows, p_a->num_cols, m2data);
+            matf32_zeros(&m2);
+
+            status = matf32_qr(p_a, &m1, &m2);
+
+            if (MATH_SUCCESS != status)
+            {
+                return status;
+            }
+
+            status = linsolve_QR(&m1, &m2, p_b, p_x);
+            
+            return status;
             break;
 
         case LU:
@@ -216,7 +232,7 @@ linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
                 return status;
             }
 
-            status = matf32_lu_solve(&m1, &m2, p_b, p_x);
+            status = linsolve_LU(&m1, &m2, p_b, p_x);
 
             return status;
             break;
@@ -224,7 +240,33 @@ linsolve_matf32_method(const matf32_t* const p_a, const matf32_t* const p_b, mat
 }
 
 err_status_t
-matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x)
+{
+    err_status_t status;
+
+    float* y_data = p1;
+    matf32_t y;
+    matf32_init(&y, p_q->num_rows, 1, y_data);
+    matf32_zeros(&y);
+
+    float temp_data[MAX_MAT_SIZE];
+    matf32_t temp;
+    matf32_init(&temp, p_q->num_rows, 1, temp_data);
+    matf32_zeros(&temp);
+
+    // Compute y = Q*b
+    matf32_mul(p_q, p_b, &temp);
+
+    // Solve Rx = y with backward substitution as R is upper triangular
+    status = linsolve_backward_substitution(p_r, &temp, p_x);
+    printf("p_x\n");
+    matf32_print(p_x);
+
+    return status;
+}
+
+err_status_t
+linsolve_LU(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
@@ -233,20 +275,20 @@ matf32_lu_solve(const matf32_t* const p_l, const matf32_t* const p_u,  const mat
     matf32_init(&y, p_l->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    status = linsolve_forward_substitution_matf32(p_l, p_b, &y);
+    status = linsolve_forward_substitution(p_l, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
         return status;
     }
 
-    status = linsolve_backward_substitution_matf32(p_u, &y, p_x);
+    status = linsolve_backward_substitution(p_u, &y, p_x);
 
     return status;
 }
 
 err_status_t
-linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
@@ -256,9 +298,10 @@ linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32
     matf32_zeros(&y);
 
     // Assuming the cholesky decomposition arrives as an upper triangular as matf32_cholesky gives it out by default
+    // Necessary to transpose it because forward substitution accepts lower triangular matrices
     matf32_trans(p_c, p_c);
 
-    status = linsolve_forward_substitution_matf32(p_c, p_b, &y);
+    status = linsolve_forward_substitution(p_c, p_b, &y);
 
     if (MATH_SUCCESS != status)
     {
@@ -267,7 +310,7 @@ linsolve_cholesky_matf32(matf32_t* const p_c,  const matf32_t* const p_b, matf32
 
     matf32_trans(p_c, p_c);
 
-    status = linsolve_backward_substitution_matf32(p_c, &y, p_x);
+    status = linsolve_backward_substitution(p_c, &y, p_x);
 
     return status;
 }
