@@ -55,4 +55,4 @@ Robotat-Linalg has been in development at the Universidad del Valle de Guatemala
 
 ## Previous Versions
 
-Documentation of the 2022 version of robotat-linalg: https://github.com/danielp96/robotat-linalg
+The version of Robotat Linalg developed here started by uploading the code as is from the 2022 version, which is available at: https://github.com/danielp96/robotat-linalg
