@@ -1149,6 +1149,38 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
     return MATH_SUCCESS;
 }
 
+// Tested => Works
+err_status_t
+matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv)
+{
+    float trans_a_data[MAX_MAT_SIZE];
+    matf32_t trans_a;
+    matf32_init(&trans_a, p_a->num_rows, p_a->num_cols, trans_a_data);
+
+    float temp_data[MAX_MAT_SIZE];
+    matf32_t temp;
+    matf32_init(&temp, p_a->num_rows, p_a->num_cols, temp_data);
+
+    // A'
+    matf32_trans(p_a, &trans_a);
+    //printf("A':\n");
+    //matf32_print(&trans_a);
+
+    // A'A
+    matf32_mul(&trans_a, p_a, &temp);
+    //printf("A'A:\n");
+    //matf32_print(&temp);
+
+    // (A'A)^-1
+    matf32_inv(&temp, &temp);
+    //printf("(A'A)^-1:\n)");
+    //matf32_print(&temp);
+
+    // (A'A)^-1 * A'
+    matf32_mul(&temp, &trans_a, p_pinv); 
+    //printf("(A'A)^-1 * A':\n");
+    //matf32_print(p_pinv);
+}
 
 // ----------------------------------------------------------------------------------------------------
 // 4.3. Matrix factorization/decomposition methods
@@ -1277,17 +1309,6 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
         matf32_sub(&q_sub, &q_sub_temp, &q_sub);
 
         matf32_submatrix_copy(&q_sub, p_q, 0, 0, 0, i, rows, rows-i);
-    }
-
-    for (uint16_t i = 0; i < p_r->num_rows; ++i)
-    {
-        for(uint16_t j = 0; j < p_r->num_cols; ++j)
-        {
-            if (j < i)
-            {
-                matf32_set(p_r, i+1, j+1, 0);
-            }
-        }
     }
 }
 

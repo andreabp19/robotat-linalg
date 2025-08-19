@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 3 Aug 2025
+ * Last modified: 18 Aug 2025
  *          By: Andrea Pineda
  */
 
@@ -984,6 +984,18 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  */
 err_status_t
 matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
+
+
+/**
+ * @brief   Calculates the pseudoinverse of a given matrix
+ * 
+ * @param[in]       p_a     Matrix to calculate the inverse from
+ * @param[in,out]   p_pinv  Matrix to save the pseudoinverse in
+ * 
+ * @return None
+ */
+err_status_t
+matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv);
 
 
 // ----------------------------------------------------------------------------------------------------
