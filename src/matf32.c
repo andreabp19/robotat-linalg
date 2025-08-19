@@ -974,6 +974,7 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 
 
 // Tested => Works
+// TODO fix decimal rounding issues that cause it to sometimes fail the matf32_is_equal comparison as the difference with matlab's result is greater thatn 1E-05 in some elements.
 err_status_t
 matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv)
 {
