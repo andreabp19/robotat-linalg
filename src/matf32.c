@@ -973,6 +973,40 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 }
 
 
+// Tested => Works
+err_status_t
+matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv)
+{
+    float trans_a_data[MAX_MAT_SIZE];
+    matf32_t trans_a;
+    matf32_init(&trans_a, p_a->num_rows, p_a->num_cols, trans_a_data);
+
+    float temp_data[MAX_MAT_SIZE];
+    matf32_t temp;
+    matf32_init(&temp, p_a->num_rows, p_a->num_cols, temp_data);
+
+    // A'
+    matf32_trans(p_a, &trans_a);
+    //printf("A':\n");
+    //matf32_print(&trans_a);
+
+    // A'A
+    matf32_mul(&trans_a, p_a, &temp);
+    //printf("A'A:\n");
+    //matf32_print(&temp);
+
+    // (A'A)^-1
+    matf32_inv(&temp, &temp);
+    //printf("(A'A)^-1:\n)");
+    //matf32_print(&temp);
+
+    // (A'A)^-1 * A'
+    matf32_mul(&temp, &trans_a, p_pinv); 
+    //printf("(A'A)^-1 * A':\n");
+    //matf32_print(p_pinv);
+}
+
+
 err_status_t
 matf32_dot(const matf32_t* const p_srca, const matf32_t* const p_srcb, float* const p_dst)
 {
@@ -1149,38 +1183,6 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
     return MATH_SUCCESS;
 }
 
-// Tested => Works
-err_status_t
-matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv)
-{
-    float trans_a_data[MAX_MAT_SIZE];
-    matf32_t trans_a;
-    matf32_init(&trans_a, p_a->num_rows, p_a->num_cols, trans_a_data);
-
-    float temp_data[MAX_MAT_SIZE];
-    matf32_t temp;
-    matf32_init(&temp, p_a->num_rows, p_a->num_cols, temp_data);
-
-    // A'
-    matf32_trans(p_a, &trans_a);
-    //printf("A':\n");
-    //matf32_print(&trans_a);
-
-    // A'A
-    matf32_mul(&trans_a, p_a, &temp);
-    //printf("A'A:\n");
-    //matf32_print(&temp);
-
-    // (A'A)^-1
-    matf32_inv(&temp, &temp);
-    //printf("(A'A)^-1:\n)");
-    //matf32_print(&temp);
-
-    // (A'A)^-1 * A'
-    matf32_mul(&temp, &trans_a, p_pinv); 
-    //printf("(A'A)^-1 * A':\n");
-    //matf32_print(p_pinv);
-}
 
 // ----------------------------------------------------------------------------------------------------
 // 4.3. Matrix factorization/decomposition methods
