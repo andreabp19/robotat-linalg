@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 19 Aug 2025
+ * Last Modified: 20 Aug 2025
  *      By: Andrea Pineda
  *
  */
@@ -1312,6 +1312,17 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
         matf32_sub(&q_sub, &q_sub_temp, &q_sub);
 
         matf32_submatrix_copy(&q_sub, p_q, 0, 0, 0, i, rows, rows-i);
+    }
+
+    for (uint16_t i = 0; i < p_r->num_rows; ++i)
+    {
+        for(uint16_t j = 0; j < p_r->num_cols; ++j)
+        {
+            if (j < i)
+            {
+                matf32_set(p_r, i+1, j+1, 0);
+            }
+        }
     }
 }
 
