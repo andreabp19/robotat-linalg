@@ -110,7 +110,7 @@ linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* con
  * 
  */
 err_status_t
-linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
@@ -119,7 +119,7 @@ linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
  * 
  */
 err_status_t
-linsolve_LU(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**

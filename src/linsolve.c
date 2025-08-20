@@ -211,7 +211,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
                 return status;
             }
 
-            status = linsolve_QR(&m1, &m2, p_b, p_x);
+            status = linsolve_qr(&m1, &m2, p_b, p_x);
             
             return status;
             break;
@@ -240,7 +240,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
 }
 
 err_status_t
-linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
@@ -274,7 +274,7 @@ linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
 }
 
 err_status_t
-linsolve_LU(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
