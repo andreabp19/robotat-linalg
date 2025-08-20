@@ -161,8 +161,7 @@ linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p
     return linsolve_method(p_a, p_b, p_x, method);
 }
 
-// TODO:
-// qr_solve
+
 err_status_t
 linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
 {
