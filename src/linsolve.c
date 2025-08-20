@@ -205,8 +205,6 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
             matf32_zeros(&m2);
 
             status = matf32_qr(p_a, &m1, &m2);
-            printf("R:\n");
-            matf32_print(&m2);
 
             if (MATH_SUCCESS != status)
             {
@@ -253,15 +251,24 @@ linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
 
     float trans_q_data[MAX_MAT_SIZE];
     matf32_t trans_q;
-    matf32_init(&trans_q, p_q->num_rows, 1, trans_q_data);
+    matf32_init(&trans_q, p_q->num_rows, p_q->num_cols, trans_q_data);
     matf32_zeros(&trans_q);
+
+    float sub_R_data[MAX_MAT_SIZE];
+    matf32_t sub_R;
+    matf32_init(&sub_R, p_r->num_rows-1, p_r->num_cols, sub_R_data);
+    matf32_zeros(&sub_R);
 
     // Compute y = Q'b
     matf32_trans(p_q, &trans_q);
-    matf32_mul(p_q, p_b, &y);
+    matf32_mul(&trans_q, p_b, &y);
+
+    // R from full QR (as matf32_qr) is n x (n-1), with an extra row of zeros.
+    // Take away the extra row of zeros to turn it into upper triangular and solve with backward substitution.
+    matf32_submatrix_copy(p_r, &sub_R, 0, 0, 0, 0, sub_R.num_rows, sub_R.num_cols);
 
     // Solve Rx = y with backward substitution as R is upper triangular
-    status = linsolve_backward_substitution(p_r, &trans_q, p_x);
+    status = linsolve_backward_substitution(&sub_R, &y, p_x);
 
     return status;
 }
