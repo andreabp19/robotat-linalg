@@ -1,7 +1,7 @@
 /**
  * @file linsolve.c
  * 
- * Last modified 18 Aug 2025
+ * Last modified 20 Aug 2025
  *      By: Andrea Pineda
  */
 
@@ -205,6 +205,8 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
             matf32_zeros(&m2);
 
             status = matf32_qr(p_a, &m1, &m2);
+            printf("R:\n");
+            matf32_print(&m2);
 
             if (MATH_SUCCESS != status)
             {
@@ -249,18 +251,17 @@ linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
     matf32_init(&y, p_q->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    float temp_data[MAX_MAT_SIZE];
-    matf32_t temp;
-    matf32_init(&temp, p_q->num_rows, 1, temp_data);
-    matf32_zeros(&temp);
+    float trans_q_data[MAX_MAT_SIZE];
+    matf32_t trans_q;
+    matf32_init(&trans_q, p_q->num_rows, 1, trans_q_data);
+    matf32_zeros(&trans_q);
 
-    // Compute y = Q*b
-    matf32_mul(p_q, p_b, &temp);
+    // Compute y = Q'b
+    matf32_trans(p_q, &trans_q);
+    matf32_mul(p_q, p_b, &y);
 
     // Solve Rx = y with backward substitution as R is upper triangular
-    status = linsolve_backward_substitution(p_r, &temp, p_x);
-    printf("p_x\n");
-    matf32_print(p_x);
+    status = linsolve_backward_substitution(p_r, &trans_q, p_x);
 
     return status;
 }
