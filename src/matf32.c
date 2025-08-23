@@ -1324,6 +1324,8 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
             }
         }
     }
+
+    return MATH_SUCCESS;
 }
 
 
