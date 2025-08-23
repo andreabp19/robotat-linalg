@@ -514,12 +514,6 @@ void main(void)
             cholesky_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
 
-        // problema con inversas: QR o SVD con un método sencillo porque implementar eigenvalores es complicado
-        // Si se implementa SVD, revisar si se implementaria operaciones de eigenvalores?
-        // Regularizaciones (especialmente tikhonov).
-        // Pseudoinversa para resover el sistema lineal, en lugar de la inversa (este sí colocarlo en matf32)
-        // Métodos iterativos: revisar si necesitan acondicionamiento (todavía pendiente)
-
         mean_cholesky_time = mean(cholesky_time, x);
 
         bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
