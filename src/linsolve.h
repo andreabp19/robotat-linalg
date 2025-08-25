@@ -3,7 +3,7 @@
  * 
  * Linear solvers based on matf32 datatype.
  * 
- * Modified 18 Aug 2025
+ * Modified 25 Aug 2025
  *      By: Andrea Pineda
  */
 
@@ -119,7 +119,7 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
  * 
  */
 err_status_t
-linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x);
+linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x, uint16_t* p_index);
 
 
 /**
