@@ -161,7 +161,8 @@ linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p
     return linsolve_method(p_a, p_b, p_x, method);
 }
 
-
+// TODO:
+// qr_solve
 err_status_t
 linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
 {
@@ -210,7 +211,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
                 return status;
             }
 
-            status = linsolve_qr(&m1, &m2, p_b, p_x);
+            status = linsolve_QR(&m1, &m2, p_b, p_x);
             
             return status;
             break;
@@ -224,14 +225,16 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
             matf32_init(&m2, p_a->num_rows, p_a->num_rows, m2data);
             matf32_zeros(&m2);
 
-            status = matf32_lu(p_a, &m1, &m2);
+            uint16_t p_index[p_a->num_rows];
+
+            status = matf32_lu(p_a, &m1, &m2, p_index);
 
             if (MATH_SUCCESS != status)
             {
                 return status;
             }
 
-            status = linsolve_LU(&m1, &m2, p_b, p_x);
+            status = linsolve_LU(&m1, &m2, p_b, p_x, p_index);
 
             return status;
             break;
@@ -239,7 +242,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
 }
 
 err_status_t
-linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_QR(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x)
 {
     err_status_t status;
 
@@ -273,7 +276,7 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
 }
 
 err_status_t
-linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_LU(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x, uint16_t* p_index)
 {
     err_status_t status;
 
@@ -282,7 +285,30 @@ linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_
     matf32_init(&y, p_l->num_rows, 1, y_data);
     matf32_zeros(&y);
 
-    status = linsolve_forward_substitution(p_l, p_b, &y);
+    float b_permuted_data[MAX_MAT_SIZE];
+    matf32_t b_permuted;
+    matf32_init(&b_permuted, p_b->num_rows, 1, b_permuted_data);
+    matf32_submatrix_copy(p_b, &b_permuted, 0, 0, 0, 0, p_b->num_rows, p_b->num_cols);
+
+    float tmp = 0;
+
+    uint16_t max_index = 0;
+
+    // Apply the same order of permutation to b that was used for U
+    for (uint16_t i = 0; i < p_b->num_rows; ++i)
+    {
+        max_index = p_index[i];
+
+        if (max_index != i)
+        {
+            tmp = b_permuted.p_data[i];
+            b_permuted.p_data[i] = b_permuted.p_data[max_index];
+            b_permuted.p_data[max_index] = tmp;
+        }
+    }
+
+    // Solve with forward subtitution (and then backward substitution in the next steps), using b_permuted to match the permuted LU
+    status = linsolve_forward_substitution(p_l, &b_permuted, &y);
 
     if (MATH_SUCCESS != status)
     {
