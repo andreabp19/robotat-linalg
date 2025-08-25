@@ -1331,7 +1331,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 
 // doolittle algoritm
 err_status_t
-matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
+matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_t* p_index)
 {
 #ifdef MATH_MATRIX_CHECK 
     if (!matf32_is_same_size(p_a, p_l) || !matf32_is_same_size(p_a, p_u))
@@ -1344,38 +1344,108 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u)
     float* p_l_data = p_l->p_data;
     float* p_u_data = p_u->p_data;
 
-    uint16_t rows = p_a->num_rows;
+    float max_val = 0;
+
+    float tmp = 0;
+
+    float pivot_row_data[MAX_MAT_SIZE];
+    matf32_t pivot_row;
+    matf32_init(&pivot_row, 1, p_a->num_cols, pivot_row_data);
+
+    matf32_eye(p_l);
+
+    uint16_t pivot = 0; // Pivot row
+    uint16_t max_index = 0;
+
+    uint16_t rows = p_a->num_rows; // All matrices are square so it works for columns as well
+    //printf("rows: %i\n", rows);
+
+    //printf("A:\n");
+    //matf32_print(p_a);
+
+    //printf("L:\n");
+    //matf32_print(p_l);
+
+    //printf("U:\n");
+    //matf32_print(p_u);
+
+    // Make a copy of A in U
+    matf32_submatrix_copy(p_a, p_u, 0, 0, 0, 0, p_a->num_rows, p_a->num_cols);
+    //printf("U = A:\n");
+    //matf32_print(p_u);
+
+    // Partial pivoting: exchange rows in order for the pivots to have the largest number in that row.
 
     for (uint16_t i = 0; i < rows; ++i)
     {
-        for (uint16_t j = i; j < rows; ++j)
-        {
-            float sum = 0;
-            for (uint16_t k = 0; k < i; ++k)
-            {
-                sum += p_l_data[i*rows + k] * p_u_data[k*rows + j];
-            }
+        pivot = i; // Save pivot index 
+        max_index = i;
+        max_val = fabs(p_u_data[i*rows + i]);
 
-            p_u_data[i*rows + j] = p_a_data[i*rows + j] - sum;
+        // Now, check if there's a larger number than the pivot in that column
+        for (uint16_t k = i+1; k < rows; ++k)
+        {
+            if (fabs(p_u_data[k*rows + pivot]) > max_val)
+            {
+                max_val = fabs(p_u_data[k*rows + pivot]);
+                //printf("max_val: %.9f\n", max_val);
+                max_index = k;
+                //printf("k:%i, pivot:%i, Comparison: value: %.9f, pivot: %.9f, result: %i\n\n", k, pivot, p_u_data[pivot + k*rows], p_u_data[pivot*rows + pivot], p_u_data[pivot + k*rows] > p_u_data[pivot*rows + pivot]);
+            }
+        }   
+
+        p_index[i] = max_index;
+
+        //printf("Max index: %i,%i\n\n", max_index, pivot);
+
+        // If max_index == i, that means the greatest value is already on the pivot, so no switches needed.
+        if (max_index != i)
+        {
+            // ----- U Permutation -----
+
+            // Copy the pivot row to a temporal matrix
+            matf32_submatrix_copy(p_u, &pivot_row, i, 0, 0, 0, pivot_row.num_rows, pivot_row.num_cols);
+            //printf("pivot_row: %i\n", pivot);
+            //matf32_print(&pivot_row);
+
+            // Replace the pivot row with the max_index row
+            matf32_submatrix_copy(p_u, p_u, max_index, 0, pivot, 0, 1, p_u->num_cols);
+
+            // Replace the selected row with the max_index row
+            matf32_submatrix_copy(&pivot_row, p_u, 0, 0, max_index, 0, 1, p_u->num_cols);  
+        
+            if (i > 0)
+            {
+                // ----- L Permutation -----
+
+                for (uint16_t k = 0; k < i; ++k)
+                {
+                    tmp = p_l_data[i*rows + k];
+                    p_l_data[i*rows + k] = p_l_data[max_index*rows + k];
+                    p_l_data[max_index*rows + k] = tmp;
+                }
+            }
         }
 
-        for (uint16_t j = i; j < rows; ++j)
+        for (uint16_t j = i + 1; j < rows; ++j)
         {
-            if (i == j)
+            // Update L values: L[j,i] = U[j,i] / U[i,i]
+            p_l_data[j*rows + i] = p_u_data[j*rows + i] / p_u_data[i*rows + i];
+            
+            for (uint16_t m = i; m < rows; ++m)
             {
-                p_l_data[i*rows + i] = 1;
-                //p_u_data[i*rows + i] = 1;
-                continue;
+                // Update U values: U[j,m] = U[j,m] - L[j,i]*U[i,m]
+                p_u_data[j*rows + m] = p_u_data[j*rows + m] - p_l_data[j*rows + i]*p_u_data[i*rows + m];
             }
-
-            float sum = 0;
-            for (uint16_t k = 0; k < i; ++k)
-            {
-                sum += p_l_data[j*rows + k] * p_u_data[k*rows + i];
-            }
-
-            p_l_data[j*rows + i] = (p_a_data[j*rows + i] - sum) / p_u_data[i*rows + i];
         }
+    }
+
+    //printf("U after pivoting:\n");
+    //matf32_print(p_u);
+
+    for (uint16_t k = 0; k < rows; ++k)
+    {
+        p_l_data[k*rows + k] = 1;
     }
 
     return MATH_SUCCESS;
