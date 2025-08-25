@@ -155,15 +155,15 @@ void main(void)
         printf("n = %i\n", n);
         printf("--------------------------------------------------\n");
 
-        matf32_cond(&A, &cond_A);
+        //matf32_cond(&A, &cond_A);
         matf32_cond(&B, &cond_B);
-        matf32_cond(&C, &cond_C);
-        matf32_cond(&D, &cond_D);
+        //matf32_cond(&C, &cond_C);
+        //matf32_cond(&D, &cond_D);
 
-        printf("cond_A = %.9f\n", cond_A);
-        printf("cond_B = %.9f\n", cond_B);
-        printf("cond_C = %.9f\n", cond_C);
-        printf("cond D = %.9f\n", cond_D);
+        //printf("cond_A = %.9f\n", cond_A);
+        //printf("cond_B = %.9f\n", cond_B);
+        //printf("cond_C = %.9f\n", cond_C);
+        //printf("cond D = %.9f\n", cond_D);
 
         // ---------------------------------------------------------------------------
         // 1. matf32_add
@@ -184,7 +184,11 @@ void main(void)
         bool add_ans = matf32_is_equal(&temp, &R_add);
         //printf("matf32_add%i\n",n);
         //printf("%.9f\n", mean_add_time);
-        printf("add      ,time(s):%.9f,%s\n", mean_add_time, add_ans?"success":"failure");
+        //printf("add      ,time(s):%.9f,%s\n\n", mean_add_time, add_ans?"success":"failure");
+
+        //printf("Difference matf32_add:\n");
+        //matf32_sub(&temp, &R_add, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 2. matf32_sub
@@ -205,7 +209,11 @@ void main(void)
         bool sub_ans = matf32_is_equal(&temp, &R_sub);
         //printf("matf32_sub%i\n", n);
         //printf("%.9f\n", mean_sub_time);
-        printf("sub      ,time(s):%.9f,%s\n", mean_sub_time, sub_ans?"success":"failure");
+        //printf("sub      ,time(s):%.9f,%s\n\n", mean_sub_time, sub_ans?"success":"failure");
+
+        //printf("Difference matf32_sub:\n");
+        //matf32_sub(&temp, &R_sub, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 3. matf32_scale
@@ -226,7 +234,11 @@ void main(void)
         bool scale_ans = matf32_is_equal(&temp, &R_scale);
         //printf("matf32_scale%i\n", n);
         //printf("%.9f\n", mean_scale_time);
-        printf("scale    ,time(s):%.9f,%s\n", mean_scale_time, scale_ans?"success":"failure");
+        //printf("scale    ,time(s):%.9f,%s\n\n", mean_scale_time, scale_ans?"success":"failure");
+
+        //printf("Difference matf32_scale:\n");
+        //matf32_sub(&temp, &R_scale, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 4. matf32_trans
@@ -247,7 +259,11 @@ void main(void)
         bool trans_ans = matf32_is_equal(&temp, &R_trans);
         //printf("matf32_trans%i\n", n);
         //printf("%.9f\n", mean_trans_time);
-        printf("trans    ,time(s):%.9f,%s\n", mean_trans_time, trans_ans?"success":"failure");
+        //printf("trans    ,time(s):%.9f,%s\n\n", mean_trans_time, trans_ans?"success":"failure");
+
+        //printf("Difference matf32_trans:\n");
+        //matf32_sub(&temp, &R_trans, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 5. matf32_mul
@@ -268,7 +284,11 @@ void main(void)
         bool mul_ans = matf32_is_equal(&temp, &R_mul);
         //printf("matf32_mul%i\n", n);
         //printf("%.9f\n", mean_mul_time);
-        printf("mul      ,time(s):%.9f,%s\n", mean_mul_time, mul_ans?"success":"failure");
+        //printf("mul      ,time(s):%.9f,%s\n\n", mean_mul_time, mul_ans?"success":"failure");
+
+        //printf("Difference matf32_mul:\n");
+        //matf32_sub(&temp, &R_mul, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 6. matf32_inv
@@ -289,7 +309,11 @@ void main(void)
         bool inv_ans = matf32_is_equal(&temp, &R_inv);
         //printf("matf32_inv%i\n", n);
         //printf("%.9f\n", mean_inv_time);
-        printf("inv      ,time(s):%.9f,%s\n", mean_inv_time, inv_ans?"success":"failure");
+        //printf("inv      ,time(s):%.9f,%s\n\n", mean_inv_time, inv_ans?"success":"failure");
+
+        //printf("Difference matf32_inv:\n");
+        //matf32_sub(&temp, &R_inv, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 7. matf32_dot
@@ -317,7 +341,11 @@ void main(void)
         bool dot_ans = matf32_is_equal(&dot_temp, &R_dot);
         //printf("matf32_dot%i\n", n);
         //printf("%.9f\n", mean_dot_time);
-        printf("dot      ,time(s):%.9f,%s\n", mean_dot_time, dot_ans?"success":"failure");
+        //printf("dot      ,time(s):%.9f,%s\n\n", mean_dot_time, dot_ans?"success":"failure");
+
+        //printf("Difference matf32_dot:\n");
+        //matf32_sub(&temp, &R_dot, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 8. matf32_vecposmul
@@ -342,7 +370,11 @@ void main(void)
         bool vecposmul_ans = matf32_is_equal(&vecposmul_temp, &R_vecposmul);
         //printf("matf32_vecposmul%i\n", n);
         //printf("%.9f\n", mean_vecposmul_time);
-        printf("vecposmul,time(s):%.9f,%s\n", mean_vecposmul_time, vecposmul_ans?"success":"failure");
+        //printf("vecposmul,time(s):%.9f,%s\n\n", mean_vecposmul_time, vecposmul_ans?"success":"failure");
+
+        //printf("Difference matf32_vecposmul:\n");
+        //matf32_sub(&vecposmul_temp, &R_vecposmul, &vecposmul_temp);
+        //matf32_print(&vecposmul_temp);
 
         // ---------------------------------------------------------------------------
         // 9. matf32_vecpremul
@@ -367,7 +399,11 @@ void main(void)
         bool vecpremul_ans = matf32_is_equal(&vecpremul_temp, &R_vecpremul);
         //printf("matf32_vecpremul%i\n", n);
         //printf("%.9f\n", mean_vecpremul_time);
-        printf("vecpremul,time(s):%.9f,%s\n", mean_vecpremul_time, vecpremul_ans?"success":"failure");
+        //printf("vecpremul,time(s):%.9f,%s\n\n", mean_vecpremul_time, vecpremul_ans?"success":"failure");
+
+        //printf("Difference matf32_vecpremul:\n");
+        //matf32_sub(&vecpremul_temp, &R_vecpremul, &vecpremul_temp);
+        //matf32_print(&vecpremul_temp);
 
         // ---------------------------------------------------------------------------
         // 10. matf32_vecmul_col_row
@@ -388,7 +424,11 @@ void main(void)
         bool vecmul_ans = matf32_is_equal(&temp, &R_vecmul);
         //printf("matf32_vecmul%i\n", n);
         //printf("%.9f\n", mean_vecmul_time);
-        printf("vecmul   ,time(s):%.9f,%s\n", mean_vecmul_time, vecmul_ans?"success":"failure");
+        //printf("vecmul   ,time(s):%.9f,%s\n\n", mean_vecmul_time, vecmul_ans?"success":"failure");
+
+        //printf("Difference matf32_vecmul:\n");
+        //matf32_sub(&temp, &R_vecmul, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 11. matf32_arr_add
@@ -409,7 +449,11 @@ void main(void)
         bool arr_add_ans = matf32_is_equal(&temp, &R_arr_add);
         //printf("matf32_arr_add%i\n", n);
         //printf("%.9f\n", mean_arr_add_time);
-        printf("arr_add  ,time(s):%.9f,%s\n", mean_arr_add_time, arr_add_ans?"success":"failure");
+        //printf("arr_add  ,time(s):%.9f,%s\n\n", mean_arr_add_time, arr_add_ans?"success":"failure");
+
+        //printf("Difference matf32_arr_add:\n");
+        //matf32_sub(&temp, &R_arr_add, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 12. matf32_arr_sub
@@ -430,7 +474,11 @@ void main(void)
         bool arr_sub_ans = matf32_is_equal(&temp, &R_arr_sub);
         //printf("matf32_arr_sub%i\n", n);
         //printf("%.9f\n", mean_arr_sub_time);
-        printf("arr_sub  ,time(s):%.9f,%s\n", mean_arr_sub_time, arr_sub_ans?"success":"failure");
+        //printf("arr_sub  ,time(s):%.9f,%s\n\n", mean_arr_sub_time, arr_sub_ans?"success":"failure");
+
+        //printf("Difference matf32_arr_sub:\n");
+        //matf32_sub(&temp, &R_arr_sub, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 13. matf32_arr_mul
@@ -451,7 +499,11 @@ void main(void)
         bool arr_mul_ans = matf32_is_equal(&temp, &R_arr_mul);
         //printf("matf32_arr_mul%i\n", n);
         //printf("%.9f\n", mean_arr_mul_time);
-        printf("arr_mul  ,time(s):%.9f,%s\n", mean_arr_mul_time, arr_mul_ans?"success":"failure");
+        //printf("arr_mul  ,time(s):%.9f,%s\n\n", mean_arr_mul_time, arr_mul_ans?"success":"failure");
+
+        //printf("Difference matf32_arr_mul:\n");
+        //matf32_sub(&temp, &R_arr_mul, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 14. matf32_pinv
@@ -472,7 +524,11 @@ void main(void)
         bool pinv_ans = matf32_is_equal(&temp, &R_pinv);
         //printf("matf32_pinv%i\n",n);
         //printf("%.9f\n", mean_pinv_time);
-        printf("pinv     ,time(s):%.9f,%s\n", mean_pinv_time, pinv_ans?"success":"failure");
+        //printf("pinv     ,time(s):%.9f,%s\n\n", mean_pinv_time, pinv_ans?"success":"failure");
+
+        //printf("Difference matf32_pinv:\n");
+        //matf32_sub(&temp, &R_pinv, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 15. matf32_lu
@@ -480,23 +536,74 @@ void main(void)
         
         float lu_time[x];
         float mean_lu_time = 0;
+        
+        uint16_t p_index[n];
+
+        float pivot_row_data[B.num_rows];
+        matf32_t pivot_row;
+        matf32_init(&pivot_row, 1, B.num_cols, pivot_row_data);
 
         matf32_zeros(&temp_L);
         matf32_zeros(&temp_U);
 
-        for (uint8_t j = 0; j < x; j++)
+        /*for (uint8_t j = 0; j < x; j++)
         {
             time = clock();
             matf32_lu(&B, &temp_L, &temp_U);
             lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }*/
+
+        //printf("B:\n");
+        //matf32_print(&B);
+
+        matf32_lu(&B, &temp_L, &temp_U, p_index);
+
+        //printf("L:\n");
+        //matf32_print(&temp_L);
+        //printf("U:\n");
+        //matf32_print(&temp_U);
+
+        //printf("R_lu_L:\n");
+        //matf32_print(&R_lu_L);
+        //printf("R_lu_U:\n");
+        //matf32_print(&R_lu_U);
+
+        for (int16_t k = (int)B.num_rows - 1; k >= 0; --k)
+        {
+            // Switch the p_index[k] row into the k row of B
+            matf32_submatrix_copy(&B, &temp_B, p_index[k], 0, k, 0, 1, B.num_cols);
         }
+
+        //matf32_mul(&temp_L, &temp_U, &temp);
+
+        //printf("L*U:\n");
+        //matf32_print(&temp);
+
+        //printf("P*B:\n");
+        //matf32_print(&temp_B);
+
+        //printf("p_index: ");
+        //for (uint16_t i = 0; i < n; ++i)
+        //{
+        //    printf("%i,", p_index[i]);
+        //}
+        //printf("\n");
 
         mean_lu_time = mean(lu_time, x);
 
         bool lu_L_ans = matf32_is_equal(&temp_L, &R_lu_L);
         bool lu_U_ans = matf32_is_equal(&temp_U, &R_lu_U);
-        bool lu_B_ans = matf32_is_equal(&temp, &B);
-        printf("lu       ,time(s):%.9f,L:%s,U:%s,B = L*U:%s\n", mean_lu_time, lu_L_ans?"success":"failure", lu_U_ans?"success":"failure", lu_B_ans?"success":"failure");
+        //printf("matf32_lu%i\n",n);
+        //printf("%.9f\n", mean_lu_time);
+        printf("lu       ,time(s):%.9f,L:%s,U:%s\n\n", mean_lu_time, lu_L_ans?"success":"failure", lu_U_ans?"success":"failure");
+
+        printf("Difference L:\n");
+        matf32_sub(&temp_L, &R_lu_L, &temp_L);
+        matf32_print(&temp_L);
+
+        printf("Difference U:\n");
+        matf32_sub(&temp_U, &R_lu_U, &temp_U);
+        matf32_print(&temp_U);
 
         // ---------------------------------------------------------------------------
         // 16. matf32_cholesky
@@ -519,7 +626,11 @@ void main(void)
         bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
         //printf("matf32_cholesky%i\n", n);
         //printf("%.9f\n", mean_cholesky_time);
-        printf("cholesky ,time(s):%.9f,%s\n", mean_cholesky_time, cholesky_ans?"success":"failure");
+        //printf("cholesky ,time(s):%.9f,%s\n\n", mean_cholesky_time, cholesky_ans?"success":"failure");
+
+        //printf("Difference matf32_cholesky:\n");
+        //matf32_sub(&temp, &R_cholesky, &temp);
+        //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 17. matf32_qr
@@ -539,6 +650,15 @@ void main(void)
                 matf32_qr(&D, &temp_Q, &temp_R);
                 qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
             }
+
+            //printf("Q:\n");
+            //matf32_print(&temp_Q);
+            //printf("R:\n");
+            //matf32_print(&temp_R);
+            //printf("R_qr_Q:\n");
+            //matf32_print(&R_qr_Q);
+            //printf("R_qr_R:\n");
+            //matf32_print(&R_qr_R);
     
             mean_qr_time = mean(qr_time, x);
 
@@ -546,7 +666,15 @@ void main(void)
             bool qr_R_ans = matf32_is_equal(&temp_R, &R_qr_R);
             //printf("matf32_qr%i\n", n);
             //printf("%.9f\n", mean_qr_time);
-            printf("qr       ,time(s):%.9f,Q:%s,R:%s\n", mean_qr_time, qr_Q_ans?"success":"failure", qr_R_ans?"success":"failure");
+            //printf("qr       ,time(s):%.9f,Q:%s,R:%s\n\n", mean_qr_time, qr_Q_ans?"success":"failure", qr_R_ans?"success":"failure");
+        
+            //printf("Difference Q:\n");
+            //matf32_sub(&temp_Q, &R_qr_Q, &temp_Q);
+            //matf32_print(&temp_Q);
+
+            //printf("Difference R:\n");
+            //matf32_sub(&temp_R, &R_qr_R, &temp_R);
+            //matf32_print(&temp_R);
         }
     }
 }

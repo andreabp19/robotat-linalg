@@ -91,9 +91,9 @@ void main(void)
             matf32_init(&R_qr, n-1, 1, R_qr_list[i-1]);
         }
 
-        //printf("\n--------------------------------------------------\n");
-        //printf("n = %i\n", n);
-        //printf("--------------------------------------------------\n");
+        printf("\n--------------------------------------------------\n");
+        printf("n = %i\n", n);
+        printf("--------------------------------------------------\n");
         //printf("cond_A = %.9f\n", cond_A);
         //printf("cond_L = %.9f\n", cond_A_L);
         //printf("cond_U = %.9f\n", cond_A_U);
@@ -124,9 +124,13 @@ void main(void)
         mean_fwd_subs_time = mean(fwd_subs_time, x);
 
         bool fwd_subs_ans = matf32_is_equal(&temp, &R_fwd_subs);
-        printf("linsolve_fwd_subs%i\n", n);
-        printf("%.9f\n", mean_fwd_subs_time);
-        //printf("forward-subs ,time(s):%.9f,%s\n", mean_fwd_subs_time, fwd_subs_ans?"success":"failure");
+        //printf("linsolve_fwd_subs%i\n", n);
+        //printf("%.9f\n", mean_fwd_subs_time);
+        printf("forward-subs ,time(s):%.9f,%s\n", mean_fwd_subs_time, fwd_subs_ans?"success":"failure");
+
+        printf("Difference fwd_subs_result:\n");
+        matf32_sub(&temp, &R_fwd_subs, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 2. linsolve - Backward Substitution
@@ -145,9 +149,13 @@ void main(void)
         mean_bwd_subs_time = mean(bwd_subs_time, x);
         
         bool bwd_subs_ans = matf32_is_equal(&temp, &R_bwd_subs);
-        printf("linsolve_bwd_subs%i\n", n);
-        printf("%.9f\n", mean_bwd_subs_time);
-        //printf("backward-subs,time(s):%.9f,%s\n", mean_bwd_subs_time, bwd_subs_ans?"success":"failure");
+        //printf("linsolve_bwd_subs%i\n", n);
+        //printf("%.9f\n", mean_bwd_subs_time);
+        printf("backward-subs,time(s):%.9f,%s\n", mean_bwd_subs_time, bwd_subs_ans?"success":"failure");
+
+        printf("Difference bwd_subs_result:\n");
+        matf32_sub(&temp, &R_bwd_subs, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 3. linsolve - Cholesky
@@ -168,9 +176,13 @@ void main(void)
         mean_cholesky_time = mean(cholesky_time, x);
         
         bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
-        printf("linsolve_cholesky%i\n", n);
-        printf("%.9f\n", mean_cholesky_time);
-        //printf("cholesky     ,time(s):%.9f,%s\n", mean_cholesky_time, cholesky_ans?"success":"failure");
+        //printf("linsolve_cholesky%i\n", n);
+        //printf("%.9f\n", mean_cholesky_time);
+        printf("cholesky     ,time(s):%.9f,%s\n", mean_cholesky_time, cholesky_ans?"success":"failure");
+
+        printf("Difference cholesky_result:\n");
+        matf32_sub(&temp, &R_cholesky, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 4. linsolve - QR
@@ -189,10 +201,13 @@ void main(void)
         mean_qr_time = mean(qr_time, x);
 
         bool qr_ans = matf32_is_equal(&temp2, &R_qr);
-        printf("linsolve_qr%i\n", n);
-        printf("%.9f\n", mean_qr_time);
-        //printf("qr           ,time(s):%.9f,%s\n", mean_qr_time, qr_ans?"success":"failure");
+        //printf("linsolve_qr%i\n", n);
+        //printf("%.9f\n", mean_qr_time);
+        printf("qr           ,time(s):%.9f,%s\n", mean_qr_time, qr_ans?"success":"failure");
 
+        printf("Difference qr_result:\n");
+        matf32_sub(&temp, &R_qr, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // 5. linsolve - LU
@@ -210,11 +225,21 @@ void main(void)
             lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
 
+        //printf("temp:\n");
+        //matf32_print(&temp);
+
+        //printf("R_lu:\n");
+        //matf32_print(&R_lu);
+
         mean_lu_time = mean(lu_time, x);
         
         bool lu_ans = matf32_is_equal(&temp, &R_lu);
-        printf("linsolve_lu%i\n", n);
-        printf("%.9f\n", mean_lu_time);
-        //printf("lu           ,time(s):%.9f,%s\n", mean_lu_time, lu_ans?"success":"failure");
+        //printf("linsolve_lu%i\n", n);
+        //printf("%.9f\n", mean_lu_time);
+        printf("lu           ,time(s):%.9f,%s\n", mean_lu_time, lu_ans?"success":"failure");
+
+        printf("Difference lu_result:\n");
+        matf32_sub(&temp, &R_lu, &temp);
+        matf32_print(&temp);
     }
 }
