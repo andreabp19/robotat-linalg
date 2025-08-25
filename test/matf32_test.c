@@ -539,25 +539,16 @@ void main(void)
         
         uint16_t p_index[n];
 
-        float pivot_row_data[B.num_rows];
-        matf32_t pivot_row;
-        matf32_init(&pivot_row, 1, B.num_cols, pivot_row_data);
-
         matf32_zeros(&temp_L);
         matf32_zeros(&temp_U);
 
-        /*for (uint8_t j = 0; j < x; j++)
+        for (uint8_t j = 0; j < x; j++)
         {
             time = clock();
-            matf32_lu(&B, &temp_L, &temp_U);
+            matf32_lu(&B, &temp_L, &temp_U, p_index);
             lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }*/
-
-        //printf("B:\n");
-        //matf32_print(&B);
-
-        matf32_lu(&B, &temp_L, &temp_U, p_index);
-
+        }
+        
         //printf("L:\n");
         //matf32_print(&temp_L);
         //printf("U:\n");
@@ -567,20 +558,6 @@ void main(void)
         //matf32_print(&R_lu_L);
         //printf("R_lu_U:\n");
         //matf32_print(&R_lu_U);
-
-        for (int16_t k = (int)B.num_rows - 1; k >= 0; --k)
-        {
-            // Switch the p_index[k] row into the k row of B
-            matf32_submatrix_copy(&B, &temp_B, p_index[k], 0, k, 0, 1, B.num_cols);
-        }
-
-        //matf32_mul(&temp_L, &temp_U, &temp);
-
-        //printf("L*U:\n");
-        //matf32_print(&temp);
-
-        //printf("P*B:\n");
-        //matf32_print(&temp_B);
 
         //printf("p_index: ");
         //for (uint16_t i = 0; i < n; ++i)
