@@ -1015,6 +1015,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
  * @param[in]       p_a   Points to square matrix to decompose.
  * @param[in, out]  p_l     Points to the lower result of the decomposition.
  * @param[in, out]  p_u     Points to the upper of the decomposition.
+ * @param[in, out]  p_index Saved indexes for permutation
  *
  * @return  Execution status
  *              MATH_SUCCESS :          Operation successful.
@@ -1022,7 +1023,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
  *              MATH_SINGULAR :         Matrix is singular.
  */
 err_status_t
-matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u);
+matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_t* p_index);
 
 
 // Maybe move this to matf32.h
