@@ -396,7 +396,7 @@ rob_quat_norm(const rob_quat_t* p_srcq, float* q_norm);
  * 
  * @return None
  */
-void
+rob_status_t
 rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
 
 
@@ -866,8 +866,8 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
  * 
  * @return None
  */
-rob_status_t
-rob_check_null_quaternion(rob_quat_t* p_q);
+bool
+rob_check_null_quaternion(const rob_quat_t* p_q);
 
 /**
  * @brief   Checks if two quaternions are equal

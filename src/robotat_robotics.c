@@ -513,16 +513,20 @@ rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 void
 rob_quat_norm(const rob_quat_t* p_srcq, float* q_norm)
 {
-    // Add check for very small numbers that could cause division by zero errors
-
     *q_norm = sqrt((*p_srcq->p_s)*(*p_srcq->p_s) + (*p_srcq->p_i)*(*p_srcq->p_i) + (*p_srcq->p_j)*(*p_srcq->p_j) + (*p_srcq->p_k)*(*p_srcq->p_k));
 }
 
 
 // Tested => Works
-void
+rob_status_t
 rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 {
+    // If the quaternion is null, return error to prevent division by zero
+    if (rob_check_null_quaternion(p_srcq))
+    {
+        return NULL_QUATERNION_ERR;
+    }
+
     float q_norm = 0;
     float q_norm_squared = 0;
 
@@ -539,6 +543,8 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
     *p_dstq->p_i = *q_conj.p_i / q_norm_squared;
     *p_dstq->p_j = *q_conj.p_j / q_norm_squared;
     *p_dstq->p_k = *q_conj.p_k / q_norm_squared;
+
+    return ROB_SUCCESS;
 }
 
 
@@ -1361,15 +1367,15 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
 
 
 // Tested => Works
-rob_status_t
-rob_check_null_quaternion(rob_quat_t* p_q)
+bool
+rob_check_null_quaternion(const rob_quat_t* p_q)
 {
     if (*p_q->p_s == 0.0 && *p_q->p_i == 0.0 && *p_q->p_j == 0.0 && *p_q->p_k == 0.0)
     {
-        return NULL_QUATERNION_ERR;
+        return true;
     }
 
-    return ROB_SUCCESS;
+    return false;
 }
 
 // Tested => Works
