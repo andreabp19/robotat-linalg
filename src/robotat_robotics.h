@@ -38,7 +38,7 @@ typedef enum
 {
     ROB_SUCCESS,
     ROT_SIZE_MISMATCH,
-    HOMOG_SIZE_MISMATCH,
+    TR_SIZE_MISMATCH,
     VEC_SIZE_MISMATCH,
     TRANSFORM_FRAMES_MISMATCH,
     NULL_QUATERNION_ERR
@@ -124,7 +124,7 @@ typedef struct
  * 
  * @return None
  */
-void
+rob_status_t
 rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, rob_frame_tags_t ref_tag, rob_frame_tags_t dst_tag, bool angle_units);
 
 /**
@@ -156,9 +156,9 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
  * @param[in,out]   p_F     Points to the reference frame struct
  * @param[in]       p_v     Points to the coordinates vector to be implemented
  * 
- * @return  err_status_t
+ * @return  rob_status_t
  */
-void
+rob_status_t
 rob_transl(matf32_t* p_v, rob_frame_t* p_F);
 
 // ----------------------------------------------------------------------------------------------------
@@ -173,7 +173,7 @@ rob_transl(matf32_t* p_v, rob_frame_t* p_F);
  * 
  * @return err_status_t
  */
-void
+rob_status_t
 rob_rotx(matf32_t* p_R, float theta, bool angle_units);
 
 /**
@@ -184,7 +184,7 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units);
  * 
  * @return None
  */
-void
+rob_status_t
 rob_roty(matf32_t* p_R, float theta, bool angle_units);
 
 /**
@@ -195,7 +195,7 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units);
  * 
  * @return None
  */
-void
+rob_status_t
 rob_rotz(matf32_t* p_R, float theta, bool angle_units);
 
 /**
@@ -431,7 +431,7 @@ rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_sr
  * 
  * @return None
  */
-void
+rob_status_t
 rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F);
 
 /**
@@ -442,7 +442,7 @@ rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F);
  * 
  * @return None
  */
-void
+rob_status_t
 rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R);
 
 
@@ -455,7 +455,7 @@ rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R);
  * 
  * @return None
  */
-void
+rob_status_t
 rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v);
 
 // ----------------------------------------------------------------------------------------------------
@@ -474,7 +474,7 @@ rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v);
  *  
  * @return None
  */
-void 
+rob_status_t 
 rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R);
 
 /**
@@ -509,7 +509,7 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequenc
  *  
  * @return None
  */
-void 
+rob_status_t 
 rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R);
 
 /**
@@ -540,7 +540,7 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence
  * 
  * @return None
  */
-void
+rob_status_t
 rob_rot2quat(matf32_t* p_R, rob_quat_t* p_uq);
 
 /**
@@ -572,7 +572,7 @@ rob_tr2quat(rob_frame_t* p_F, rob_quat_t* p_uq);
  * 
  * @return None
  */
-void
+rob_status_t
 rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
 
 
@@ -589,7 +589,7 @@ rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rot_seque
  * 
  * @return None
  */
-void
+rob_status_t
 rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq);
 
 
@@ -609,7 +609,7 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequen
  * 
  * @return None
  */
-void 
+rob_status_t 
 rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw);
 
 
@@ -644,7 +644,7 @@ rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
  * 
  * @return None
  */
-void
+rob_status_t
 rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi);
 
 /**
@@ -674,7 +674,7 @@ rob_tr2eul(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
  * 
  * @return None
  */
-void
+rob_status_t
 rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R);
 
 /**
@@ -818,31 +818,31 @@ rob_quat_print(const rob_quat_t* p_srcq);
 /**
  * @brief    Check if a matrix is 3x3 to be a rotation matrix
  * 
- * @param[in]   p_R     Points to matrix to be checked.
+ * @param[in]   p_R     Points to matrix to be checked (matf32_t matrix, 3,3).
  * 
- * @return rob_status_t
+ * @return bool
  */
-rob_status_t
+bool
 rob_isrot(matf32_t* p_R);
 
 /**
  * @brief   Check if a matrix is 4x4 to be an homogeneous transformation matrix
  * 
- * @param[in]   p_T     Points to matrix to be checked.
+ * @param[in]   p_T     Points to matrix to be checked (matf32_t matrix, 4x4).
  * 
- * @return rob_status_t
+ * @return bool
  */
-rob_status_t
-rob_ishom(matf32_t* p_T);
+bool
+rob_istr(matf32_t* p_T);
 
 /**
  * @brief   Check if a vector has 3 elements to be used as coordinates vector in the homogeneous transformation matrix
  * 
- * @param[in]   p_v     Points to vector to be checked (matrix, 1x3 or 3x1);
+ * @param[in]   p_v     Points to vector to be checked (matf32_t matrix, 1x3 or 3x1);
  * 
- * @return rob_status_t
+ * @return bool
  */
-rob_status_t
+bool
 rob_isvec(matf32_t* p_v);
 
 /**

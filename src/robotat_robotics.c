@@ -19,7 +19,7 @@
 // ====================================================================================================
 
 // Tested => Works
-void
+rob_status_t
 rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
                 rob_frame_tags_t ref_tag, rob_frame_tags_t dst_tag, bool angle_units)
 {
@@ -29,6 +29,20 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
     p_F->angle_units = angle_units;
 
     // ADD SIZE CHECK TO ENSURE p_T points to a 4x4 matrix
+    if (rob_istr(p_T))
+    {
+        return TR_SIZE_MISMATCH;
+    }
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
+    if (rob_isvec(p_v))
+    {
+        return VEC_SIZE_MISMATCH;
+    }
 
     // Set matrices to the frame struct
     p_F->p_T = p_T;
@@ -37,10 +51,14 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
 
     // Set last element as 1, because the last row must always be: 0 0 0 1
     matf32_set(p_T, 4, 4, 1);
+
+    return ROB_SUCCESS;
 }
 
 
 // Tested => Works
+// No dimension check needed because the vector is initialized inside the function with the necessary dimensions
+// Warning, the matf32_t matrix used will be overwritten to a 4x1 matrix, no previous check.
 void
 rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_tag)
 {
@@ -62,10 +80,17 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-void
+rob_status_t
 rob_transl(matf32_t* p_v, rob_frame_t* p_F)
 {
+    if (rob_isvec(p_v))
+    {
+        return VEC_SIZE_MISMATCH;
+    }
+
     matf32_submatrix_copy(p_v, p_F->p_T, 0, 0, 0, p_F->p_R->num_cols, p_v->num_rows, p_v->num_cols);
+
+    return ROB_SUCCESS;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -73,7 +98,7 @@ rob_transl(matf32_t* p_v, rob_frame_t* p_F)
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-void
+rob_status_t
 rob_rotx(matf32_t* p_R, float theta, bool angle_units)
 {
     /**
@@ -82,6 +107,11 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units)
      *  | 0 cos(theta) -sin(theta) |
      *  | 0 sin(theta)  cos(theta) |
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     float rads = theta*M_PI/180;
 
@@ -108,11 +138,13 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 2, 3, neg_sin_theta);
     matf32_set(p_R, 3, 2, sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
+
+    return ROB_SUCCESS;
 }
 
 
 // Tested => Works
-void
+rob_status_t
 rob_roty(matf32_t* p_R, float theta, bool angle_units)
 {
     /**
@@ -121,6 +153,11 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units)
      *  |      0      1      0     |
      *  |-sin(theta)  0  cos(theta)|
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     float rads = theta*M_PI/180;
 
@@ -147,11 +184,13 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 2, 2, 1);
     matf32_set(p_R, 3, 1, neg_sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
+
+    return ROB_SUCCESS;
 }
 
 
 // Tested => Works
-void
+rob_status_t
 rob_rotz(matf32_t* p_R, float theta, bool angle_units)
 {
     /**
@@ -160,6 +199,11 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units)
      *  | sin(theta)  cos(theta) 0 |
      *  |     0           0      1 |
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     float rads = theta*M_PI/180;
 
@@ -186,6 +230,8 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 2, 1, sin_theta);
     matf32_set(p_R, 2, 2, cos_theta);
     matf32_set(p_R, 3, 3, 1);
+
+    return ROB_SUCCESS;
 }
 
 
@@ -569,27 +615,53 @@ rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_sr
 
 
 // Tested => Works
-void
+rob_status_t
 rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F)
 {
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
+
+    return ROB_SUCCESS;
 }
 
 
 // Tested => Works
-void
+rob_status_t
 rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R)
 {
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
     matf32_submatrix_copy(p_F->p_T, p_R, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
+
+    return ROB_SUCCESS;
 }
 
 
 // Tested => Works
-void
+rob_status_t
 rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v)
 {
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
+    if (rob_isvec(p_v))
+    {
+        return VEC_SIZE_MISMATCH;
+    }
+
     rob_rot2tr(p_R, p_F);
     rob_transl(p_v, p_F);
+
+    return ROB_SUCCESS;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -599,7 +671,7 @@ rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v)
 
 // Tested => Works
 // Change the angles names to avoid confusion
-void
+rob_status_t
 rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R)
 {
     /**
@@ -612,6 +684,11 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequen
      * - Multiply the rotation matrices
      * - Assign the result to the rotation matrix of the reference frame
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     float R_roll_data[MAX_MAT_SIZE];
     matf32_t R_roll;
@@ -673,6 +750,8 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequen
     // Multiply the generated rotation matrices in the order: R_yaw * R_pitch * R_roll, then save to p_R
     matf32_mul(&R_yaw, &R_pitch, &temp_R);
     matf32_mul(&temp_R, &R_roll, p_R);
+
+    return ROB_SUCCESS;
 }
 
 
@@ -695,7 +774,7 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequenc
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-void
+rob_status_t
 rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R)
 {
     /**
@@ -708,6 +787,11 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequenc
      * - Multiply the rotation matrices
      * - Assign the result to the rotation matrix of the reference frame
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     float R_phi_data[MAX_MAT_SIZE];
     matf32_t R_phi;
@@ -769,6 +853,8 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequenc
     // Multiply the generated rotation matrices in the order: R_psi * R_theta * R_phi, then save to p_R
     matf32_mul(&R_phi, &R_theta, &temp_R);
     matf32_mul(&temp_R, &R_psi, p_R);
+
+    return ROB_SUCCESS;
 }
 
 
@@ -791,9 +877,14 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-void
+rob_status_t
 rob_rot2quat(matf32_t* p_R, rob_quat_t* p_uq)
 {
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
     float diag_1 = p_R->p_data[0];
     float diag_2 = p_R->p_data[4];
     float diag_3 = p_R->p_data[8];
@@ -896,6 +987,8 @@ rob_rot2quat(matf32_t* p_R, rob_quat_t* p_uq)
     *p_uq->p_i = uq_i;
     *p_uq->p_j = uq_j;
     *p_uq->p_k = uq_k;
+
+    return ROB_SUCCESS;
 }
 
 
@@ -912,20 +1005,34 @@ rob_tr2quat(rob_frame_t* p_F, rob_quat_t* p_uq)
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-void
+rob_status_t
 rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
 {
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
     rob_rpy2rot(roll, pitch, yaw, rot_sequence, angle_units, p_R);
     rob_rot2quat(p_R, p_uq);
+
+    return ROB_SUCCESS;
 }
 
 
 // Tested => Works
-void
+rob_status_t
 rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R, rob_quat_t* p_uq)
 {
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
+
     rob_eul2rot(phi, theta, psi, rot_sequence, angle_units, p_R);
     rob_rot2quat(p_R, p_uq);
+
+    return ROB_SUCCESS;
 }
 
 
@@ -934,7 +1041,7 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequen
 // ----------------------------------------------------------------------------------------------------
 
 // Still not fully tested
-void 
+rob_status_t 
 rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw)
 {
     /**
@@ -942,6 +1049,11 @@ rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
      * 
      * Solving for each angle in rotation sequence, using acos, asin and atan2, to avoid divisions.
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     switch(rot_sequence)
     {
@@ -983,6 +1095,8 @@ rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
     }
 
     // TODO: Add optional conversion to degrees
+
+    return ROB_SUCCESS;
 }
 
 
@@ -995,7 +1109,7 @@ rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
 
 // Still not fully tested
 // Change all rot_sequence paraments into eul_seq, and rot_sequence into rpy_seq
-void 
+rob_status_t 
 rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi)
 {
     /**
@@ -1005,6 +1119,11 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
      * 
      * Solving for each angle in rotation sequence, using acos, asin and atan2, to avoid divisions.
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     switch(rot_sequence)
     {
@@ -1046,6 +1165,8 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
     }
 
     // TODO: Add optional conversion to degrees
+
+    return ROB_SUCCESS;
 }
 
 
@@ -1062,7 +1183,7 @@ rob_tr2eul(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-void
+rob_status_t
 rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R)
 {
     /**
@@ -1071,6 +1192,11 @@ rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R)
      * Use notation xyz to check if I wrote it well from the reference equation, then change to:
      * uq_s, uq_i, uq_j and uq_k
      */
+
+    if (rob_isrot(p_R))
+    {
+        return ROT_SIZE_MISMATCH;
+    }
 
     float s = *p_uq->p_s;
     float x = *p_uq->p_i;
@@ -1091,6 +1217,8 @@ rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R)
     p_R->p_data[6] = 2.0*((x*z) - (s*y));
     p_R->p_data[7] = 2.0*((y*z) + (s*x));
     p_R->p_data[8] = 1.0 - (2.0*((x*x) + (y*y)));
+
+    return ROB_SUCCESS;
 }
 
 
@@ -1107,7 +1235,7 @@ rob_quat2tr(rob_quat_t* p_uq, rob_frame_t* p_F)
 // 4.8. Quaternions -> Roll-Pitch-Yaw and Euler Angles
 // ----------------------------------------------------------------------------------------------------
 
-// Still not tested
+// Tested => Works
 void
 rob_quat2rpy(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw)
 {
@@ -1123,7 +1251,7 @@ rob_quat2rpy(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_seque
 }
 
 
-// Still not tested
+// Tested => Works
 void
 rob_quat2eul(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi)
 {
@@ -1275,8 +1403,8 @@ rob_status_print(rob_status_t rob_status)
             printf("ROT_SIZE_MISMATCH\n");
             break;
         
-        case HOMOG_SIZE_MISMATCH:
-            printf("HOMOG_SIZE_MISMATCH\n");
+        case TR_SIZE_MISMATCH:
+            printf("TR_SIZE_MISMATCH\n");
             break;
 
         case VEC_SIZE_MISMATCH:
@@ -1299,44 +1427,43 @@ rob_status_print(rob_status_t rob_status)
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
-rob_status_t
+bool
 rob_isrot(matf32_t* p_R)
 {
-    if (p_R->num_rows != 3 && p_R->num_cols != 3)
+    if (p_R->num_rows != 3 || p_R->num_cols != 3)
     {
-        return ROT_SIZE_MISMATCH;
+        return true;
     }
 
-    return ROB_SUCCESS;
+    return false;
 }
 
 
 // Tested => Works
-rob_status_t
-rob_ishom(matf32_t* p_T)
+bool
+rob_istr(matf32_t* p_T)
 {
-    if (p_T->num_rows != 4 && p_T->num_cols != 4)
+    if (p_T->num_rows != 4 || p_T->num_cols != 4)
     {
-        return HOMOG_SIZE_MISMATCH;
+        return true;
     }
 
-    return ROB_SUCCESS;
+    return false;
 }
 
 
 // Tested => Works
-rob_status_t
+bool
 rob_isvec(matf32_t* p_v)
 {
     // Defined as a column vector for convenience for all operations
-    if (p_v->num_rows != 3 && p_v->num_cols != 1)
+    if (p_v->num_rows != 3 || p_v->num_cols != 1)
     {
-        return VEC_SIZE_MISMATCH;
+        return true;
     }
 
-    return ROB_SUCCESS;
+    return false;
 }
-
 
 // Tested => Works
 rob_status_t
