@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.h
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 16 Aug 2025
+ * @date created 19 Jul. 2025, last modified 27 Aug 2025
  *
  * Robotics algorithms, based on Robotics Toolbox by Peter Corke for Matlab
 */

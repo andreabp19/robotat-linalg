@@ -3,7 +3,7 @@
  * 
  * Linear solvers based on matf32 datatype.
  * 
- * Modified 25 Aug 2025
+ * Last modified 27 Aug 2025
  *      By: Andrea Pineda
  */
 
@@ -36,7 +36,11 @@ typedef enum
 } linsolve_method_t;
 
 /**
-*  @brief   Prints string representing the linear method.
+* @brief   Prints string representing the linear method.
+* 
+* @param[in]    lsm     Method to use
+*
+* @return None.
 */
 void
 linsolve_print_method(linsolve_method_t lsm);
@@ -97,26 +101,49 @@ linsolve_backward_substitution(const matf32_t* const p_u, const matf32_t* const 
 
 
 /**
- * @brief   Pending
+ * @brief   Solves a system Cx = b through Cholesky factorization. C must be an upper triangle matrix,
+ * the length of b and must be the same as the amount of rows in C.
  * 
+ * @param[in]       p_c     Points to upper triangular matrix.
+ * @param[in]       p_b     Points to b vector.
+ * @param[in,out]   p_x     Points to output vector x.
  * 
+ * @return  Execution status
+ *              MATH_SUCCESS :          Operation successful
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed
  */
 err_status_t
 linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
- * @brief   
+ * @brief   Solves a system Ax = b through QR factorization. For A = QR, first computes y = Qb,
+ * then solves Rx = y.
  * 
+ * @param[in]       p_q     Points to matrix q from QR decomposition of A.
+ * @param[in]       p_r     Points to matrix R from QR decomposition of A.
+ * @param[in]       p_b     Points to b vector.
+ * @param[in,out]   p_x     Points to output vector x.
+ * 
+ * @return  Execution status
+ *              MATH_SUCCESS :          Operation successful
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed
  */
 err_status_t
 linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
- * @brief   Add description
+ * @brief   Solves a system Ax = b through LU factorization.
  * 
+ * @param[in]       p_l     Points to matrix L from LU decomposition of A.
+ * @param[in]       p_u     Points to matrix U from LU decomposition of A.
+ * @param[in]       p_b     Points to b vector.
+ * @param[in,out]   p_x     Points to output vector x.
  * 
+ * @return  Execution status
+ *              MATH_SUCESS :           Operation successful
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed
  */
 err_status_t
 linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x, uint16_t* p_index);

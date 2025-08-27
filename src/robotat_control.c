@@ -1,3 +1,12 @@
+
+/**
+ * @author Miguel Zea
+ * 
+ * Last modified: 27 Aug 2025
+ * 		By: Andrea Pineda
+ * 
+ */
+
 #include "robotat_control.h"
 
 
@@ -19,6 +28,7 @@ static matf32_t m5;
 // 1. PID Control
 // ====================================================================================================
 
+// Tested => Works
 void
 ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizations_t pid_alg, bool set_i_limits, ...)
 {
@@ -229,7 +239,6 @@ ctr_sys_lti_init(ctr_sys_lti_t* const sys, matf32_t* const state, matf32_t* cons
 	}
 	return MATH_SUCCESS;
 }
-
 
 // ----------------------------------------------------------------------------------------------------
 // 2.2. Non-linear State Space
@@ -677,7 +686,7 @@ ctr_pid_print(ctr_pid_t* const p_pid)
 	printf("dt     : %.9f\n", p_pid->dt);
 	
 	printf("pid_alg: ");
-	ctr_discretizations_print(PURE_DISCRETE);
+	ctr_discretizations_print(p_pid->pid_alg);
 
 	printf("-------------------------\n\n");
 }
@@ -723,9 +732,9 @@ ctr_sys_lti_print(ctr_sys_lti_t* p_sys_lti)
 	matf32_print(p_sys_lti->state);
 	
 	printf("dt: %.9f\n", p_sys_lti->dt);
-	printf("state_dim: %.9f\n", p_sys_lti->state_dim);
-	printf("input_dim: %.9f\n", p_sys_lti->input_dim);
-	printf("output_dim: %.9f\n", p_sys_lti->output_dim);
+	printf("state_dim: %.9f\n", (float)p_sys_lti->state_dim);
+	printf("input_dim: %.9f\n", (float)p_sys_lti->input_dim);
+	printf("output_dim: %.9f\n", (float)p_sys_lti->output_dim);
 	printf("is_continuous: %i\n\n", p_sys_lti->is_continuous);
 
 	printf("A:\n");

@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 12 Aug 2025
+ * Last modified: 27 Aug 2025
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -180,6 +180,7 @@ ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
     pid->ki = ki;
     pid->kd = kd;
 }
+// Tested => Works
 
 
 /**
@@ -252,7 +253,6 @@ ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t
 
 err_status_t
 ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta);
-
 
 // ----------------------------------------------------------------------------------------------------
 // 2.1. Linear State Space Controllers
