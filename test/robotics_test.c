@@ -1,7 +1,16 @@
 
+
+/**
+ * @author Andrea Pineda
+ * @date Created 23 Aug 2025, last modified: 27 Aug 2025
+ * 
+ * For testing robotat_robotics in computer
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #include "matf32.h"
 #include "linsolve.h"
@@ -140,7 +149,7 @@ int main(void)
 {
     clock_t time;
 
-    rob_status_t rob_status;
+    rob_status_t status;
 
     // Initialize matrices for Frame AB
     matf32_init(&F_AB_T, 4, 4, F_AB_T_data);  // Homogeneous transformation matrix
@@ -152,12 +161,12 @@ int main(void)
 
     // Initialize reference frame
     // Note: last argument 0=radians, 1=degrees
-    rob_frame_init(&F_AB, &F_AB_T, &F_AB_R, &F_AB_v, FRAME_A, FRAME_B, angle_units);
+    status = rob_frame_init(&F_AB, &F_AB_T, &F_AB_R, &F_AB_v, FRAME_A, FRAME_B, angle_units);
 
     // Initialize vector points
     rob_refpoint_init(&p_A, &p_A_v, p_A_data, FRAME_A);
     rob_refpoint_init(&p_B, &p_B_v, p_B_data, FRAME_B);
-    
+
     // Initialize quaternions
     rob_quat_init(&q1, &q1_data[0], &q1_data[1], &q1_data[2], &q1_data[3]);
     rob_quat_init(&temp_q, &temp_q_data[0], &temp_q_data[1], &temp_q_data[2], &temp_q_data[3]);
@@ -202,6 +211,10 @@ int main(void)
 
     printf("\n\n");
 
+    float mismatch_test_data[MAX_MAT_SIZE];
+    matf32_t mismatch_test;
+    matf32_init(&mismatch_test, 5, 1, mismatch_test_data);
+
     // ---------------------------------------------------------------------------
     // 1. rob_transl
     // ---------------------------------------------------------------------------
@@ -220,7 +233,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_transl(F_AB.p_v, &F_AB);
+        status = rob_transl(F_AB.p_v, &F_AB);
         transl_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -247,7 +260,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_rotx(F_AB.p_R, theta, 0);
+        status = rob_rotx(F_AB.p_R, theta, 0);
         rotx_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -274,7 +287,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_roty(F_AB.p_R, theta, 0);
+        status = rob_roty(F_AB.p_R, theta, 0);
         roty_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -301,7 +314,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_rotz(F_AB.p_R, theta, 0);
+        status = rob_rotz(F_AB.p_R, theta, 0);
         rotz_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -645,7 +658,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_status = rob_quat_inv(&q2, &temp_q);
+        status = rob_quat_inv(&q1, &temp_q);
         quat_inv_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -679,7 +692,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_rot2tr(F_AB.p_R, &F_AB);
+        status = rob_rot2tr(F_AB.p_R, &F_AB);
         rot2tr_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -710,7 +723,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_tr2rot(&F_AB, F_AB.p_R);
+        status = rob_tr2rot(&F_AB, F_AB.p_R);
         tr2rot_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -737,7 +750,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_rpy2rot(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R);
+        status = rob_rpy2rot(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R);
         rpy2rot_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -800,7 +813,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_update_transform(&F_AB, F_AB.p_R, F_AB.p_v);
+        status = rob_update_transform(&F_AB, F_AB.p_R, F_AB.p_v);
         update_transform_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -828,7 +841,7 @@ int main(void)
     {
         time = clock();
         // In robotics toolbox there seems only ZYZ is implemented for eul2r
-        rob_eul2rot(phi, theta, psi, ZYZ, angle_units, F_AB.p_R);
+        status = rob_eul2rot(phi, theta, psi, ZYZ, angle_units, F_AB.p_R);
         eul2rot_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -894,7 +907,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_rot2quat(F_AB.p_R, &temp_q);
+        status = rob_rot2quat(F_AB.p_R, &temp_q);
         rot2quat_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -952,7 +965,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_rpy2quat(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R, &temp_q);
+        status = rob_rpy2quat(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R, &temp_q);
         rpy2quat_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -970,7 +983,7 @@ int main(void)
     printf("rpy2quat        ,%s,mean_time(s): %.9f\n", rpy2quat_ans?"success":"failure", rpy2quat_mean_time);
 
     // ---------------------------------------------------------------------------
-    // 27. rob_rpy2quat
+    // 27. rob_eul2quat
     // ---------------------------------------------------------------------------
 
     float eul2quat_time[x]; // Raw time data
@@ -979,7 +992,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        rob_eul2quat(phi, theta, psi, ZYZ, angle_units, F_AB.p_R, &temp_q);
+        status = rob_eul2quat(phi, theta, psi, ZYZ, angle_units, F_AB.p_R, &temp_q);
         eul2quat_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
