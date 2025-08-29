@@ -1,5 +1,7 @@
 /**
  * @file quadprog.c
+ * 
+ * Last modified: 29 Aug 2025
  */
 
 #include <stdint.h>
