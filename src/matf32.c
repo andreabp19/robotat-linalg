@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 27 Aug 2025
+ * Last Modified: 29 Aug 2025
  *      By: Andrea Pineda
  *
  */
@@ -1329,7 +1329,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 }
 
 
-// doolittle algoritm
+// doolittle algoritm with partial pivoting
 err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_t* p_index)
 {
