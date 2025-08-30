@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 29 Aug 2025
+ * Last Modified: 30 Aug 2025
  *      By: Andrea Pineda
  *
  */
@@ -515,7 +515,6 @@ matf32_is_equal_scalar(const matf32_t* const p_mat, float scalar)
 
     return true;
 }
-
 
 bool
 matf32_is_equal_less_scalar(const matf32_t* const p_mat, float scalar)
@@ -1532,4 +1531,99 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
 }
 
 
+// Tested that computes without bugs but haven't compared to an equivalent of this function
+err_status_t
+matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* beta)
+{
+    uint16_t m = p_x->num_rows;
+    printf("m: %f\n\n", m);
 
+    // Assuming p_x is a column vector
+    float sub_x_data[MAX_MAT_SIZE];
+    matf32_t sub_x;
+    matf32_init(&sub_x, p_x->num_rows - 1, 1, sub_x_data);
+
+    float trans_sub_x_data[MAX_MAT_SIZE];
+    matf32_t trans_sub_x;
+    matf32_init(&trans_sub_x, sub_x.num_rows, sub_x.num_cols, trans_sub_x_data);
+
+    float sigma = 0;
+    float mu = 0;
+
+    printf("x:\n");
+    matf32_print(p_x);
+
+    // Define sub_x as p_x(2:m)
+    matf32_submatrix_copy(p_x, &sub_x, 1, 0, 0, 0, m-1, 1);
+    printf("sub_x:\n");
+    matf32_print(&sub_x);
+
+    // v = [1 x(2:m)]' = v[0] = 1, v[1:m] = sub_x
+    // No need for applying transpose because of how the data is managed
+    matf32_set(p_v, 1, 1, 1);
+    matf32_submatrix_copy(&sub_x, p_v, 0, 0, 1, 0, sub_x.num_rows, sub_x.num_cols);
+    printf("v:\n");
+    matf32_print(p_v);
+
+    // sigma =  sub_x'sub_x
+    matf32_trans(&sub_x, &trans_sub_x);
+    printf("trans_sub_x:\n");
+    matf32_print(&trans_sub_x);
+    matf32_dot(&trans_sub_x, &sub_x, &sigma);
+    printf("sub_x'sub_x:\n");
+    printf("sigma: %.9f\n", sigma);
+
+    // Value asignation depending on the case:
+
+    // if: sigma = 0 and p_x[0] >= 0
+    // Condition works
+    if (sigma == 0 && p_x->p_data[0] >= 0)
+    {
+        printf("Condition: beta = 0\n\n");
+        *beta = 0;
+    }
+
+    // if: sigma = 0 and p_x[0] < 0
+    // Condition works
+    else if (sigma == 0 && p_x->p_data[0] < 0)
+    {
+        printf("Condition: beta = -2\n\n");
+        *beta = -2;
+    }
+
+    // else: sigma != 0, further conditions
+    // Condition works
+    else
+    {
+        // mu = sqrt(x[0]^2 + sigma)
+        mu = sqrt(p_x->p_data[0]*p_x->p_data[0] + sigma);
+        printf("mu: %.9f\n\n", mu);
+
+        // Condition works
+        if (p_x->p_data[0] < 0)
+        {
+            printf("Condition: Else - If v[0] = x[0] - mu\n\n");
+            // v[0] = x[0] - mu
+            p_v->p_data[0] = p_x->p_data[0] - mu;
+        }
+        // Condition works
+        else
+        {
+            printf("Condition else - else: v[0] = -sigma/(x[0] + mu)\n\n");
+            // v[0] = -sigma/(x[0] + mu)
+            p_v->p_data[0] = -1.0*sigma/(p_x->p_data[0] + mu);
+        }
+
+        printf("beta = 2*v[0]^2/(sigma + v[0]^2)\n\n");
+        // beta = 2*v[0]^2/(sigma + v[0]^2)
+        *beta = 2*p_v->p_data[0]*p_v->p_data[0]/(sigma + p_v->p_data[0]*p_v->p_data[0]);
+        
+        printf("v = v/v[0]\n\n");
+        // v = v/v[0]
+        matf32_scale(p_v, 1/p_v->p_data[0], p_v);
+    }
+
+    printf("Final beta: %.9f\n", *beta);
+    printf("Final v:\n");
+    matf32_print(p_v);
+}
