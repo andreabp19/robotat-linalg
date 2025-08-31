@@ -1041,23 +1041,29 @@ err_status_t
 matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 
 /**
- * @brief   Generates householder transformation vectors for a given matrix
+ * @brief   Generates householder transformation vector and constant for a given matrix
  * 
  * @warning Assumes p_x is a column vector and works accordingly, so for now will fail if a row vector is introduced.
  * 
  * @param[in]       p_x     Points to vector to work with
  * @param[in,out]   p_v     Points to vector v to save the first householder vector
- * @param[in,out]   p_b     Points to scalar b to save the second householder vector
+ * @param[in,out]   p_b     Points to scalar b to save the constant produced
  * 
- * @return None
+ * @return err_status_t
  */
 err_status_t
 matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* p_b);
 
 /**
+ * @brief   Generates a householder bidiagonalization based on a given matrix
  * 
+ * @param[in]       p_a         Points to matrix A from which to generate the bidiagonalization
+ * @param[in,out]   p_bdiag     Points to matrix to save the householder bidiagonalization of A
  * 
+ * @return err_status_t
  */
+err_status_t
+matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag);
 
 #ifdef __cplusplus
 }
