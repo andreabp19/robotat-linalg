@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 30 Aug 2025
+ * Last modified: 31 Aug 2025
  *          By: Andrea Pineda
  */
 

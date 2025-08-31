@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 30 Aug 2025
+ * Last Modified: 31 Aug 2025
  *      By: Andrea Pineda
  *
  */
@@ -1818,6 +1818,7 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
 }
 
 
+// Based on Golub, Matrix Computations, Algorithm 5.1.3, but modified to generate as well the Givens rotation matrix instead of just sin and cos
 err_status_t
 matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
 {
@@ -1862,3 +1863,8 @@ matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
     matf32_set(p_g, j, i, -1.0*sin);
     matf32_set(p_g, j, j, cos);
 }
+
+
+
+
+//
