@@ -1816,3 +1816,49 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
     //printf("Final p_bdiag:\n");
     //matf32_print(p_bdiag);
 }
+
+
+err_status_t
+matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
+{
+    // Add size check for p_g (it should be 2x2)
+
+    float cos = 0;
+    float sin = 0;
+    float tau = 0;
+
+    // Generate sin and cos values for the Givens rotation
+    if (b == 0)
+    {
+        cos = 1;
+        sin = 0;
+    }
+
+    else
+    {
+        if (fabs(b) > fabs(a))
+        {
+            tau = -1.0*a/b;
+            sin = 1/sqrt(1 + (tau*tau));
+            cos = sin*tau;
+        }
+
+        else
+        {
+            tau = -1.0*b/a;
+            cos = 1/sqrt(1 + (tau*tau));
+            sin = cos*tau;
+        }
+    }
+
+    // Create Givens Rotation Matrix
+    
+    // Create Identity matrix
+    matf32_eye(p_g);
+
+    // Set sin and cos in their respective places given indices i and j
+    matf32_set(p_g, i, i, cos);
+    matf32_set(p_g, i, j, sin);
+    matf32_set(p_g, j, i, -1.0*sin);
+    matf32_set(p_g, j, j, cos);
+}

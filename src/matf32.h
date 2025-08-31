@@ -1065,6 +1065,23 @@ matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* p_b);
 err_status_t
 matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag);
 
+/**
+ * @brief   Computes a Givens rotation matrix (square matrix) based on two input values
+ * 
+ * @warning This routine uses mathematical indexing, which means indices i and j start in 1 instead of 0.
+ * 
+ * @param[in]       a       Scalar a
+ * @param[in]       b       Scalar b
+ * @param[in]       i       Index i for rows of G to modify
+ * @param[in]       j       Index j for cols of G to modify
+ * @param[in,out]   p_g     Points to output matrix (2x2)
+ * 
+ * @return err_status_t
+ */
+err_status_t
+matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g);
+
+
 #ifdef __cplusplus
 }
 #endif
