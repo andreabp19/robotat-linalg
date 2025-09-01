@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 31 Aug 2025
+ * Last modified: 1 Sep 2025
  *          By: Andrea Pineda
  */
 
@@ -1065,7 +1065,7 @@ matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* p_b);
  * @return err_status_t
  */
 err_status_t
-matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_u, matf32_t* p_b, matf32_t* p_v);
+matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_b, matf32_t* const p_v);
 
 /**
  * @brief   Computes a Givens rotation matrix (square matrix) based on two input values
