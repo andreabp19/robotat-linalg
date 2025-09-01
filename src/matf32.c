@@ -1632,7 +1632,7 @@ matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* beta)
 // Golub, Matrix Computations, Algorithm 5.4.2 (Householder Bidiagonalization)
 // Not fully tested, computes without bugs but haven't tested against other implementations' results.
 err_status_t
-matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
+matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_u, matf32_t* p_b, matf32_t* p_v)
 {
     // A is a mxn matrix
     uint16_t m = p_a->num_rows;
@@ -1658,9 +1658,6 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
     float v_data[MAX_MAT_SIZE];
     matf32_t v;
 
-    float v_trans_data[MAX_MAT_SIZE];
-    matf32_t v_trans;
-
     // Identity matrix
     float I_dim = 0;
     float I_data[MAX_MAT_SIZE];
@@ -1673,10 +1670,10 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
     float v_product_data[MAX_MAT_SIZE];
     matf32_t v_product;
 
-    // Copy p_a to p_bdiag to avoid overwriting p_a
-    matf32_submatrix_copy(p_a, p_bdiag, 0, 0, 0, 0, p_a->num_rows, p_a->num_cols);
+    // Copy p_a to p_b to avoid overwriting p_a
+    matf32_submatrix_copy(p_a, p_b, 0, 0, 0, 0, p_a->num_rows, p_a->num_cols);
     //printf("pbdiag:\n");
-    //matf32_print(p_bdiag);
+    //matf32_print(p_b);
 
     for (uint16_t j = 0; j < n; ++j)
     {
@@ -1693,7 +1690,6 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
         // 1 column because it's a vector
         matf32_init(&house_vec, m-j, 1, house_vec_data);
         matf32_init(&v, house_vec.num_rows, 1, v_data); // Same dimensions as house_vec
-        matf32_init(&v_trans, 1, v.num_rows, v_trans_data);
         matf32_init(&v_product, v.num_rows, v.num_rows, v_product_data); // vv' = v.rows x v.rows
         matf32_init(&sub_A, m-j, n-j, sub_A_data);  // A(j:m,j:n)
         matf32_init(&tmp_A, sub_A.num_rows, sub_A.num_cols, tmp_A_data);
@@ -1702,7 +1698,6 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
 
         matf32_zeros(&house_vec);
         matf32_zeros(&v);
-        matf32_zeros(&v_trans);
         matf32_zeros(&v_product);
         matf32_zeros(&sub_A);
 
@@ -1710,7 +1705,7 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
         
         // Asignation of house_vec
         // house_vec = A(j:m, j) means that the first rows are discarded, so copy the corresponding part of A
-        matf32_submatrix_copy(p_bdiag, &house_vec, j, j, 0, 0, m-j, 1);
+        matf32_submatrix_copy(p_b, &house_vec, j, j, 0, 0, m-j, 1);
         //printf("house_vec asignation:\n");
         //matf32_print(&house_vec);
 
@@ -1721,12 +1716,11 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
         //printf("beta: %.9f\n\n", beta);
     
         // Define A(j:m,j:n)
-        matf32_submatrix_copy(p_bdiag, &sub_A, j, j, 0, 0, m-j, n-j);
+        matf32_submatrix_copy(p_b, &sub_A, j, j, 0, 0, m-j, n-j);
         //printf("sub_A:\n");
         //matf32_print(&sub_A);
 
-        matf32_trans(&v, &v_trans); // v'
-        matf32_vecmul_col_row(v.p_data, v_trans.p_data, &v_product); // vv'
+        matf32_vecmul_col_row(v.p_data, v.p_data, &v_product); // vv'
         //printf("vv':\n");
         //matf32_print(&v_product);
 
@@ -1738,14 +1732,14 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
         matf32_mul(&house_transform, &sub_A, &tmp_A);
         //printf("After Householder Transformation:\n");
         //matf32_print(&tmp_A);
-        matf32_submatrix_copy(&tmp_A, p_bdiag, 0, 0, j, j, m-j, n-j);
+        matf32_submatrix_copy(&tmp_A, p_b, 0, 0, j, j, m-j, n-j);
         //printf("p_biag = I*sub_A:\n");
-        //matf32_print(p_bdiag);
+        //matf32_print(p_b);
 
-        // Storing the householder vector of this iteration in the subcolumn below the diagonal of p_bdiag: A(j+1: m,j) = v(2:m - j + 1)
-        matf32_submatrix_copy(&v, p_bdiag, 1, 0, j+1, j, v.num_rows-1, v.num_cols);
-        //printf("p_bdiag with v saved:\n");
-        //matf32_print(p_bdiag);
+        // Storing U vectors: A(j+1: m,j) = v(2:m - j + 1)
+        matf32_submatrix_copy(&v, p_u, 1, 0, j+1, j, v.num_rows-1, v.num_cols);
+        //printf("A_U:\n");
+        //matf32_print(p_u);
 
         // The step in the book says: j <= n - 2, but as it starts in zero, < is correct
         if (j < n - 2)
@@ -1771,8 +1765,8 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
             matf32_eye(&I);
 
             // Copy data for the new house_vec and sub_A
-            matf32_submatrix_copy(p_bdiag, &house_vec_row, j, j+1, 0, 0, 1, n-(j+1));
-            matf32_submatrix_copy(p_bdiag, &sub_A, j, j+1, 0, 0, m-j, n-(j+1));
+            matf32_submatrix_copy(p_b, &house_vec_row, j, j+1, 0, 0, 1, n-(j+1));
+            matf32_submatrix_copy(p_b, &sub_A, j, j+1, 0, 0, m-j, n-(j+1));
             
             matf32_trans(&house_vec_row, &house_vec);
             
@@ -1788,13 +1782,12 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
             //printf("new beta: %.9f\n\n", beta);
 
             // Recalculate Householder Transformation
-            matf32_trans(&v, &v_trans); // v'
-            matf32_vecmul_col_row(v.p_data, v_trans.p_data, &v_product); // vv'
+            matf32_vecmul_col_row(v.p_data, v.p_data, &v_product); // vv'
             matf32_scale(&v_product, beta, &v_product); // beta*vv'
             matf32_sub(&I, &v_product, &house_transform); // I = I - beta*vv'
             
             // Apply Householder Transformation
-            matf32_mul(&sub_A, &house_transform, &tmp_A); // tmp_A = Isub_A
+            matf32_mul(&sub_A, &house_transform, &tmp_A); // tmp_A = sub_A * I
             
             //printf("v_trans:\n");
             //matf32_print(&v_trans);
@@ -1805,16 +1798,60 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag)
             //printf("tmp_A:\n");
             //matf32_print(&tmp_A);
 
-            matf32_submatrix_copy(&tmp_A, p_bdiag, 0, 0, j, j+1, m-j, n-(j+1)); 
-            matf32_submatrix_copy(&v_trans, p_bdiag, 0, 1, j, j+2, 1, n-(j+2)); // A(j,j+2:n) = v(2:n-j)'
-            //printf("p_bdiag with v saved:\n");
-            //matf32_print(p_bdiag);
+            matf32_submatrix_copy(&tmp_A, p_b, 0, 0, j, j+1, m-j, n-(j+1)); 
+            matf32_submatrix_copy(&v, p_v, 1, 0, j, j+2, v.num_rows-1, v.num_cols); // A(j,j+2:n) = v(2:n-j)'
+            //printf("A_V:\n");
+            //matf32_print(p_v);
         }
     }
 
-    //printf("End of algorithm\n");
-    //printf("Final p_bdiag:\n");
-    //matf32_print(p_bdiag);
+    // Zero unnecessary entries of U
+    for (uint16_t i = 0; i < p_u->num_rows; ++i)
+    {
+        for (uint16_t j = 0; j < p_u->num_cols; ++j)
+        {
+            if (i <= j)
+            {
+                matf32_set(p_u, i+1, j+1, 0);
+            }
+        }
+    }
+
+    // Zero unnecessary entries of V
+    for (uint16_t i = 0; i < p_v->num_rows; ++i)
+    {
+        for (uint16_t j = 0; j < p_v->num_cols; ++j)
+        {
+            if (i >= j)
+            {
+                matf32_set(p_v, i+1, j+1, 0);
+            }
+        }
+    }
+
+    // Zero unnecessary entries of B
+    for (uint16_t i = 0; i < p_b->num_rows; ++i)
+    {
+        for (uint16_t j = 0; j < p_b->num_cols; ++j)
+        {
+            if (i > j)
+            {
+                matf32_set(p_b, i+1, j+1, 0);
+            }
+
+            if (j - i >= 2)
+            {
+                matf32_set(p_b, i+1, j+1, 0);
+            }
+        }
+    }
+
+    //printf("Final A_U:\n");
+    //matf32_print(p_u);
+    //printf("Final A_B:\n");
+    //matf32_print(p_b);
+    //printf("Final A_V:\n");
+    //matf32_print(p_v);
 }
 
 

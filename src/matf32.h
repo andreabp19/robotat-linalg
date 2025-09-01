@@ -1055,15 +1055,17 @@ err_status_t
 matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* p_b);
 
 /**
- * @brief   Generates a householder bidiagonalization based on a given matrix
+ * @brief   Generates a householder bidiagonalization (A = U'BV) based on a given matrix
  * 
  * @param[in]       p_a         Points to matrix A from which to generate the bidiagonalization
- * @param[in,out]   p_bdiag     Points to matrix to save the householder bidiagonalization of A
+ * @param[in,out]   p_u         Points to U matrix
+ * @param[in,out]   p_b         Points to B matrix
+ * @param[in,out]   p_v         Points to V matrix
  * 
  * @return err_status_t
  */
 err_status_t
-matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_bdiag);
+matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* p_u, matf32_t* p_b, matf32_t* p_v);
 
 /**
  * @brief   Computes a Givens rotation matrix (square matrix) based on two input values
