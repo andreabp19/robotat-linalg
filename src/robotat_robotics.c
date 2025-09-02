@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.c
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 27 Aug 2025
+ * @date created 19 Jul. 2025, last modified 2 Sep 2025
  * 
  * Robotics algorithms, based on Robotics Toolbox by Peter Corke for Matlab
  */
@@ -21,11 +21,11 @@
 // Tested => Works
 rob_status_t
 rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
-                rob_frame_tags_t ref_tag, rob_frame_tags_t dst_tag, bool angle_units)
+                rob_frame_tags_t ref_frame, rob_frame_tags_t dst_frame, bool angle_units)
 {
     // Set origin, destination and angle tags
-    p_F->ref_tag = ref_tag;
-    p_F->dst_tag = dst_tag;
+    p_F->ref_frame = ref_frame;
+    p_F->dst_frame = dst_frame;
     p_F->angle_units = angle_units;
 
     // ADD SIZE CHECK TO ENSURE p_T points to a 4x4 matrix
@@ -52,7 +52,7 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
     // Set last element as 1, because the last row must always be: 0 0 0 1
     matf32_set(p_T, 4, 4, 1);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -60,10 +60,10 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v,
 // No dimension check needed because the vector is initialized inside the function with the necessary dimensions
 // Warning, the matf32_t matrix used will be overwritten to a 4x1 matrix, no previous check.
 void
-rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_tag)
+rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_frame)
 {
     p_p->p_v = p_v;
-    p_p->ref_tag = ref_tag;
+    p_p->ref_frame = ref_frame;
 
     matf32_init(p_v, 4, 1, p_data);
     matf32_set(p_v, 4, 1, 1);
@@ -90,7 +90,7 @@ rob_transl(matf32_t* p_v, rob_frame_t* p_F)
 
     matf32_submatrix_copy(p_v, p_F->p_T, 0, 0, 0, p_F->p_R->num_cols, p_v->num_rows, p_v->num_cols);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 2, sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -185,7 +185,7 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 3, 1, neg_sin_theta);
     matf32_set(p_R, 3, 3, cos_theta);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -231,7 +231,7 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units)
     matf32_set(p_R, 2, 2, cos_theta);
     matf32_set(p_R, 3, 3, 1);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -437,6 +437,7 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 // ----------------------------------------------------------------------------------------------------
 
 // Tested => Works
+// TODO: Change to use a single array with all the values instead on entering each value separately
 void
 rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k)
 {
@@ -590,7 +591,7 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
     *p_dstq->p_j = *q_conj.p_j / q_norm_squared;
     *p_dstq->p_k = *q_conj.p_k / q_norm_squared;
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -625,7 +626,7 @@ rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F)
 
     matf32_submatrix_copy(p_F->p_R, p_F->p_T, 0, 0, 0, 0, p_F->p_R->num_rows, p_F->p_R->num_cols);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -640,7 +641,7 @@ rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R)
 
     matf32_submatrix_copy(p_F->p_T, p_R, 0, 0, 0, 0, p_R->num_rows, p_R->num_cols);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -661,7 +662,7 @@ rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v)
     rob_rot2tr(p_R, p_F);
     rob_transl(p_v, p_F);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -751,7 +752,7 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequen
     matf32_mul(&R_yaw, &R_pitch, &temp_R);
     matf32_mul(&temp_R, &R_roll, p_R);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -854,7 +855,7 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequenc
     matf32_mul(&R_phi, &R_theta, &temp_R);
     matf32_mul(&temp_R, &R_psi, p_R);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -988,7 +989,7 @@ rob_rot2quat(matf32_t* p_R, rob_quat_t* p_uq)
     *p_uq->p_j = uq_j;
     *p_uq->p_k = uq_k;
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -1016,7 +1017,7 @@ rob_rpy2quat(float roll, float pitch, float yaw, rob_angle_sequences_t rot_seque
     rob_rpy2rot(roll, pitch, yaw, rot_sequence, angle_units, p_R);
     rob_rot2quat(p_R, p_uq);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -1032,7 +1033,7 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequen
     rob_eul2rot(phi, theta, psi, rot_sequence, angle_units, p_R);
     rob_rot2quat(p_R, p_uq);
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -1096,7 +1097,7 @@ rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
 
     // TODO: Add optional conversion to degrees
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -1166,7 +1167,7 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
 
     // TODO: Add optional conversion to degrees
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -1218,7 +1219,7 @@ rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R)
     p_R->p_data[7] = 2.0*((y*z) + (s*x));
     p_R->p_data[8] = 1.0 - (2.0*((x*x) + (y*y)));
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -1306,10 +1307,10 @@ rob_frame_print(rob_frame_t* p_F)
     printf("REFERENCE FRAME\n");
     printf("-------------------------\n");
     printf("Origin Tag: ");
-    rob_frame_tags_print(p_F->ref_tag);
+    rob_frame_tags_print(p_F->ref_frame);
     printf("\n");
     printf("Destination Tag: ");
-    rob_frame_tags_print(p_F->dst_tag);
+    rob_frame_tags_print(p_F->dst_frame);
     printf("\n");
     printf("Angle Units: ");
     rob_angle_units_print(p_F->angle_units);
@@ -1332,7 +1333,7 @@ rob_refpoint_print(rob_point_t* p_p)
     printf("REFERENCE POINT\n");
     printf("-------------------------\n");
     printf("Origin tag: ");
-    rob_frame_tags_print(p_p->ref_tag);
+    rob_frame_tags_print(p_p->ref_frame);
     printf("\n");
     matf32_print(p_p->p_v);
     printf("-------------------------\n");
@@ -1395,8 +1396,8 @@ rob_status_print(rob_status_t rob_status)
 {
     switch(rob_status)
     {
-        case ROB_SUCCESS:
-            printf("ROB_SUCCESS\n");
+        case ROB_MATH_SUCCESS:
+            printf("ROB_MATH_SUCCESS\n");
             break;
 
         case ROT_SIZE_MISMATCH:
@@ -1475,21 +1476,21 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
      * (where p_F.p_T is the transformation matrix of the frame F)
      * 
      * So check:
-     *  - If p_dstp.ref_tag == p_F.dst_tag 
-     *  - If p_F.ref_tag == p_srcp.ref_tag
+     *  - If p_dstp.ref_frame == p_F.dst_frame 
+     *  - If p_F.ref_frame == p_srcp.ref_frame
      */
 
-    if (p_dstp->ref_tag != p_F->dst_tag)
+    if (p_dstp->ref_frame != p_F->dst_frame)
     {
         return TRANSFORM_FRAMES_MISMATCH;
     }
 
-    if (p_F->ref_tag != p_srcp->ref_tag)
+    if (p_F->ref_frame != p_srcp->ref_frame)
     {
         return TRANSFORM_FRAMES_MISMATCH;
     }
 
-    return ROB_SUCCESS;
+    return ROB_MATH_SUCCESS;
 }
 
 

@@ -2,7 +2,7 @@
 /**
  * @file robotat_robotics.h
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 27 Aug 2025
+ * @date created 19 Jul. 2025, last modified 2 Sep 2025
  *
  * Robotics algorithms, based on Robotics Toolbox by Peter Corke for Matlab
 */
@@ -36,7 +36,7 @@ extern "C" {
  */
 typedef enum
 {
-    ROB_SUCCESS,
+    ROB_MATH_SUCCESS, // Cambiar por ROB_MATH_SUCCESS
     ROT_SIZE_MISMATCH,
     TR_SIZE_MISMATCH,
     VEC_SIZE_MISMATCH,
@@ -82,15 +82,15 @@ typedef struct
     matf32_t* p_T;                /** Points to homogeneous transformation matrix */
     matf32_t* p_R;                /** Points to rotation matrix */
     matf32_t* p_v;                /** Points to coordinates vector */
-    rob_frame_tags_t ref_tag;     /** Current reference frame for the transformation */
-    rob_frame_tags_t dst_tag;     /** Destination reference frame for the transformation */
+    rob_frame_tags_t ref_frame;     /** Current reference frame for the transformation */
+    rob_frame_tags_t dst_frame;     /** Destination reference frame for the transformation */
     bool angle_units;             /** Angle unit tags, between RADIANS or DEGREES */
 } rob_frame_t;
 
 typedef struct
 {
     const matf32_t* p_v;        /** Coordinates vector for a given point with respect to the frame */
-    rob_frame_tags_t ref_tag;   /** Enumerate tags for frame reference and destination */
+    rob_frame_tags_t ref_frame;   /** Enumerate tags for frame reference and destination */
 } rob_point_t;
 
 /**
@@ -118,14 +118,14 @@ typedef struct
  * @param[in]   p_T             Transformation matrix for the reference frame.
  * @param[in]   p_R             Rotation matrix.
  * @param[in]   p_v             Coordinates vector.
- * @param[in]   ref_tag         Enumerate tag for the current reference frame for the transformation.
- * @param[in]   dst_tag         Enumerate tag for the destination frame for the transformation.
+ * @param[in]   ref_frame         Enumerate tag for the current reference frame for the transformation.
+ * @param[in]   dst_frame         Enumerate tag for the destination frame for the transformation.
  * @param[in]   angle_units     Enumerate tag for the units of the angles.
  * 
  * @return None
  */
 rob_status_t
-rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, rob_frame_tags_t ref_tag, rob_frame_tags_t dst_tag, bool angle_units);
+rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, rob_frame_tags_t ref_frame, rob_frame_tags_t dst_frame, bool angle_units);
 
 /**
  * @brief   Constructor for the reference frame data structure, defines 4x4 dimensiones, sets the rotation matrix,
@@ -133,12 +133,12 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, ro
  * 
  * @param[in]   p_p         Points to the point struct to use.
  * @param[in]   p_data      Points to data float to use
- * @param[in]   ref_tag     Enum tag to indiate the associated reference frame
+ * @param[in]   ref_frame     Enum tag to indiate the associated reference frame
  * 
  * @return None
  */
 void
-rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_tag);
+rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_frame);
 
 
 
