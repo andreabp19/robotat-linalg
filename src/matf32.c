@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 1 Sep 2025
+ * Last Modified: 3 Sep 2025
  *      By: Andrea Pineda
  *
  */
@@ -322,7 +322,7 @@ err_status_print(err_status_t err)
     }
 }
 
-void matf32_cond(matf32_t* const p_src, float* p_cond)
+void matf32_cond(const matf32_t* const p_src, float* p_cond)
 {
     float temp_data[MAX_MAT_SIZE];
     matf32_t temp;
@@ -1536,6 +1536,8 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
 err_status_t
 matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* beta)
 {
+    // Add dimension checks and err_status_t returns
+
     uint16_t m = p_x->num_rows;
     //printf("m: %i\n\n", m);
 
@@ -1634,6 +1636,8 @@ matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* beta)
 err_status_t
 matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_b, matf32_t* const p_v)
 {
+    // TODO: Add dimension checks and err_status_t returns
+
     // A is a mxn matrix
     uint16_t m = p_a->num_rows;
     uint16_t n = p_a->num_cols;
@@ -1805,10 +1809,11 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
 
 
 // Based on Golub, Matrix Computations, Algorithm 5.1.3, but modified to generate as well the Givens rotation matrix instead of just sin and cos
+// Tested = works
 err_status_t
 matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
 {
-    // Add size check for p_g (it should be 2x2)
+    // TODO: Add size check for p_g (it should be 2x2) and err_status_t returns
 
     float cos = 0;
     float sin = 0;
@@ -1849,7 +1854,6 @@ matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
     matf32_set(p_g, j, i, -1.0*sin);
     matf32_set(p_g, j, j, cos);
 }
-
 
 
 

@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 1 Sep 2025
+ * Last modified: 3 Sep 2025
  *          By: Andrea Pineda
  */
 
@@ -366,7 +366,7 @@ err_status_print(err_status_t err);
  * @return  None
  */
 void 
-matf32_cond(matf32_t* const p_src, float* p_cond);
+matf32_cond(const matf32_t* const p_src, float* p_cond);
 
 /**
  * @brief   Gets an specific element from a matrix.
@@ -1082,6 +1082,7 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
  */
 err_status_t
 matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g);
+
 
 
 #ifdef __cplusplus
