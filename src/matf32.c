@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 3 Sep 2025
+ * Last Modified: 10 Sep 2025
  *      By: Andrea Pineda
  *
  */
@@ -1662,6 +1662,9 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
     float v_data[MAX_MAT_SIZE];
     matf32_t v;
 
+    float v_trans_data[MAX_MAT_SIZE];
+    matf32_t v_trans;
+
     // Identity matrix
     float I_dim = 0;
     float I_data[MAX_MAT_SIZE];
@@ -1718,7 +1721,10 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
         matf32_mul(&house_transform, &sub_A, &tmp_A);
         matf32_submatrix_copy(&tmp_A, p_b, 0, 0, j, j, m-j, n-j);
 
-        // Storing U vectors: A(j+1: m,j) = v(2:m - j + 1)
+        // Storing U vectors: A(j+1:m,j) = v(2:m - j + 1)
+        //matf32_submatrix_copy(&v, p_b, 1, 0, j+1, j, v.num_rows-1, v.num_cols);
+
+        // Uncomment to save U as a separate matrix
         matf32_submatrix_copy(&v, p_u, 1, 0, j+1, j, v.num_rows-1, v.num_cols);
 
         // The step in the book says: j <= n - 2, but as it starts in zero, < is correct
@@ -1732,6 +1738,7 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
             matf32_init(&sub_A, m-j, n-(j+1), sub_A_data);
             matf32_init(&tmp_A, m-j, n-(j+1), tmp_A_data);
             matf32_init(&v, house_vec.num_rows, 1, v_data);
+            matf32_init(&v_trans, 1, house_vec.num_rows, v_trans_data);
             matf32_init(&v_product, v.num_rows, v.num_rows, v_product_data);
 
             // Clean all matrices to make sure there's no residual data from before
@@ -1740,6 +1747,7 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
             matf32_zeros(&sub_A);
             matf32_zeros(&tmp_A);
             matf32_zeros(&v);
+            matf32_zeros(&v_trans);
             matf32_zeros(&v_product);
             
             matf32_eye(&I);
@@ -1762,7 +1770,12 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
             matf32_mul(&sub_A, &house_transform, &tmp_A); // tmp_A = sub_A * I
 
             matf32_submatrix_copy(&tmp_A, p_b, 0, 0, j, j+1, m-j, n-(j+1)); 
-            matf32_submatrix_copy(&v, p_v, 1, 0, j, j+2, v.num_rows-1, v.num_cols); // A(j,j+2:n) = v(2:n-j)'
+
+            // Save v values to p_b
+            matf32_trans(&v, &v_trans);
+            //matf32_submatrix_copy(&v_trans, p_b, 0, 1, j, j+2, 1, v_trans.num_cols-1);
+            // Uncomment to save v as a separate matrix.
+            matf32_submatrix_copy(&v_trans, p_v, 0, 1, j, j+2, 1, v_trans.num_cols-1); // A(j,j+2:n) = v(2:n-j)'
         }
     }
 
@@ -1799,31 +1812,27 @@ matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, m
         }
     }
 
-    //printf("Final A_U:\n");
+    //printf("U:\n");
     //matf32_print(p_u);
-    //printf("Final A_B:\n");
+    //printf("B:\n");
     //matf32_print(p_b);
-    //printf("Final A_V:\n");
+    //printf("V:\n");
     //matf32_print(p_v);
 }
 
 
-// Based on Golub, Matrix Computations, Algorithm 5.1.3, but modified to generate as well the Givens rotation matrix instead of just sin and cos
-// Tested = works
+// Based on Golub, Matrix Computations, Algorithm 5.1.3
+// Tested and validated against a cubstom matlab function with the same algorithm
 err_status_t
-matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
+matf32_givens_pair(float a, float b, float* c, float* s)
 {
-    // TODO: Add size check for p_g (it should be 2x2) and err_status_t returns
-
-    float cos = 0;
-    float sin = 0;
     float tau = 0;
 
-    // Generate sin and cos values for the Givens rotation
+    // Generate s and c values for the Givens rotation
     if (b == 0)
     {
-        cos = 1;
-        sin = 0;
+        *c = 1;
+        *s = 0;
     }
 
     else
@@ -1831,30 +1840,97 @@ matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g)
         if (fabs(b) > fabs(a))
         {
             tau = -1.0*a/b;
-            sin = 1/sqrt(1 + (tau*tau));
-            cos = sin*tau;
+            *s = (float)(1/sqrt(1 + (tau*tau)));
+            *c = (*s)*tau;
         }
 
         else
         {
             tau = -1.0*b/a;
-            cos = 1/sqrt(1 + (tau*tau));
-            sin = cos*tau;
+            *c = (float)(1/sqrt(1 + (tau*tau)));
+            *s = (*c)*tau;
         }
     }
 
-    // Create Givens Rotation Matrix
-    
-    // Create Identity matrix
-    matf32_eye(p_g);
-
-    // Set sin and cos in their respective places given indices i and j
-    matf32_set(p_g, i, i, cos);
-    matf32_set(p_g, i, j, sin);
-    matf32_set(p_g, j, i, -1.0*sin);
-    matf32_set(p_g, j, j, cos);
+    return MATH_SUCCESS;
 }
 
+
+// Based on Golub, Matrix Computations, Algorithm 8.5.1
+// Tested and validated against a custom matlab function with same algorithm
+err_status_t
+matf32_symschur2_pair(matf32_t* p_a, uint16_t p, uint16_t q, float* c, float* s)
+{
+    // Add matrix check: A must be square and symmetric
+
+    uint16_t rows = p_a->num_rows;
+    
+    float tau = 0.0;
+    float t = 0.0;
+
+    // If A(p,q) != 0
+    if (fabs(p_a->p_data[p*rows + q]) > MATH_EQUAL_PRECISION)
+    {
+        tau = (float)((p_a->p_data[q*rows + q] - p_a->p_data[p*rows + p]) / (2.0*p_a->p_data[p*rows + q]));
+
+        // Greater than our designated "0" tolerance which is 1E-05
+        if (tau >= 0)
+        {
+            t = (float)(1.0/(tau + sqrt(1.0 + (tau*tau))));
+        }
+        else
+        {
+            t = (float)(1.0/(tau - sqrt(1.0 + (tau*tau))));
+        }
+
+        *c = (float)(1.0/sqrt(1.0 + (t*t)));
+        *s = (float)(t*(*c));
+    }
+
+    else
+    {
+        *c = 1.0;
+        *s = 0;
+    }
+
+    return MATH_SUCCESS;
+}
+
+
+// Tested against a custom matlab function that does exactly the same
+err_status_t
+matf32_generate_rotation(matf32_t* p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b)
+{
+    // Either initialize the rotation matrix here or add size checks to ensure it's adequate to operate with A
+    // Add check for p and q, because p should be strictly less than q.
+    // Add size check, because the smallest rotation matrix that can be created is 2x2.
+
+    float c = 0;
+    float s = 0;
+
+    switch (method)
+    {
+        case GIVENS:
+            matf32_givens_pair(a, b, &c, &s);
+            break;
+
+        case SYMMETRIC_SCHUR2:
+            matf32_symschur2_pair(p_a, p-1, q-1, &c, &s); // Assumes matf32_generate_rotation received mathematical index (not zero-indexed)
+            break;
+    }
+
+    // Generate rotation matrix
+    
+    matf32_eye(p_rot);
+
+    // Set s and c in their respective places given indices i and j
+    matf32_set(p_rot, p, p, c);
+    matf32_set(p_rot, p, q, s);
+    matf32_set(p_rot, q, p, -1.0*(s));
+    matf32_set(p_rot, q, q, c);
+
+    return MATH_SUCCESS;
+}
 
 
 //

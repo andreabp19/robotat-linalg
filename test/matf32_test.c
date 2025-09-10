@@ -1,7 +1,15 @@
 
+/**
+ * @author Andrea Pineda
+ * @date Created 23 Aug 2025, last modified: 10 Sep 2025
+ * 
+ * For testing matf32 in computer
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #include "matf32.h"
 #include "matf32_test_results.h"
@@ -41,6 +49,8 @@ matf32_t rowvec;
 float* colvec_list[10] = {colvec_data1, colvec_data2, colvec_data3, colvec_data4, colvec_data5, colvec_data6, colvec_data7, colvec_data8, colvec_data9, colvec_data10};
 matf32_t colvec;
 
+
+// Matrix operations Matlab Results
 float* R_add_list[10] = {R_add1, R_add2, R_add3, R_add4, R_add5, R_add6, R_add7, R_add8, R_add9, R_add10};
 matf32_t R_add;
 
@@ -83,6 +93,8 @@ matf32_t R_arr_mul;
 float* R_pinv_list[10] = {R_pinv1, R_pinv2, R_pinv3, R_pinv4, R_pinv5, R_pinv6, R_pinv7, R_pinv8, R_pinv9, R_pinv10};
 matf32_t R_pinv;
 
+
+// Matrix Factorizations Matlab Results
 float* R_lu_L_list[10] = {R_lu_L1, R_lu_L2, R_lu_L3, R_lu_L4, R_lu_L5, R_lu_L6, R_lu_L7, R_lu_L8, R_lu_L9, R_lu_L10};
 matf32_t R_lu_L;
 
@@ -98,12 +110,39 @@ matf32_t R_qr_Q;
 float* R_qr_R_list[9] = {R_qr_R1, R_qr_R2, R_qr_R3, R_qr_R4, R_qr_R5, R_qr_R6, R_qr_R7, R_qr_R8, R_qr_R9};
 matf32_t R_qr_R;
 
+// Values for testing and validating matf32_givens_pair
+float givens_a_list[10] = {givens_a1, givens_a2, givens_a3, givens_a4, givens_a5, givens_a6, givens_a7, givens_a8, givens_a9};
+float givens_b_list[10] = {givens_b1, givens_b2, givens_b3, givens_b4, givens_b5, givens_b6, givens_b7, givens_b8, givens_b9};
+float R_givens_c_list[10] = {R_givens_c1, R_givens_c2, R_givens_c3, R_givens_c4, R_givens_c5, R_givens_c6, R_givens_c7, R_givens_c8, R_givens_c9};
+float R_givens_s_list[10] = {R_givens_s1, R_givens_s2, R_givens_s3, R_givens_s4, R_givens_s5, R_givens_s6, R_givens_s7, R_givens_s8, R_givens_s9};
+
+float givens_c = 0;
+float givens_s = 0;
+
+// Values for testing and validating matf32_symschur2_pair
+float R_symschur2_c_list[10] = {R_symschur2_c1, R_symschur2_c2, R_symschur2_c3, R_symschur2_c4, R_symschur2_c5, R_symschur2_c6, R_symschur2_c7, R_symschur2_c8, R_symschur2_c9};
+float R_symschur2_s_list[10] = {R_symschur2_s1, R_symschur2_s2, R_symschur2_s3, R_symschur2_s4, R_symschur2_s5, R_symschur2_s6, R_symschur2_s7, R_symschur2_s8, R_symschur2_s9};
+
+uint16_t symschur2_p_list[10] = {symschur2_p1, symschur2_p2, symschur2_p3, symschur2_p4, symschur2_p5, symschur2_p6, symschur2_p7, symschur2_p8, symschur2_p9};
+uint16_t symschur2_q_list[10] = {symschur2_q1, symschur2_q2, symschur2_q3, symschur2_q4, symschur2_q5, symschur2_q6, symschur2_q7, symschur2_q8, symschur2_q9};
+
+float symschur2_c = 0;
+float symschur2_s = 0;
+
+// Condition numbers for all input matrices used
 float cond_A = 0;
 float cond_B = 0;
 float cond_C = 0;
 float cond_D = 0;
 
-void main(void)
+// Rotation matrices
+float* R_givens_rotation_list[10] = {R_givens_rotation1, R_givens_rotation2, R_givens_rotation3, R_givens_rotation4, R_givens_rotation5, R_givens_rotation6, R_givens_rotation7, R_givens_rotation8, R_givens_rotation9};
+matf32_t R_givens_rotation;
+
+float* R_jacobi_rotation_list[10] = {R_jacobi_rotation1, R_jacobi_rotation2, R_jacobi_rotation3, R_jacobi_rotation4, R_jacobi_rotation5, R_jacobi_rotation6, R_jacobi_rotation7, R_jacobi_rotation8, R_jacobi_rotation9};
+matf32_t R_jacobi_rotation;
+
+int main(void)
 {
     clock_t time;
 
@@ -142,11 +181,16 @@ void main(void)
         // D, Q and R have only 9 elements in the list of values (no element for n=1 as D is a rectangular matrix n x (n-1))
         if (n > 1)
         {
+            // QR-related matrices
             matf32_init(&temp_Q, n, n, temp_Q_data);
             matf32_init(&temp_R, n, n-1, temp_R_data);
             matf32_init(&D, n, n-1, D_list[i-1]);
             matf32_init(&R_qr_Q, n, n, R_qr_Q_list[i-1]);
             matf32_init(&R_qr_R, n, n-1, R_qr_R_list[i-1]);
+
+            // Rotation matrices
+            matf32_init(&R_givens_rotation, n, n, R_givens_rotation_list[i-1]);
+            matf32_init(&R_jacobi_rotation, n, n, R_jacobi_rotation_list[i-1]);
         }
 
         const matf32_t* mat_array[3] = {&A, &A, &A};
@@ -156,7 +200,7 @@ void main(void)
         printf("--------------------------------------------------\n");
 
         //matf32_cond(&A, &cond_A);
-        matf32_cond(&B, &cond_B);
+        //matf32_cond(&B, &cond_B);
         //matf32_cond(&C, &cond_C);
         //matf32_cond(&D, &cond_D);
 
@@ -166,7 +210,7 @@ void main(void)
         //printf("cond D = %.9f\n", cond_D);
 
         // ---------------------------------------------------------------------------
-        // 1. matf32_add
+        // matf32_add
         // ---------------------------------------------------------------------------
 
         float add_time[x];
@@ -191,7 +235,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 2. matf32_sub
+        // matf32_sub
         // ---------------------------------------------------------------------------
 
         float sub_time[x];
@@ -216,7 +260,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 3. matf32_scale
+        // matf32_scale
         // ---------------------------------------------------------------------------
 
         float scale_time[x];
@@ -241,7 +285,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 4. matf32_trans
+        // matf32_trans
         // ---------------------------------------------------------------------------
 
         float trans_time[x];
@@ -266,7 +310,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 5. matf32_mul
+        // matf32_mul
         // ---------------------------------------------------------------------------
 
         float mul_time[x];
@@ -291,7 +335,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 6. matf32_inv
+        // matf32_inv
         // ---------------------------------------------------------------------------
 
         float inv_time[x];
@@ -316,7 +360,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 7. matf32_dot
+        // matf32_dot
         // ---------------------------------------------------------------------------
 
         float dot_time[x];
@@ -348,7 +392,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 8. matf32_vecposmul
+        // matf32_vecposmul
         // ---------------------------------------------------------------------------
         
         float vecposmul_time[x];
@@ -377,7 +421,7 @@ void main(void)
         //matf32_print(&vecposmul_temp);
 
         // ---------------------------------------------------------------------------
-        // 9. matf32_vecpremul
+        // matf32_vecpremul
         // ---------------------------------------------------------------------------
 
         float vecpremul_time[x];
@@ -406,7 +450,7 @@ void main(void)
         //matf32_print(&vecpremul_temp);
 
         // ---------------------------------------------------------------------------
-        // 10. matf32_vecmul_col_row
+        // matf32_vecmul_col_row
         // ---------------------------------------------------------------------------
         
         float vecmul_time[x];
@@ -431,7 +475,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 11. matf32_arr_add
+        // matf32_arr_add
         // ---------------------------------------------------------------------------
 
         float arr_add_time[x];
@@ -456,7 +500,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 12. matf32_arr_sub
+        // matf32_arr_sub
         // ---------------------------------------------------------------------------
 
         float arr_sub_time[x];
@@ -481,7 +525,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 13. matf32_arr_mul
+        // matf32_arr_mul
         // ---------------------------------------------------------------------------
 
         float arr_mul_time[x];
@@ -506,7 +550,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 14. matf32_pinv
+        // matf32_pinv
         // ---------------------------------------------------------------------------
 
         float pinv_time[x];
@@ -531,7 +575,7 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 15. matf32_lu
+        // matf32_lu
         // ---------------------------------------------------------------------------
         
         float lu_time[x];
@@ -548,23 +592,6 @@ void main(void)
             matf32_lu(&B, &temp_L, &temp_U, p_index);
             lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
-        
-        //printf("L:\n");
-        //matf32_print(&temp_L);
-        //printf("U:\n");
-        //matf32_print(&temp_U);
-
-        //printf("R_lu_L:\n");
-        //matf32_print(&R_lu_L);
-        //printf("R_lu_U:\n");
-        //matf32_print(&R_lu_U);
-
-        //printf("p_index: ");
-        //for (uint16_t i = 0; i < n; ++i)
-        //{
-        //    printf("%i,", p_index[i]);
-        //}
-        //printf("\n");
 
         mean_lu_time = mean(lu_time, x);
 
@@ -572,18 +599,18 @@ void main(void)
         bool lu_U_ans = matf32_is_equal(&temp_U, &R_lu_U);
         //printf("matf32_lu%i\n",n);
         //printf("%.9f\n", mean_lu_time);
-        printf("lu       ,time(s):%.9f,L:%s,U:%s\n\n", mean_lu_time, lu_L_ans?"success":"failure", lu_U_ans?"success":"failure");
+        //printf("lu       ,time(s):%.9f,L:%s,U:%s\n\n", mean_lu_time, lu_L_ans?"success":"failure", lu_U_ans?"success":"failure");
 
-        printf("Difference L:\n");
-        matf32_sub(&temp_L, &R_lu_L, &temp_L);
-        matf32_print(&temp_L);
+        //printf("Difference L:\n");
+        //matf32_sub(&temp_L, &R_lu_L, &temp_L);
+        //matf32_print(&temp_L);
 
-        printf("Difference U:\n");
-        matf32_sub(&temp_U, &R_lu_U, &temp_U);
-        matf32_print(&temp_U);
+        //printf("Difference U:\n");
+        //matf32_sub(&temp_U, &R_lu_U, &temp_U);
+        //matf32_print(&temp_U);
 
         // ---------------------------------------------------------------------------
-        // 16. matf32_cholesky
+        // matf32_cholesky
         // ---------------------------------------------------------------------------
 
         float cholesky_time[x];
@@ -610,10 +637,10 @@ void main(void)
         //matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
-        // 17. matf32_qr
+        // matf32_qr
         // ---------------------------------------------------------------------------
 
-        if (n > 1)
+        /*if (n > 1)
         {
             float qr_time[x];
             float mean_qr_time = 0;
@@ -627,15 +654,6 @@ void main(void)
                 matf32_qr(&D, &temp_Q, &temp_R);
                 qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
             }
-
-            //printf("Q:\n");
-            //matf32_print(&temp_Q);
-            //printf("R:\n");
-            //matf32_print(&temp_R);
-            //printf("R_qr_Q:\n");
-            //matf32_print(&R_qr_Q);
-            //printf("R_qr_R:\n");
-            //matf32_print(&R_qr_R);
     
             mean_qr_time = mean(qr_time, x);
 
@@ -652,6 +670,117 @@ void main(void)
             //printf("Difference R:\n");
             //matf32_sub(&temp_R, &R_qr_R, &temp_R);
             //matf32_print(&temp_R);
+        }*/
+
+        // ---------------------------------------------------------------------------
+        // matf32_givens_pair
+        // ---------------------------------------------------------------------------
+
+        if (n > 1)
+        {
+            float givens_pair_time[x];
+            float mean_givens_pair_time = 0;
+
+            for (uint8_t j = 0; j < x; j++)
+            {
+                time = clock();
+                matf32_givens_pair(givens_a_list[i-1], givens_b_list[i-1], &givens_c, &givens_s);
+                givens_pair_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+            }
+
+            mean_givens_pair_time = mean(givens_pair_time, x);
+
+            bool givens_c_ans = (fabs(givens_c-R_givens_c_list[i-1])<1E-05)?1:0;
+            bool givens_s_ans = (fabs(givens_s-R_givens_s_list[i-1])<1E-05)?1:0;
+            //printf("matf32_givens_pair%i\n", n);
+            //printf("%.9f\n", mean_givens_pair_time);
+            printf("givens_pair, time(s):%.9f, c: %s, s: %s\n\n", mean_givens_pair_time, givens_c_ans?"success":"failure", givens_s_ans?"success":"failure");
         }
+
+        // ---------------------------------------------------------------------------
+        // matf32_symschur2_pair
+        // ---------------------------------------------------------------------------
+
+        if (n > 1)
+        {
+            float symschur2_pair_time[x];
+            float mean_symschur2_pair_time = 0;
+
+            for (uint8_t j = 0; j < x; j++)
+            {
+                time = clock();
+                matf32_symschur2_pair(&C, symschur2_p_list[i-1]-1, symschur2_q_list[i-1]-1, &symschur2_c, &symschur2_s);
+                symschur2_pair_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+            }
+
+            mean_symschur2_pair_time = mean(symschur2_pair_time, x);
+
+            bool symschur2_c_ans = (fabs(symschur2_c-R_symschur2_c_list[i-1])<1E-05)?1:0;
+            bool symschur2_s_ans = (fabs(symschur2_s-R_symschur2_s_list[i-1])<1E-05)?1:0;
+            //printf("matf32_symschur2_pair%i\n", n);
+            //printf("%.9f\n", mean_symschur2_pair_time);
+            printf("symschur2_pair, time(s):%.9f, c: %s, s: %s\n\n", mean_symschur2_pair_time, symschur2_c_ans?"success":"failure", symschur2_s_ans?"success":"failure");
+        }
+            
+        // ---------------------------------------------------------------------------
+        // matf32_generate_rotation: Givens Rotation
+        // ---------------------------------------------------------------------------
+
+        if (n > 1)
+        {
+            float givens_rotation_time[x];
+            float mean_givens_rotation_time = 0;
+
+            matf32_zeros(&temp);
+
+            for (uint8_t j = 0; j < x; j++)
+            {
+                time = clock();
+                matf32_generate_rotation(&C, symschur2_p_list[i-1], symschur2_q_list[i-1], &temp, GIVENS, givens_a_list[i-1], givens_b_list[i-1]);
+                givens_rotation_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+            }
+
+            mean_givens_rotation_time = mean(givens_rotation_time, x);
+
+            bool givens_rotation_ans = matf32_is_equal(&temp, &R_givens_rotation);
+            //printf("matf32_givens_rotation%i\n", n);
+            //printf("%.9f\n", mean_givens_rotation_time);
+            printf("givens_rotation,time(s):%.9f,%s\n\n", mean_givens_rotation_time, givens_rotation_ans?"success":"failure");
+
+            //printf("Difference matf32_givens_rotation:\n");
+            //matf32_sub(&temp, &R_givens_rotation, &temp);
+            //matf32_print(&temp);
+        }
+
+        // ---------------------------------------------------------------------------
+        // matf32_generate_rotation: Jacobi Rotation
+        // ---------------------------------------------------------------------------
+
+        if (n > 1)
+        {
+            float jacobi_rotation_time[x];
+            float mean_jacobi_rotation_time = 0;
+
+            matf32_zeros(&temp);
+
+            for (uint8_t j = 0; j < x; j++)
+            {
+                time = clock();
+                matf32_generate_rotation(&C, symschur2_p_list[i-1], symschur2_q_list[i-1], &temp, SYMMETRIC_SCHUR2, 0, 0);
+                jacobi_rotation_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+            }
+
+            mean_jacobi_rotation_time = mean(jacobi_rotation_time, x);
+
+            bool jacobi_rotation_ans = matf32_is_equal(&temp, &R_jacobi_rotation);
+            //printf("matf32_jacobi_rotation%i\n", n);
+            //printf("%.9f\n", mean_jacobi_rotation_time);
+            printf("jacobi_rotation,time(s):%.9f,%s\n\n", mean_jacobi_rotation_time, jacobi_rotation_ans?"success":"failure");
+
+            //printf("Difference matf32_jacobi_rotation:\n");
+            //matf32_sub(&temp, &R_jacobi_rotation, &temp);
+            //matf32_print(&temp);
+        }
+
     }
 }

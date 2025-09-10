@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 3 Sep 2025
+ * Last modified: 10 Sep 2025
  *          By: Andrea Pineda
  */
 
@@ -316,6 +316,16 @@ typedef enum
     MATH_TEST_FAILURE,
     MATH_DECOMPOSITION_FAILURE
 } err_status_t;
+
+/**
+ * @brief Rotation matrix methods implemented
+ * 
+ */
+typedef enum
+{
+    GIVENS,
+    SYMMETRIC_SCHUR2
+} rotation_method_t;
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -1068,22 +1078,77 @@ err_status_t
 matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_b, matf32_t* const p_v);
 
 /**
- * @brief   Computes a Givens rotation matrix (square matrix) based on two input values
+ * @brief   Computes a sine-cosine pair based on two input values to use for generating a Givens Rotation matrix
  * 
  * @warning This routine uses mathematical indexing, which means indices i and j start in 1 instead of 0.
  * 
  * @param[in]       a       Scalar a
  * @param[in]       b       Scalar b
- * @param[in]       i       Index i for rows of G to modify
- * @param[in]       j       Index j for cols of G to modify
- * @param[in,out]   p_g     Points to output matrix (2x2)
+ * @param[in,out]   c       Points to generated cosine value
+ * @param[in,out]   s       Points to generated sine value
  * 
  * @return err_status_t
  */
 err_status_t
-matf32_givens_rotation(float a, float b, uint16_t i, uint16_t j, matf32_t* p_g);
+matf32_givens_pair(float a, float b, float* c, float* s);
+
+/**
+ * @brief   Computes a sine-cosine pair to use for generating a 2-by-2 symmetric Schur jacobi rotation
+ * 
+ * @param[in]       p_a     Points to a matrix
+ * @param[in]       p       Index p
+ * @param[in]       q       Index q
+ * @param[in,out]   c       Points to generated cosine value
+ * @param[in,out]   s       Points to generated sine value   
+ * 
+ * @return err_status_t
+ */
+err_status_t
+matf32_symschur2_pair(matf32_t* p_a, uint16_t p, uint16_t q, float* c, float* s);
 
 
+/**
+ * @brief   Generates a Givens or Jacobi rotation matrix depending on the desired method
+ * 
+ * @param[in]       p_a     Points to input matrix
+ * @param[in]       p       Index p
+ * @param[in]       q       Index q
+ * @param[in,out]   c       Points to generated cosine value
+ * @param[in,out]   s       Points to generated sine value
+ * @param[in,out]   p_rot   Points to output matrix to save the generated rotation matrix
+ * @param[in]       method  Enum constant to select the rotation method (currently: Givens or Symmetric Schur for Jacobi routines)
+ * @param[in]       a       Scalar for generating Givens rotation (set to 0 if you're not using Givens)
+ * @param[in]       b       Scalar for generating Givens rotation (set to 0 if you're not using Givens)
+ * 
+ * @return err_status_t
+ */
+err_status_t
+matf32_generate_rotation(matf32_t* p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b);
+
+/**
+ * @brief   Computes the Golub-Kahan SVD Step necessary for calculating the SVD of a matrix.
+ * 
+ * @warning This algorithm overwrites the input matrix to create the new step of the SVD
+ * 
+ * @param[in]       p_b   Points to matrix on which to apply the SVD step
+ * 
+ * @return err_status_t
+ */
+err_status_t
+matf32_gk_svd_step(matf32_t* const p_b);
+
+/**
+ * @brief   Computes the SVD of a given matrix (with the Golub-Kahan SVD Step)
+ * 
+ * @param[in]       p_a     Points to the matrix A from which to calculate the SVD Factorization
+ * @param[in,out]   p_u     Points to the U matrix of the SVD factorization
+ * @param[in,out]   p_s     Points to the S (sigma) matrix (singular values) of the SVD factorization
+ * @param[in,out]   p_v     Points to the V matrix of the SVD factorization
+ * 
+ * @return err_status_t
+ */
+err_status_t
+matf32_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_s, matf32_t* const p_v);
 
 #ifdef __cplusplus
 }
