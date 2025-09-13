@@ -3,7 +3,7 @@
  * @author Andrea Pineda
  * @date Created 2 Aug 2025
  * 
- * Last Modified: 10 Sep 2025
+ * Last Modified: 12 Sep 2025
  *      By: Andrea Pineda
  *
  */
@@ -1859,7 +1859,7 @@ matf32_givens_pair(float a, float b, float* c, float* s)
 // Based on Golub, Matrix Computations, Algorithm 8.5.1
 // Tested and validated against a custom matlab function with same algorithm
 err_status_t
-matf32_symschur2_pair(matf32_t* p_a, uint16_t p, uint16_t q, float* c, float* s)
+matf32_symschur2_pair(const matf32_t* const p_a, uint16_t p, uint16_t q, float* c, float* s)
 {
     // Add matrix check: A must be square and symmetric
 
@@ -1899,7 +1899,7 @@ matf32_symschur2_pair(matf32_t* p_a, uint16_t p, uint16_t q, float* c, float* s)
 
 // Tested against a custom matlab function that does exactly the same
 err_status_t
-matf32_generate_rotation(matf32_t* p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b)
+matf32_generate_rotation(const matf32_t* const p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b)
 {
     // Either initialize the rotation matrix here or add size checks to ensure it's adequate to operate with A
     // Add check for p and q, because p should be strictly less than q.
@@ -1914,7 +1914,7 @@ matf32_generate_rotation(matf32_t* p_a, float p, float q, matf32_t* p_rot, rotat
             matf32_givens_pair(a, b, &c, &s);
             break;
 
-        case SYMMETRIC_SCHUR2:
+        case JACOBI: // Symetric Schur 2-by-2
             matf32_symschur2_pair(p_a, p-1, q-1, &c, &s); // Assumes matf32_generate_rotation received mathematical index (not zero-indexed)
             break;
     }
@@ -1932,5 +1932,136 @@ matf32_generate_rotation(matf32_t* p_a, float p, float q, matf32_t* p_rot, rotat
     return MATH_SUCCESS;
 }
 
+
+err_status_t
+matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_av, matf32_t* const p_v, uint16_t iterations)
+{
+    // Add dimension check: Square matrix
+    //if (!matf32_check_square_matrix(p_a))
+    //{
+    //    return MATH_ARGUMENT_ERROR;
+    //}
+
+    // Also check: p_v and p_av should have the same dimensions as p_a
+
+    uint16_t n = p_a->num_cols;
+
+    float J_data[MAX_MAT_SIZE];
+    matf32_t J;
+    matf32_init(&J, n, n, J_data);
+
+    float temp_A_data[MAX_MAT_SIZE];
+    matf32_t temp_A;
+    matf32_init(&temp_A, n, n, temp_A_data);
+
+    float offA_data[MAX_MAT_SIZE];
+    matf32_t offA;
+    matf32_init(&offA, n, n, offA_data);
+
+    float temp_V_data[MAX_MAT_SIZE];
+    matf32_t temp_V;
+    matf32_init(&temp_V, n, n, temp_V_data);
+
+    // V = I (n x n)
+    matf32_eye(&temp_V);
+
+    float a_pq = 0;
+    float a_qp = 0;
+
+    // Copy p_a to p_av to work in p_av during the iterations
+    matf32_submatrix_copy(p_a, p_av, 0, 0, 0, 0, n, n);
+
+    // Generate off-diagonals matrix
+    matf32_trans(p_av, &temp_A);
+    matf32_mul(&temp_A, p_av, &offA);
+
+    // Erase diagonals from the AtA matrix
+    for (uint16_t i = 0; i < n; ++i)
+    {
+        offA.p_data[i*n + i] -= offA.p_data[i*n + i]; // AtA(i,i) = 0 
+    }
+
+    // Norm of AtA = norm(off(A))
+    // TODO: fix matf32_norm because gives error of "undefined reference to matf32_norm" despite being in matf32.h
+    float norm_offA2 = norm(offA.p_data, n, n)*norm(offA.p_data, n, n);
+
+    //printf("Norm off(A): %.9f\n\n", sqrt(norm_offA2));
+
+    for (int16_t i = 0; i < iterations; i++)
+    {
+
+        // p = 1:n-1
+        for (uint16_t p = 1; p <= (n-1); ++p)
+        {
+            // q = p+1:n
+            for (uint16_t q = p+1; q <= n; ++q)
+            {
+                matf32_generate_rotation(p_av, p, q, &J, JACOBI, 0, 0); // Generate Jacobi Rotation J
+                matf32_mul(&temp_A, &J, p_av); // AV = AV * J
+                matf32_submatrix_copy(p_av, &temp_A, 0, 0, 0, 0, n, n);
+                matf32_mul(&temp_V, &J, p_v); // V = V * J
+                matf32_submatrix_copy(p_v, &temp_V, 0, 0, 0, 0, n, n);
+
+                // Update off(A) matrix: off(A) = sqrt(off(A)^2 - a_pq^2 - a_qp^2)
+                a_pq = p_av->p_data[p*n + q];
+                a_qp = p_av->p_data[q*n + p];
+                norm_offA2 = norm_offA2 - (a_pq*a_pq) - (a_qp*a_qp);
+            }
+        }
+    }
+
+    return MATH_SUCCESS;
+}
+
+err_status_t
+matf32_jacobi_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_s, matf32_t* const p_v)
+{
+    // Add dimension check: only square matrices, all the size of A (n x n)
+
+    matf32_zeros(p_u);
+    matf32_zeros(p_s);
+    matf32_eye(p_v);
+
+    uint16_t n = p_a->num_rows;
+
+    float AV_data[MAX_MAT_SIZE];
+    matf32_t AV;
+    matf32_init(&AV, n, n, AV_data);
+
+    float AV_column_data[MAX_MAT_SIZE];
+    matf32_t AV_column;
+    matf32_init(&AV_column, n, 1, AV_column_data);
+
+    float U_column_data[MAX_MAT_SIZE];
+    matf32_t U_column;
+    matf32_init(&U_column, n, 1, U_column_data);
+
+    // Generate AV and V
+    matf32_one_sided_jacobi(p_a, &AV, p_v, 10);
+
+    // Normalize columns of AV to ensure AV = US and to save U and S
+    for (uint16_t j = 0; j < n; ++j)
+    {
+        // Get column AV(:,j)
+        matf32_submatrix_copy(&AV, &AV_column, 0, j, 0, 0, n, 1);
+
+        // Calculate the singular value S(j,j) = norm(AV(:,j))
+        p_s->p_data[j*n + j] = norm(AV_column.p_data, n, 1);
+
+        // If S(j,j) is close to zero, ensure it's zero and skip the normalization to avoid division by zero
+        if (p_s->p_data[j*n + j] < 1E-05)
+        {
+            p_s->p_data[j*n + j] = 0;
+        }
+        // Normalize the column AV(:,j) and save it in the corresponding U(:,j)
+        else
+        {
+            matf32_scale(&AV_column, 1/p_s->p_data[j*n + j], &U_column);
+            matf32_submatrix_copy(&U_column, p_u, 0, 0, 0, j, n, 1);
+        }
+    }
+
+    return MATH_SUCCESS;
+}
 
 //

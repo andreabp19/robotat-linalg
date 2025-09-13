@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 10 Sep 2025
+ * Last modified: 12 Sep 2025
  *          By: Andrea Pineda
  */
 
@@ -324,7 +324,7 @@ typedef enum
 typedef enum
 {
     GIVENS,
-    SYMMETRIC_SCHUR2
+    JACOBI
 } rotation_method_t;
 
 
@@ -1104,7 +1104,7 @@ matf32_givens_pair(float a, float b, float* c, float* s);
  * @return err_status_t
  */
 err_status_t
-matf32_symschur2_pair(matf32_t* p_a, uint16_t p, uint16_t q, float* c, float* s);
+matf32_symschur2_pair(const matf32_t* const p_a, uint16_t p, uint16_t q, float* c, float* s);
 
 
 /**
@@ -1123,32 +1123,35 @@ matf32_symschur2_pair(matf32_t* p_a, uint16_t p, uint16_t q, float* c, float* s)
  * @return err_status_t
  */
 err_status_t
-matf32_generate_rotation(matf32_t* p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b);
+matf32_generate_rotation(const matf32_t* const p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b);
 
 /**
- * @brief   Computes the Golub-Kahan SVD Step necessary for calculating the SVD of a matrix.
+ * @brief   Applies a one-sided Jacobi algorithm to generate the transformation A = AV
+ * Based on the following algorithms from Golub, Matrix Computations:
+ *  - Algorithm 8.5.3 (Cyclic Jacobi): modified to apply A = AJ instead of A = J'AJ (where J is a Jacobi rotation using Algorithm 8.5.1)
+ *  - Problem P8.6.5 to implement off(A)^2 = off(A)^2 - a_pq^2 - a_qp^2 as the update for the off diagonals matrix to check in each iteration.
  * 
- * @warning This algorithm overwrites the input matrix to create the new step of the SVD
+ * @param[in]       p_a     Points to input matrix (square matrix)
+ * @param[in,out]   p_av    Points to matrix to save the transformation AV instead of overwriting A
+ * @param[in,out]   p_v     Points to matrix to save the orthonormal matrix V
  * 
- * @param[in]       p_b   Points to matrix on which to apply the SVD step
- * 
- * @return err_status_t
+ * @return Execution status
  */
 err_status_t
-matf32_gk_svd_step(matf32_t* const p_b);
+matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_av, matf32_t* const p_v, uint16_t iterations);
 
 /**
- * @brief   Computes the SVD of a given matrix (with the Golub-Kahan SVD Step)
+ * @brief   Calculates the SVD of a matrix using using the one-sided Jacobi algorithm
  * 
- * @param[in]       p_a     Points to the matrix A from which to calculate the SVD Factorization
- * @param[in,out]   p_u     Points to the U matrix of the SVD factorization
- * @param[in,out]   p_s     Points to the S (sigma) matrix (singular values) of the SVD factorization
- * @param[in,out]   p_v     Points to the V matrix of the SVD factorization
+ * @param[in]       p_a     Points to input matrix (square matrix)
+ * @param[in,out]   p_u     Points to matrix to save the orthogonal matrix U
+ * @param[in,out]   p_s     Points to matrix to save the singular values matrix S
+ * @param[in,out]   p_v     Points to matrix to save the orthogonal matrix V
  * 
- * @return err_status_t
+ * @return Execution status
  */
 err_status_t
-matf32_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_s, matf32_t* const p_v);
+matf32_jacobi_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_s, matf32_t* const p_v);
 
 #ifdef __cplusplus
 }
