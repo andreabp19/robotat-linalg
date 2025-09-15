@@ -2,7 +2,7 @@
 /**
  * @author Miguel Zea
  * 
- * Last modified: 27 Aug 2025
+ * Last modified: 15 Sep 2025
  * 		By: Andrea Pineda
  * 
  */
@@ -159,6 +159,7 @@ ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time
 }
 
 
+// Not tested yet: Backward Euler, Tustin
 err_status_t
 ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method)
 {	
@@ -170,6 +171,15 @@ ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t metho
 	matf32_init(I, sys->state_dim, sys->state_dim, m1data);
 	matf32_eye(I);
 
+	matf32_t* I_Asample_time = &m2;
+	matf32_init(I_Asample_time, sys->state_dim, sys->state_dim, m2data);
+
+	matf32_t* temp_B = &m3;
+	matf32_init(temp_B, sys->B->num_rows, sys->B->num_cols, m3data);
+
+	matf32_t* temp_A = &m4;
+	matf32_init(temp_A, sys->A->num_rows, sys->A->num_cols, m4data);
+
 	sys->is_continuous = false;
 	sys->dt = sample_time;
 
@@ -179,22 +189,48 @@ ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t metho
 		break;
 
 	case FWD_EULER:
-		matf32_scale(sys->A, sample_time, sys->A);
-		matf32_add(sys->A, I, sys->A);
+
+		// A_d = I + A*sample_time
+		matf32_scale(sys->A, sample_time, temp_A);
+		matf32_add(temp_A, I, sys->A);
+
+		// B_d = B*sample_time
 		matf32_scale(sys->B, sample_time, sys->B);
 		break;
 
 	case BWD_EULER:
 
+		// A_d = (I - A*sample_time)^-1
+		matf32_scale(sys->A, sample_time, sys->A);
+		matf32_sub(I, sys->A, sys->A);
+		matf32_inv(sys->A, sys->A);
+
+		// B_d = A_d * (B*sample_time)
+		matf32_scale(sys->B, sample_time, temp_B);
+		matf32_mul(sys->A, temp_B, sys->B);
+
 		break;
 
 	case TUSTIN:
 
+		// I_Asample_time = (I - A*sample_time/2)^-1
+		matf32_scale(sys->A, sample_time/2, sys->A);
+		matf32_sub(I, sys->A, I_Asample_time);
+		matf32_inv(I_Asample_time, I_Asample_time);
+
+		// A_d = I_Asample_time * (I + A*sample_time/2)
+		matf32_scale(sys->A, sample_time/2, sys->A);
+		matf32_add(I, sys->A, temp_A);
+		matf32_mul(I_Asample_time, temp_A, sys->A);
+
+		// B_d = I_Asample_time * (B*sample_time/2)
+		matf32_scale(sys->B, sample_time/2, temp_B);
+		matf32_mul(I_Asample_time, temp_B, sys->B);
+
 		break;
 
-
 	case ZOH:
-
+		// TODO: Includes integration, which is not implemented yet.
 		break;
 
 	default:
@@ -290,7 +326,7 @@ ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t
 	return MATH_SUCCESS;
 }
 
-
+// comparar con loclin_fast en matlab
 err_status_t
 ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta)
 {
@@ -407,6 +443,9 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 
 	return MATH_SUCCESS;
 }
+
+
+// Add ctr_sys_nonlin_simulate
 
 
 // ====================================================================================================
@@ -554,6 +593,8 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 	return MATH_SUCCESS;
 }
 
+
+// Other version of kalman functions (don't touch)
 
 //void
 //kalman_predict(kalman_info_t* const kf, float* const inputs)
