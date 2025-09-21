@@ -1,7 +1,7 @@
 /**
  * @file linsolve.c
  * 
- * Last modified 27 Aug 2025
+ * Last modified 21 Sep 2025
  *      By: Andrea Pineda
  */
 
@@ -11,6 +11,18 @@ static float m1data[MAX_MAT_SIZE];
 static matf32_t m1;
 static float m2data[MAX_MAT_SIZE];
 static matf32_t m2;
+static float m3data[MAX_MAT_SIZE];
+static matf32_t m3;
+static float m4data[MAX_MAT_SIZE];
+static matf32_t m4;
+static float m5data[MAX_MAT_SIZE];
+static matf32_t m5;
+static float m6data[MAX_MAT_SIZE];
+static matf32_t m6;
+static float m7data[MAX_MAT_SIZE];
+static matf32_t m7;
+static float m8data[MAX_MAT_SIZE];
+static matf32_t m8;
 static float p1[MAX_VEC_SIZE];
 
 
@@ -37,6 +49,10 @@ linsolve_print_method(linsolve_method_t lsm)
 
         case LU:
             printf("LU\n");
+            break;
+
+        case SVD:
+            printf("SVD\n");
             break;
     }
 }
@@ -68,7 +84,13 @@ linsolve_get_method(const matf32_t* const p_a)
         return CHOLESKY;
     }
 
-    // TODO: Add SVD for ill-conditioned matrices
+    // solve with SVD if ill-conditioned (adjust limit as you see fit)
+    float conditioning_a = 0;
+    matf32_cond(p_a, &conditioning_a);
+    if (conditioning_a > ILL_CONDITIONING_THRESHOLD)
+    {
+        return SVD;
+    }
 
     return LU; //general square solver
 }
@@ -148,6 +170,10 @@ linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p
 {
     linsolve_method_t method = linsolve_get_method(p_a);
 
+    printf("\nLinsolve Method: ");
+    linsolve_print_method(method);
+    printf("\n\n");
+
     return linsolve_method(p_a, p_b, p_x, method);
 }
 
@@ -204,6 +230,31 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
             return status;
             break;
 
+        case SVD:
+            
+            matf32_t* U = &m1;
+            matf32_init(U, p_a->num_rows, p_a->num_rows, m1data);
+
+            matf32_t* S = &m2;
+            matf32_init(S, p_a->num_rows, p_a->num_cols, m2data);
+
+            matf32_t* V = &m3;
+            matf32_init(V, p_a->num_cols, p_a->num_cols, m3data);
+
+            matf32_jacobi_svd(p_a, U, S, V); // Generate SVD decomposition for A
+
+            //printf("U:\n");
+            //matf32_print(U);
+            //printf("S:\n");
+            //matf32_print(S);
+            //printf("V:\n");
+            //matf32_print(V);
+
+            status = linsolve_svd(U, S, V, p_b, p_x); // Solve system with the SVD decomposition matrices
+
+            return status;
+            break;
+
         case LU:
             // matrix L
             matf32_init(&m1, p_a->num_rows, p_a->num_rows, m1data);
@@ -255,10 +306,13 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
 
     // R from full QR (as matf32_qr) is n x (n-1), with an extra row of zeros.
     // Take away the extra row of zeros to turn it into upper triangular and solve with backward substitution.
+    
     matf32_submatrix_copy(p_r, &sub_R, 0, 0, 0, 0, sub_R.num_rows, sub_R.num_cols);
+    // Uncomment to solve nonsquare matrices
+    //status = linsolve_backward_substitution(&sub_R, &y, p_x);
 
-    // Solve Rx = y with backward substitution as R is upper triangular
-    status = linsolve_backward_substitution(&sub_R, &y, p_x);
+    // Use this one instead to solve square matrices
+    status = linsolve_backward_substitution(p_r, &y, p_x);
 
     return status;
 }
@@ -334,4 +388,74 @@ linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* con
     status = linsolve_backward_substitution(p_c, &y, p_x);
 
     return status;
+}
+
+
+// Works, but still in testing
+err_status_t
+linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_t* const p_v, const matf32_t* const p_b, matf32_t* const p_x)
+{
+    /**
+     * Procedure based on Watkins, Fundamentals of Matrix Computations, 4.3 The SVD and the Least Squares Problem,
+     * but modified to use the pseudoinverse instead of the inverse and without intermediate subvectors.
+     * 
+     * Right now, exclusive for SQUARE matrices, have to adjust dimension checks for rectangular matrices.
+     * With svd(A) = USV'
+     * 
+     * x = V*pinv(S)*U'*b
+     */
+
+    uint16_t n = p_s->num_cols;
+
+    matf32_t* Si = &m5;
+    matf32_init(Si, p_s->num_rows, p_s->num_cols, m5data);
+    matf32_zeros(Si); // Without this it has garbage values after pinv(S) in the off-diagonals
+
+    matf32_t* Utb = &m6;
+    matf32_init(Utb, p_u->num_rows, p_b->num_cols, m6data);
+
+    matf32_t* SiUtb = &m7;
+    matf32_init(SiUtb, Si->num_rows, p_b->num_cols, m7data);
+
+    matf32_t* U_trans = &m8;
+    matf32_init(U_trans, p_u->num_cols, p_u->num_rows, m8data);
+
+    // Si = pinv(S) (Golub, Matrix Computations 5.5.2 A Note About the Pseudoinverse)
+    for (uint16_t k = 0; k < n; ++k)
+    {
+        // For nonzero singular values (sigma), do: 1/sigma
+        if (fabs(p_s->p_data[k*n + k]) > 1E-02)
+        {
+            // Save the new value in Si, zero values will already be zero and untouched in Si.
+            Si->p_data[k*n + k] = 1/p_s->p_data[k*n + k];
+        }
+        else
+        {
+            Si->p_data[k*n + k] = 0;
+        }
+    }
+
+    //float cond_S = 0;
+    //matf32_cond(p_s, &cond_S);
+    //printf("Condition number S: %.9f\n", cond_S);
+
+    //float cond_Si = 0;
+    //matf32_cond(Si, &cond_Si);
+    //printf("Condition number Si: %.9f\n\n", cond_Si);
+
+    //printf("Si:\n");
+    //matf32_print(Si);
+
+    matf32_trans(p_u, U_trans); // U'
+    //printf("Ut:\n");
+    //matf32_print(U_trans);
+    matf32_mul(U_trans, p_b, Utb); // U'b
+    //printf("Utb:\n");
+    //matf32_print(Utb);
+    matf32_mul(Si, Utb, SiUtb); // pinv(S)*U'*b
+    //printf("SiUtb:\n");
+    //matf32_print(SiUtb);
+    matf32_mul(p_v, SiUtb, p_x); // x = V*pinv(S)*U'*b
+
+    return MATH_SUCCESS;
 }

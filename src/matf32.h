@@ -997,7 +997,7 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 
 
 /**
- * @brief   Calculates the pseudoinverse of a given matrix
+ * @brief   Calculates the pseudoinverse of a given matrix using the singular values of the SVD decomposition of A
  * 
  * @param[in]       p_a     Matrix to calculate the inverse from
  * @param[in,out]   p_pinv  Matrix to save the pseudoinverse in
@@ -1006,7 +1006,7 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  */
 err_status_t
 matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv);
-
+// Input: S, U and V directly to avoid operating the svd inside the function.
 
 // ----------------------------------------------------------------------------------------------------
 // 4.3. Matrix factorization/decomposition methods
@@ -1126,19 +1126,19 @@ err_status_t
 matf32_generate_rotation(const matf32_t* const p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b);
 
 /**
- * @brief   Applies a one-sided Jacobi algorithm to generate the transformation A = AV
- * Based on the following algorithms from Golub, Matrix Computations:
- *  - Algorithm 8.5.3 (Cyclic Jacobi): modified to apply A = AJ instead of A = J'AJ (where J is a Jacobi rotation using Algorithm 8.5.1)
- *  - Problem P8.6.5 to implement off(A)^2 = off(A)^2 - a_pq^2 - a_qp^2 as the update for the off diagonals matrix to check in each iteration.
+ * @brief   Generates and applies a one-sided jacobi rotation to matrix A
+ * 
+ * @warning This routine OVERWRITES matrix A.
  * 
  * @param[in]       p_a     Points to input matrix (square matrix)
- * @param[in,out]   p_av    Points to matrix to save the transformation AV instead of overwriting A
  * @param[in,out]   p_v     Points to matrix to save the orthonormal matrix V
+ * @param[in]       j       Index j for the rotation
+ * @param[in]       k       Index k for the rotation
  * 
  * @return Execution status
  */
 err_status_t
-matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_av, matf32_t* const p_v, uint16_t iterations);
+matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_v, uint16_t j, uint16_t k);
 
 /**
  * @brief   Calculates the SVD of a matrix using using the one-sided Jacobi algorithm

@@ -1,9 +1,9 @@
 /**
  * @file linsolve.h
  * 
- * Linear solvers based on matf32 datatype.
+ * Linear solver based on matf32_t datatype.
  * 
- * Last modified 27 Aug 2025
+ * Last modified 21 Sep 2025
  *      By: Andrea Pineda
  */
 
@@ -32,7 +32,7 @@ typedef enum
     CHOLESKY,
     QR,
     LU,
-    SCHUR
+    SVD
 } linsolve_method_t;
 
 /**
@@ -140,6 +140,7 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
  * @param[in]       p_u     Points to matrix U from LU decomposition of A.
  * @param[in]       p_b     Points to b vector.
  * @param[in,out]   p_x     Points to output vector x.
+ * @param[in]       p_index List of permutations executed during the LU decomposition of A.
  * 
  * @return  Execution status
  *              MATH_SUCESS :           Operation successful
@@ -147,6 +148,20 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
  */
 err_status_t
 linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x, uint16_t* p_index);
+
+/**
+ * @brief   Solves a system Ax = b through SVD Factorization A = USV
+ * 
+ * @param[in]       p_u     Points to matrix U from SVD of A
+ * @param[in]       p_s     Points to matrix S from SVD of A
+ * @param[in]       p_v     Points to matrix V from SVD of A
+ * @param[in]       p_b     Points to b vector
+ * @param[in,out]   p_x     Points to output vector x
+ * 
+ * @return  Execution status     
+ */
+err_status_t
+linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_t* const p_v, const matf32_t* const p_b, matf32_t* const p_x);
 
 
 /**
