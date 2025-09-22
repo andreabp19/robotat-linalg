@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 27 Aug 2025
+ * Last modified: 15 Sep 2025
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -173,6 +173,7 @@ ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizat
  * 
  * @return  None.
  */
+// Tested => Works
 static inline void
 ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
 {
@@ -180,7 +181,6 @@ ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
     pid->ki = ki;
     pid->kd = kd;
 }
-// Tested => Works
 
 
 /**
@@ -242,17 +242,54 @@ ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time
 err_status_t
 ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method);
 
-
+/**
+ * @brief   Initialices an instance of the ctr_sys_lti_t struct for lti linear systems
+ * 
+ * @param[in,out]   sys             lti system struct instance
+ * @param[in]       state           Points to matrix for the system state
+ * @param[in]       A               Points to matrix A for the system
+ * @param[in]       B               Points to matrix B for the system
+ * @param[in]       C               Points to matrix C for the system
+ * @param[in]       D               Points to matrix D for the system
+ * @param[in]       sample_time     Float for the sample time of the system
+ * 
+ * @return Execution status
+ */
 err_status_t
 ctr_sys_lti_init(ctr_sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, matf32_t* const B, matf32_t* const C, matf32_t* const D, float sample_time);
 
-
+/**
+ * @brief   Initializes an instance of the ctr_sys_nonlin_t struct for nonlinear systems
+ * 
+ * @param[in,out]   sys             Nonlinear system struct instance
+ * @param[in]       state           Points to matrix for the system state
+ * @param[in]       input_dim       Number of inputs of the system
+ * @param[in]       output_dim      Number of outputs of the system
+ * @param[in]       dynamics        Points to function representing the dynamics of the system: output_matrix, xss, uss  
+ * @param[in]       outputs         Points to function representing the outputs of the system: output_matrix, xss, uss
+ * @param[in]       sample_time     Float for the sample time of the system
+ * 
+ * @return Execution status
+ */
 err_status_t
 ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t input_dim, uint16_t output_dim, err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*), err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*), float sample_time);
 
 
+/**
+ * @brief   Linearizes a nonlinear system: input a nonlinear system, outputs a linear version, using the corresponding structs: ctr_sys_nonlin_t and ctr_sys_lti_t
+ * 
+ * @param[in]       src_sys         Points to nonlinear system struct instance
+ * @param[in,out]   dst_sys         Points to lti system struct instance
+ * @param[in]       xss             xss for the operation point (xss,uss)
+ * @param[in]       uss             uss for the operation point (xss,uss)
+ * @param[in]       delta           Diferences to divide by for the linearization
+ * 
+ * @return Execution status
+ */
 err_status_t
 ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta);
+
+
 
 // ----------------------------------------------------------------------------------------------------
 // 2.1. Linear State Space Controllers
@@ -273,6 +310,22 @@ ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const 
  */
 err_status_t
 ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* x, const matf32_t* xss, const matf32_t* uss);
+
+
+/**
+ * @brief   Updates the step for a nonlinear system with either forward euler or runge-kutta-4 methods.
+ * 
+ * @param[in]   sys     Points to the nonlinear system to work with
+ * @param[in]   x_k     Points to the current state
+ * @param[in]   x_k_1   Points to the next state to save it
+ * @param[in]   u_k     Points to system input
+ * @param[in]   delta   Float for the time step
+ * @param[in]   method  Method to work with: Forward Euler or Runge-Kutta-4
+ * 
+ * @return Execution status
+ */
+err_status_t
+ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32_t* const x_k_1, const matf32_t* const u_k, float delta, ctr_discretizations_t method);
 
 
 // ====================================================================================================

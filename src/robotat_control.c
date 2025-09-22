@@ -2,7 +2,7 @@
 /**
  * @author Miguel Zea
  * 
- * Last modified: 15 Sep 2025
+ * Last modified: 16 Sep 2025
  * 		By: Andrea Pineda
  * 
  */
@@ -159,7 +159,7 @@ ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time
 }
 
 
-// Not tested yet: Backward Euler, Tustin
+// Tested = works
 err_status_t
 ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method)
 {	
@@ -326,7 +326,7 @@ ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t
 	return MATH_SUCCESS;
 }
 
-// comparar con loclin_fast en matlab
+// comparar con loclin_fast en matlab = works
 err_status_t
 ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta)
 {
@@ -369,43 +369,49 @@ ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const 
 	matf32_copy(xss, dx);
 	for (uint16_t i = 1; i <= state_dim; i++)
 	{
+		// dx = xss_i + delta
 		matf32_get(dx, i, 1, &xss_i);
 		matf32_set(dx, i, 1, xss_i + delta);
 		
-		src_sys->dynamics(df, dx, uss);
-		matf32_sub(df, df, fss);
-		matf32_scale(df, 1 / delta, df);
+		// A = df(x,u)/dx
+		src_sys->dynamics(df, dx, uss); // df = f(xe+dx, ue)
+		matf32_sub(df, fss, df); // fss = df - df = 0? Correct seems to be: df = df-fss
+		matf32_scale(df, 1 / delta, df); // df = df/delta
 		memcpy(dst_sys->A->p_data + (i - 1) * state_dim, df->p_data, state_dim * sizeof(float));
 
-		src_sys->outputs(dh, dx, uss);
-		matf32_sub(dh, dh, hss);
-		matf32_scale(dh, 1 / delta, dh);
-		memcpy(dst_sys->C->p_data + (i - 1) * output_dim, df->p_data, output_dim * sizeof(float));
+		// C = dh(x,u)/dx
+		src_sys->outputs(dh, dx, uss); // dh = h(xe+dx, ue)
+		matf32_sub(dh, hss, dh); // hss = dh - dh = 0? Correct seems to be: dh = dh-hss
+		matf32_scale(dh, 1 / delta, dh); // dh = dh/delta
+		memcpy(dst_sys->C->p_data + (i - 1) * output_dim, dh->p_data, output_dim * sizeof(float)); // Minor error fixed: was using df->p_data instead of dh->p_data
 
-		matf32_set(dx, i, 1, xss_i);
+		matf32_set(dx, i, 1, xss_i); // Reset dx to xss_i
 	}
 
-	// Get the Jacobians with respecto to the input vector
+	// Get the Jacobians with respect to the input vector
 	matf32_t* const du = &m3;
 	matf32_reshape(du, output_dim, 1);
 
 	matf32_copy(uss, du);
 	for (uint16_t i = 1; i <= input_dim; i++)
 	{
+		// du = uss_i + delta
 		matf32_get(du, i, 1, &uss_i);
 		matf32_set(du, i, 1, uss_i + delta);
 
-		src_sys->dynamics(df, xss, du);
-		matf32_sub(df, df, fss);
-		matf32_scale(df, 1 / delta, df);
+		// B = df(x,u)/du
+		src_sys->dynamics(df, xss, du); // df = f(xe, ue+du)
+		matf32_sub(df, fss, df); // fss = df - df = 0? Correct seems to be: df = df-fss
+		matf32_scale(df, 1 / delta, df); // df = df/delta
 		memcpy(dst_sys->B->p_data + (i - 1) * state_dim, df->p_data, state_dim * sizeof(float));
 
-		src_sys->outputs(dh, xss, du);
-		matf32_sub(dh, dh, hss);
-		matf32_scale(dh, 1 / delta, dh);
-		memcpy(dst_sys->D->p_data + (i - 1) * output_dim, df->p_data, output_dim * sizeof(float));
+		// D = dh(x,u)/du
+		src_sys->outputs(dh, xss, du); // dh = h(xe, ue+du)
+		matf32_sub(dh, hss, dh); // hss = dh - dh = 0? Correct seems to be: dh = dh-hss
+		matf32_scale(dh, 1 / delta, dh); // dh = dh/delta
+		memcpy(dst_sys->D->p_data + (i - 1) * output_dim, dh->p_data, output_dim * sizeof(float));
 
-		matf32_set(du, i, 1, uss_i);
+		matf32_set(du, i, 1, uss_i); // Reset du to xss_i
 	}
 
 	// Return to row linear indexing
@@ -445,7 +451,88 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 }
 
 
-// Add ctr_sys_nonlin_simulate
+// Tested = Works
+err_status_t
+ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32_t* const x_k_1, const matf32_t* const u_k, float delta, ctr_discretizations_t method)
+{
+	matf32_t* fss = &m1;
+	matf32_init(fss, x_k->num_rows, x_k->num_cols, m1data);
+
+	matf32_t* k1 = &m2;
+	matf32_init(k1, fss->num_rows, fss->num_cols, m2data);
+
+	matf32_t* k2 = &m3;
+	matf32_init(k2, fss->num_rows, fss->num_cols, m3data);
+
+	matf32_t* k3 = &m4;
+	matf32_init(k3, fss->num_rows, fss->num_cols, m4data);
+
+	matf32_t* k4 = &m5;
+	matf32_init(k4, fss->num_rows, fss->num_cols, m5data);
+
+	float temp_data[MAX_MAT_SIZE];
+	matf32_t temp;
+	matf32_init(&temp, fss->num_rows, fss->num_cols, temp_data);
+
+	switch (method)
+	{
+		case FWD_EULER:
+
+			/**
+			 * Forward Euler
+			 * x_k_1 = x_k + f(x_k)*delta
+			 */
+
+			sys->dynamics(fss, x_k, u_k);	// f(x_k, u_k)
+			matf32_scale(fss, delta, fss); 	// f(x_k, u_k)*delta
+			matf32_add(x_k, fss, x_k_1); 	// x_k_1 = x_k + f(x_k, u_k)*delta
+
+			break;
+
+		case RK4:
+
+			/**
+			 * Runge-Kutta-4
+			 * x_k_1 = x_k + (delta/6)(k1 + 2k2 + 2k3 + k4)
+			 * 		 = x_k + (delta/6)(k1 + 2(k2 + k3) + k4)
+			 * 
+			 * k1 = f(x_k)
+			 * k2 = f(x_k + (delta/2)*k1)
+			 * k3 = f(x_k + (delta/2)*k2)
+			 * k4 = f(x_k + delta*k3)
+			 */
+
+			// k1
+			sys->dynamics(k1, x_k, u_k); 		// k1 = f(x_k, u_k)
+
+			// k2
+			matf32_scale(k1, delta/2, k2); 		// (delta/2)*k1
+			matf32_add(x_k, k2, &temp); 		// temp = x_k + (delta/2)*k1
+			sys->dynamics(k2, &temp, u_k);		// k2 = f(temp, u_k) = f(x_k + (delta/2)*k1, u_k)
+			
+			// k3
+			matf32_scale(k2, delta/2, k3);		// (delta/2)*k2
+			matf32_add(x_k, k3, &temp);			// temp = x_k + (delta/2)*k2
+			sys->dynamics(k3, &temp, u_k);		// k3 = f(temp, u_k) = f(x_k + (delta/2)*k2, u_k)
+
+			// k4
+			matf32_scale(k3, delta, k4);		// delta*k3
+			matf32_add(x_k, k4, &temp);			// temp = x_k + delta*k3
+			sys->dynamics(k4, &temp, u_k);		// k4 = f(temp, u_k) = f(x_k + delta*k3, u_k)
+
+			// x_k_1
+			matf32_add(k2, k3, k3);				// k2 + k3
+			matf32_scale(k3, 2, &temp);			// temp = 2*(k2 + k3) = 2k2 + 2k3
+			matf32_add(&temp, k4, k4);			// k4 = 2k2 + 2k3 + k4
+			matf32_add(k4, k1, &temp);			// temp = k1 + 2k2 + 2k3 + k4
+			matf32_scale(&temp, delta/6, k1);	// k1 = (delta/6)(k1 + 2k2 + 2k3 + k4)
+			matf32_add(x_k, k1, x_k_1);			// x_k_1 = x_k + (delta/6)(k1 + 2k2 + 2k3 + k4)
+
+			break;
+	}
+
+	return MATH_SUCCESS;
+}
 
 
 // ====================================================================================================
@@ -789,6 +876,8 @@ ctr_sys_lti_print(ctr_sys_lti_t* p_sys_lti)
 
 	printf("-------------------------\n\n");
 }
+
+// Add a print for the nonlinear system	
 
 void
 ctr_kalman_print(ctr_kalman_t* p_kalman)
