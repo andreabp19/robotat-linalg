@@ -3,51 +3,50 @@ Low-level C library for numerical computation aimed at applications in optimizat
 
 # About this repository
 
-Here you will find all of the robotat-linalg numerical computation libraries (matf32, linsolve and quadprog), additional control and robotics libraries implementing the numerical computation libraries and all of the projects and test files in matlab and platformio for the devices used (currently only the ESP32).
+Here you will find all of the robotat-linalg numerical computation libraries (matf32, linsolve and quadprog) and the control and robotics libraries, along with example files for testing the functions and to learn how to use each library.
 
 ## Robotat Linalg Files
 
-* constants.h: constant values to be used throughout the libraries, for example: maximum matrix and vector sizes.
+* constants.h: constant values to be used throughout the libraries, for example: maximum matrix and vector sizes, maximum number of iterations for SVD, etc.
 
 * matf32.h: linear algebra library
-    * auxiliary operations with floats (mean, set, randn, zeros, ones, etc.)
-    * matrix definitions: based on a custom struct (matf32_t)
-    * matrix operations: addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, set, etc.
-    * check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite.
+    * Auxiliary operations with floats (mean, set, randn, zeros, ones, etc.)
+    * Matrix definitions: based on a custom struct (matf32_t)
+    * Matrix operations (matf32_ functions): addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, resizing, set, etc.
+    * Check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite.
+    * Matrix Factorizations: LU, QR, Cholesky and SVD (with One-Sided Jacobi).
 
-* linsolve.h: linear solver for Ax = b systems, implementing the following matrix decomposition methods:
+* linsolve.h: linear solver for Ax = b systems, implementing the following methods:
     * Forward Substitution
     * Backward Substitution
     * Cholesky
     * LU
     * QR
+    * SVD
 
-* quadprog.h: quadratic solver for equality constrained quadratic programs (QPs), implementing the linsolve library.
+* quadprog.h: quadratic solver for equality and inequality constrained quadratic programs (QPs), implementing the following methods: 
+    * For QPs with equality restrictions:
+       * LU
+       * QR
+       * SVD
+       * LDL'
+       * Nullspace
+    * For QPs with inequality restrictions:
+       * Active-Set 
 
 * robotat_control.h: control algorithms
     * PID discretizations (Forward and Backward Euler, Pure Discrete and Tustin, ZOH is not implemented yet)
-    * State space representations for LTI and non-linear systems
-    * Kalman filter
+    * State space representations for LTI and non-linear systems.
+       * Continuous to discrete time conversion (ctr_c2d)
+       * Nonlinear system state simulation with Forward Euler and Runge-Kutta4.
+    * Kalman filter prediction and correction functions.
 
-* robotat_robotics.h: robotics algorithms based on the Matlab Robotics Toolbox by Peter Corke
+* robotat_robotics.h: robotics algorithms based on the Robotics Toolbox by Peter Corke for MATLAB
     * Homogeneous transformation matrix operations (generating and setting rotation matrices, setting coordinate vectors, applying homogeneous transformations, applying euler angles)
     * Quaternion structures and operations (addition, substraction, quaternion-scalar and quaternion-quaternion multiplication, conjugate, norm and inverse).
     * Functions for conversions between angles, homogeneous transformations, rotation matrices and quaternions.
 
-* robotat_linalg.h: to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h
-
-## Test Files
-
-Test files are organized first by library and then by device. For example, in the case of matf32:
-   * matf32_tests
-      * matf32_test_esp32
-      * matf32_test_matlab
-    
-The results exported from each file are saved and then plotted using MATLAB, all of which can be found in the matlab_plotting folder (the script for plotting and the exported .eps files organized in folders, by library).
-
-# Testing and Validation of the Libraries
-
-Validation of matf32, linsolve and quadprog are done by comparing the result and time of execution for the different functions with respect to their matlab equivalents (functions when possible or manually recreating them when necessary). This is currently a work in progress, so documentation and files will be updated accordingly. The same strategy is used for the robotics library, as it is compared against matlab using the Robotics Toolbox by Peter Corke, as the functions implemented are based on the latter. And the same approach will be used for the control library.
+* robotat_linalg.h: to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h in order to use all the libraries.
 
 # History and Development
 
