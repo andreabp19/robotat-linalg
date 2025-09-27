@@ -1,6 +1,8 @@
 /**
  * @file quadsprog.h
  *
+ * Last modified: 22 Sep 2025
+ *          By: Andrea Pineda
  */
 
 #ifndef ROBOTAT_QUADPROG_H_
@@ -46,6 +48,15 @@ typedef enum
     QP_NOT_CONVEX,      /** Problem is not convex */
     QP_BAD_DEFINED      /** Problem is not correctly defined */
 } quadprog_status_t;
+
+/**
+ * @brief Quadprog-specific methods for solving QPs
+ * 
+ */
+typedef enum
+{
+    NULLSPACE   /** Direct method for solving a KKT system using the null-space matrix of Aeq */
+} quadprog_method_t;
 
 
 /**
@@ -94,16 +105,39 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x);
 
 
 /**
- * @brief   Equality restricted quadratic convex problem solver
+ * @brief   Equality restricted quadratic convex problem solver using linsolve methods: LU, SVD or QR
  *
- * @param[in]  p_qp Points to the structure representing the problem to solve.
- * @param[out] p_x  Points to the vector to store the result.
+ * @param[in]  p_qp     Points to the structure representing the problem to solve.
+ * @param[out] p_x      Points to the vector to store the solution to the QP.
+ * @param[in]  method   Linsolve method to use for solving the system: LU, SVD or QR.
  *
  * @return  Execution status.
  */
 quadprog_status_t
-quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x);
+quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method);
 
+/**
+ * @brief   Solves a convex quadratic problem with equality restrictions using the null-space method for KKT systems
+ * 
+ * @param[in]       p_qp Points to the structure representing the problem to solve.
+ * @param[in,out]   p_x  Points to the vector to store the solution for the QP.
+ * 
+ * @return Execution status.
+ */
+quadprog_status_t 
+quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x);
+
+/**
+ * @brief Solves a convex quadratic problemwith equality restrictions using the LDL' factorization,
+ * Based on LDL' with Bunch and Parlett Pivoting presented in section 4.4.3 of Golub, Matrix Computations.
+ * 
+ * @param[in]       p_qp Points to the structure representing the problem to solve.
+ * @param[in,out]   p_x  Points to the vector to store the solution for the QP.
+ * 
+ * @return Execution status
+ */
+quadprog_status_t
+quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x);
 
 /**
  * @brief   Inequality restricted quadratic convex problem solver.
