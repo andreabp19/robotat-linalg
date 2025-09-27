@@ -3,13 +3,16 @@ SRC = ../src/
 
 CC = gcc
 
-all: matf32 linsolve control robotics
+all: matf32 linsolve quadprog control robotics
 
 matf32: lib
 	$(CC) matf32_test.c $(SRC)/*.o -I$(SRC) -lm -o build/matf32_test
 
 linsolve: lib
 	$(CC) linsolve_test.c $(SRC)/*.o -I$(SRC) -lm -o build/linsolve_test
+
+quadprog: lib
+	$(CC) quadprog_test.c $(SRC)/*.o -I$(SRC) -lm -o build/quadprog_test
 
 control: lib
 	$(CC) control_test.c $(SRC)/*.o -I$(SRC) -lm -o build/control_test
