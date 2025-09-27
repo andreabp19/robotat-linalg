@@ -1,7 +1,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 3 Sep 2025, last modified: 15 Sep 2025
+ * @date Created 3 Sep 2025, last modified: 24 Sep 2025
  * 
  * For testing quadprog in computer
  */
@@ -32,8 +32,29 @@ matf32_t c;
 float* beq_list[10] = {beq_data1, beq_data2, beq_data3, beq_data4, beq_data5};
 matf32_t beq;
 
-float* R_quadprog_list[10] = {R_quadprog_data1, R_quadprog_data2, R_quadprog_data3, R_quadprog_data4, R_quadprog_data5};
-matf32_t R_quadprog;
+float* R_x_list[10] = {R_x_data1, R_x_data2, R_x_data3, R_x_data4, R_x_data5};
+matf32_t R_x;
+
+float* R_Ax_list[10] = {R_Ax_data1, R_Ax_data2, R_Ax_data3, R_Ax_data4, R_Ax_data5};
+matf32_t R_Ax;
+
+float x_nullspace_data[MAX_MAT_SIZE];
+matf32_t x_nullspace;
+
+float x_lu_data[MAX_MAT_SIZE];
+matf32_t x_lu;
+
+float x_svd_data[MAX_MAT_SIZE];
+matf32_t x_svd;
+
+float x_ldlt_data[MAX_MAT_SIZE];
+matf32_t x_ldlt;
+
+float x_qr_data[MAX_MAT_SIZE];
+matf32_t x_qr;
+
+float Ax_data[MAX_MAT_SIZE];
+matf32_t Ax;
 
 quadprog_t qp;
 quadprog_t sqp;
@@ -51,91 +72,159 @@ int main(void)
     {
         uint8_t n = i + 1; // i is 1 value below the dimension n, for each matrix
 
-        matf32_init(&temp, n, 1, temp_data); // To save results
-        matf32_init(&temp_difference, n, 1, temp_difference_data);
         matf32_init(&Q, n, n, Q_list[i]);
         matf32_init(&Aeq, n, n, Aeq_list[i]);
         matf32_init(&c, n, 1, c_list[i]);
         matf32_init(&beq, n, 1, beq_list[i]);
-        matf32_init(&R_quadprog, n, 1, R_quadprog_list[i]);
+
+        matf32_init(&R_x, n, 1, R_x_list[i]);
+        matf32_init(&R_Ax, n, 1, R_Ax_list[i]);
+
+        matf32_init(&x_lu, n, 1, x_lu_data);
+        matf32_init(&x_svd, n, 1, x_svd_data);
+        matf32_init(&x_ldlt, n, 1, x_ldlt_data);
+        matf32_init(&x_qr, n, 1, x_qr_data);
+        matf32_init(&Ax, n, 1, Ax_data);
+
+        matf32_init(&temp, n, 1, temp_data);
+        matf32_init(&temp_difference, n, 1, temp_difference_data);
 
         quadprog_init(&qp, &Q, &c, &Aeq, &beq, NULL, NULL, NULL);
         quadprog_init(&sqp, &Q, &c, NULL, NULL, &Aeq, &beq, NULL);
 
-        //printf("\n--------------------------------------------------\n");
-        //printf("n = %i\n", n);
-        //printf("--------------------------------------------------\n");
+        printf("\n--------------------------------------------------\n");
+        printf("n = %i\n", n);
+        printf("--------------------------------------------------\n");
 
         // ---------------------------------------------------------------------------
         // Equality Restricted QPs
         // ---------------------------------------------------------------------------
         // ---------------------------------------------------------------------------
-        // quadprog: Equality Restrictions (quadprog_qp)
+        // quadprog: Equality Restrictions (Square Aeq Matrices)
         // ---------------------------------------------------------------------------
     
-        float quadprog_qp_time[z];
-        float mean_quadprog_qp_time = 0;
+        //printf("----- QP Solution x -----\n\n");
+        printf("----- Ax = b Reconstruction -----\n\n");
 
+        //printf("MATLAB:\n");
+        //matf32_print(&R_x);
+        printf("beq:\n");
+        matf32_print(&beq);
+
+        // --------------------------------------------------
+        // quadprog_qp_ldlt'
+        // --------------------------------------------------
+        printf("\n-------------------------\n");
+        printf("LDL' %ix%i\n", n, n);
+        printf("-------------------------\n");
+
+        float qp_ldlt_time[z];
+        float mean_qp_ldlt_time = 0;
         for (uint8_t j = 0; j < z; j++)
         {
             time = clock();
-            quadprog(&qp, &temp);
-            quadprog_qp_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+            quadprog_qp_ldlt(&qp, &x_ldlt);
+            qp_ldlt_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
+        mean_qp_ldlt_time = mean(qp_ldlt_time, z);
+        
+        matf32_mul(&Aeq, &x_ldlt, &Ax);
+        bool qp_ldlt_ans = matf32_is_equal(&x_ldlt, &R_x);
+        printf("quadprog_qp LDL', mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_ldlt_time, qp_ldlt_ans?"success":"failure");
 
-        //quadprog(&qp, &temp); // It's using LU
+        printf("Ax LDL':\n");
+        matf32_print(&Ax);
 
-        mean_quadprog_qp_time = mean(quadprog_qp_time, z);
+        // --------------------------------------------------
+        // quadprog_qp LU
+        // --------------------------------------------------
+        printf("\n-------------------------\n");
+        printf("LU %ix%i\n", n, n);
+        printf("-------------------------\n");
 
-        /*printf("ESP32 Result:\n");
-        matf32_print(&temp);
-        printf("MATLAB Result:\n");
-        matf32_print(&R_quadprog);*/
+        float qp_lu_time[z];
+        float mean_qp_lu_time = 0;
+        for (uint8_t j = 0; j < z; j++)
+        {
+            time = clock();
+            quadprog_qp(&qp, &x_lu, LU);
+            qp_lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
+        mean_qp_lu_time = mean(qp_lu_time, z);
 
-        bool quadprog_qp_ans = matf32_is_equal(&temp, &R_quadprog);
-        printf("quadprog_qp%i\n",n);
-        printf("%.9f\n", mean_quadprog_qp_time);
-        //printf("quadprog_qp,time(s):%.9f,%s\n\n", mean_quadprog_qp_time, quadprog_qp_ans?"success":"failure");
-        //printf("quadprog_qp,%s\n\n", quadprog_qp_ans?"success":"failure");
+        matf32_mul(&Aeq, &x_lu, &Ax);
+        bool qp_lu_ans = matf32_is_equal(&x_lu, &R_x);
+        printf("quadprog_qp LU, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_lu_time, qp_lu_ans?"success":"failure");
 
-        //printf("Difference ESP32 vs MATLAB Result:\n");
-        //matf32_sub(&temp, &R_quadprog, &temp_difference);
-        //matf32_print(&temp_difference);
+        printf("Ax LU:\n");
+        matf32_print(&Ax);
 
-        // ---------------------------------------------------------------------------
-        // quadprog: Inequality Restrictions (quadprog_sqp)
-        // ---------------------------------------------------------------------------
-    
-        //float quadprog_sqp_time[z];
-        //float mean_quadprog_sqp_time = 0;
+        // --------------------------------------------------
+        // quadprog_qp SVD
+        // --------------------------------------------------
+        printf("\n-------------------------\n");
+        printf("SVD %ix%i\n", n, n);
+        printf("-------------------------\n");
 
-        //for (uint8_t j = 0; j < z; j++)
-        //{
-        //    time = clock();
-        //    quadprog_sqp(&qp, &temp);
-        //    quadprog_sqp_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        //}
+        float qp_svd_time[z];
+        float mean_qp_svd_time = 0;
+        for (uint8_t j = 0; j < z; j++)
+        {
+            time = clock();
+            quadprog_qp(&qp, &x_svd, SVD);
+            qp_svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
+        mean_qp_svd_time = mean(qp_svd_time, z);
 
-        /*quadprog_sqp(&sqp, &temp); // It's using LU
+        matf32_mul(&Aeq, &x_svd, &Ax);
+        bool qp_svd_ans = matf32_is_equal(&x_svd, &R_x);
+        printf("quadprog_qp SVD, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_svd_time, qp_svd_ans?"success":"failure");
+        
+        printf("Ax SVD:\n");
+        matf32_print(&Ax);
 
-        //mean_quadprog_sqp_time = mean(quadprog_sqp_time, z);
+        // --------------------------------------------------
+        // quadprog_qp QR
+        // --------------------------------------------------
+        printf("\n-------------------------\n");
+        printf("QR %ix%i\n", n, n);
+        printf("-------------------------\n");
 
-        printf("ESP32 Result:\n");
-        matf32_print(&temp);
-        printf("MATLAB Result:\n");
-        matf32_print(&R_quadprog);
+        float qp_qr_time[z];
+        float mean_qp_qr_time = 0;
+        for (uint8_t j = 0; j < z; j++)
+        {
+            time = clock();
+            quadprog_qp(&qp, &x_qr, QR);
+            qp_qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
+        mean_qp_qr_time = mean(qp_qr_time, z);
 
-        bool quadprog_sqp_ans = matf32_is_equal(&temp, &R_quadprog);
-        //printf("matf32_quadprog_sqp%i\n",n);
-        //printf("%.9f\n", mean_quadprog_sqp_time);
-        //printf("quadprog_sqp,time(s):%.9f,%s\n\n", mean_quadprog_sqp_time, quadprog_sqp_ans?"success":"failure");
-        printf("quadprog_sqp,%s\n\n", quadprog_sqp_ans?"success":"failure");
+        matf32_mul(&Aeq, &x_qr, &Ax);
+        bool qp_qr_ans = matf32_is_equal(&x_qr, &R_x);
+        printf("quadprog_qp QR, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_qr_time, qp_qr_ans?"success":"failure");
 
-        printf("Difference ESP32 vs MATLAB Result:\n");
-        matf32_sub(&temp, &R_quadprog, &temp_difference);
-        matf32_print(&temp_difference);*/
-
+        printf("Ax QR:\n");
+        matf32_print(&Ax);
     }
+
+    matf32_init(&Aeq, 4, 5, Aeq_data5);
+    matf32_init(&beq, 4, 1, beq_data5);
+    matf32_init(&Ax, 4, 1, Ax_data);
+    matf32_init(&x_nullspace, 4, 1, x_nullspace_data);
+    
+    quadprog_qp_nullspace(&qp, &x_nullspace);
+    matf32_mul(&Aeq, &x_nullspace, &Ax);
+
+    printf("\n\n\n-------------------------\n");
+    printf("NULLSPACE:\n");
+    printf("-------------------------\n");
+
+    printf("beq:\n");
+    matf32_print(&beq);
+
+    printf("Ax NULLSPACE:\n");
+    matf32_print(&Ax);
 }
 
 
