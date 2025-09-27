@@ -1,7 +1,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 12 Sep 2025
+ * @date Created 23 Aug 2025, last modified: 22 Sep 2025
  * 
  * For testing matf32 in computer
  */
@@ -675,7 +675,7 @@ int main(void)
             bool qr_R_ans = matf32_is_equal(&temp_R, &R_qr_R);
             //printf("matf32_qr%i\n", n);
             //printf("%.9f\n", mean_qr_time);
-            //printf("qr       ,time(s):%.9f,Q:%s,R:%s\n\n", mean_qr_time, qr_Q_ans?"success":"failure", qr_R_ans?"success":"failure");
+            printf("qr       ,time(s):%.9f,Q:%s,R:%s\n\n", mean_qr_time, qr_Q_ans?"success":"failure", qr_R_ans?"success":"failure");
         
             //printf("Difference Q:\n");
             //matf32_sub(&temp_Q, &R_qr_Q, &temp_Q);
@@ -805,21 +805,48 @@ int main(void)
             float jacobi_svd_time[x];
             float mean_jacobi_svd_time = 0;
 
+            float A_copy_data[MAX_MAT_SIZE];
+            matf32_t A_copy;
+            matf32_init(&A_copy, A.num_rows, A.num_cols, A_copy_data);
+            matf32_submatrix_copy(&A, &A_copy, 0, 0, 0, 0, A.num_rows, A.num_cols);
+
             float V_trans_data[MAX_MAT_SIZE];
             matf32_t V_trans;
             matf32_init(&V_trans, A.num_rows, A.num_cols, V_trans_data);
 
-            for (uint8_t j = 0; j < x; j++)
-            {
-                time = clock();
-                matf32_jacobi_svd(&A, &U, &S, &V);
-                jacobi_svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-            }
+            float U_trans_data[MAX_MAT_SIZE];
+            matf32_t U_trans;
+            matf32_init(&U_trans, A.num_rows, A.num_cols, U_trans_data);
 
-            mean_jacobi_svd_time = mean(jacobi_svd_time, x);
+            float UtU_data[MAX_MAT_SIZE];
+            matf32_t UtU;
+            matf32_init(&UtU, U.num_rows, U.num_cols, UtU_data);
+
+            float VtV_data[MAX_MAT_SIZE];
+            matf32_t VtV;
+            matf32_init(&VtV, U.num_rows, U.num_cols, VtV_data);
+
+            float US_data[MAX_MAT_SIZE];
+            matf32_t US;
+            matf32_init(&US, U.num_rows, S.num_cols, US_data);
+
+            float USVt_data[MAX_MAT_SIZE];
+            matf32_t USVt;
+            matf32_init(&USVt, A.num_rows, A.num_cols, USVt_data);
+
+            //for (uint8_t j = 0; j < x; j++)
+            //{
+            //    time = clock();
+            //    matf32_jacobi_svd(&A, &U, &S, &V);
+            //    jacobi_svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+            //}
+
+            matf32_jacobi_svd(&A, &U, &S, &V);
+
+            //mean_jacobi_svd_time = mean(jacobi_svd_time, x);
 
             //printf("A:\n");
-            //matf32_print(&A);
+            //matf32_print(&A_copy);
             //printf("U:\n");
             //matf32_print(&U);
             //printf("S:\n");
@@ -828,17 +855,86 @@ int main(void)
             //matf32_print(&V);
 
             matf32_trans(&V, &V_trans);
-            matf32_mul(&U, &S, &temp);
-            matf32_mul(&temp, &V_trans, &U);
-            matf32_trans(&U, &temp);
-            //printf("Reconstructed A:\n");
-            //matf32_print(&temp);
+            matf32_trans(&U, &U_trans);
 
-            bool jacobi_svd_ans = matf32_is_equal(&A, &temp);
+            matf32_mul(&U_trans, &U, &UtU);
+            //printf("UtU:\n");
+            //matf32_print(&UtU);
+
+            matf32_mul(&V_trans, &V, &VtV);
+            //printf("VtV:\n");
+            //matf32_print(&VtV);
+
+            matf32_mul(&U, &S, &US);
+            matf32_mul(&US, &V_trans, &USVt);
+            //printf("USVt:\n");
+            //matf32_print(&USVt);
+
+            bool jacobi_svd_ans = matf32_is_equal(&A_copy, &USVt);
             //printf("jacobi_svd%i\n", n);
             //printf("%.9f\n", mean_jacobi_svd_time);
-            printf("one_sided_jacobi, time(s):%.9f, %s\n", mean_jacobi_svd_time, jacobi_svd_ans?"success":"failure");
+            printf("one_sided_jacobi,%s\n\n", jacobi_svd_ans?"success":"failure");
         
+            // Test Ax = b with SVD: x = V * pinv(S) * U' * b
+
+            float Si_data[MAX_MAT_SIZE];
+            matf32_t Si;
+            matf32_init(&Si, S.num_rows, S.num_cols, Si_data);
+            matf32_zeros(&Si);
+
+            for (uint16_t k = 0; k < n; ++k)
+            {
+                // For nonzero singular values (sigma), do: 1/sigma
+                if (fabs(S.p_data[k*n + k]) > 1E-05)
+                {
+                    // Save the new value in Si, zero values will already be zero and untouched in Si.
+                    Si.p_data[k*n + k] = 1/S.p_data[k*n + k];
+                }
+            }
+
+            //printf("Si:\n");
+            //matf32_print(&Si);
+
+            float b_data[MAX_MAT_SIZE];
+            matf32_t b;
+            matf32_init(&b, n, 1, b_data);
+            matf32_randn(&b,0,1);
+
+            float x_data[MAX_MAT_SIZE];
+            matf32_t x;
+            matf32_init(&x, A.num_rows, 1, x_data);
+
+            float Utb_data[MAX_MAT_SIZE];
+            matf32_t Utb;
+            matf32_init(&Utb, U_trans.num_rows, b.num_cols, Utb_data);
+            
+            matf32_mul(&U_trans, &b, &Utb);
+
+            float SiUtb_data[MAX_MAT_SIZE];
+            matf32_t SiUtb;
+            matf32_init(&SiUtb, Si.num_rows, b.num_cols, SiUtb_data);
+
+            matf32_mul(&Si, &Utb, &SiUtb);
+
+            matf32_mul(&V, &SiUtb, &x);
+            
+            //printf("b:\n");
+            //matf32_print(&b);
+
+            //printf("x:\n");
+            //matf32_print(&x);
+
+            float Ax_data[MAX_MAT_SIZE];
+            matf32_t Ax;
+            matf32_init(&Ax, b.num_rows, b.num_cols, Ax_data);
+
+            matf32_mul(&A_copy, &x, &Ax);
+            //printf("Ax:\n");
+            //matf32_print(&Ax);
+
+            bool linsolve_svd_ans = matf32_is_equal(&b, &Ax);
+            printf("linsolve_svd,%s\n\n", linsolve_svd_ans?"success":"failure");
+
             //matf32_sub(&A, &temp, &V_trans);
             //matf32_print(&V_trans);
         }
