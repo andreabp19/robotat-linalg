@@ -3,7 +3,7 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 12 Sep 2025
+ * Last modified: 26 Sep 2025
  *          By: Andrea Pineda
  */
 
@@ -1017,7 +1017,6 @@ err_status_t
 matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
 
 
-// Maybe move this to matf32.h
 /**
  * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
  * such that PA = LU.
@@ -1036,7 +1035,6 @@ err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_t* p_index);
 
 
-// Maybe move this to matf32.h
 /**
  * @brief   Calculates the Cholesky decomposition of a matrix.
  *
@@ -1050,80 +1048,6 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
 err_status_t
 matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 
-/**
- * @brief   Generates householder transformation vector and constant for a given matrix
- * 
- * @warning Assumes p_x is a column vector and works accordingly, so for now will fail if a row vector is introduced.
- * 
- * @param[in]       p_x     Points to vector to work with
- * @param[in,out]   p_v     Points to vector v to save the first householder vector
- * @param[in,out]   p_b     Points to scalar b to save the constant produced
- * 
- * @return err_status_t
- */
-err_status_t
-matf32_house(const matf32_t* const p_x, matf32_t* p_v, float* p_b);
-
-/**
- * @brief   Generates a householder bidiagonalization (A = U'BV) based on a given matrix
- * 
- * @param[in]       p_a         Points to matrix A from which to generate the bidiagonalization
- * @param[in,out]   p_u         Points to U matrix
- * @param[in,out]   p_b         Points to B matrix
- * @param[in,out]   p_v         Points to V matrix
- * 
- * @return err_status_t
- */
-err_status_t
-matf32_house_bidiagonalization(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_b, matf32_t* const p_v);
-
-/**
- * @brief   Computes a sine-cosine pair based on two input values to use for generating a Givens Rotation matrix
- * 
- * @warning This routine uses mathematical indexing, which means indices i and j start in 1 instead of 0.
- * 
- * @param[in]       a       Scalar a
- * @param[in]       b       Scalar b
- * @param[in,out]   c       Points to generated cosine value
- * @param[in,out]   s       Points to generated sine value
- * 
- * @return err_status_t
- */
-err_status_t
-matf32_givens_pair(float a, float b, float* c, float* s);
-
-/**
- * @brief   Computes a sine-cosine pair to use for generating a 2-by-2 symmetric Schur jacobi rotation
- * 
- * @param[in]       p_a     Points to a matrix
- * @param[in]       p       Index p
- * @param[in]       q       Index q
- * @param[in,out]   c       Points to generated cosine value
- * @param[in,out]   s       Points to generated sine value   
- * 
- * @return err_status_t
- */
-err_status_t
-matf32_symschur2_pair(const matf32_t* const p_a, uint16_t p, uint16_t q, float* c, float* s);
-
-
-/**
- * @brief   Generates a Givens or Jacobi rotation matrix depending on the desired method
- * 
- * @param[in]       p_a     Points to input matrix
- * @param[in]       p       Index p
- * @param[in]       q       Index q
- * @param[in,out]   c       Points to generated cosine value
- * @param[in,out]   s       Points to generated sine value
- * @param[in,out]   p_rot   Points to output matrix to save the generated rotation matrix
- * @param[in]       method  Enum constant to select the rotation method (currently: Givens or Symmetric Schur for Jacobi routines)
- * @param[in]       a       Scalar for generating Givens rotation (set to 0 if you're not using Givens)
- * @param[in]       b       Scalar for generating Givens rotation (set to 0 if you're not using Givens)
- * 
- * @return err_status_t
- */
-err_status_t
-matf32_generate_rotation(const matf32_t* const p_a, float p, float q, matf32_t* p_rot, rotation_method_t method, float a, float b);
 
 /**
  * @brief   Generates and applies a one-sided jacobi rotation to matrix A
@@ -1139,6 +1063,7 @@ matf32_generate_rotation(const matf32_t* const p_a, float p, float q, matf32_t* 
  */
 err_status_t
 matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_v, uint16_t j, uint16_t k);
+
 
 /**
  * @brief   Calculates the SVD of a matrix using using the one-sided Jacobi algorithm
