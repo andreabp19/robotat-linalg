@@ -102,7 +102,8 @@ zeros(float* p_dst, int row, int column)
 void
 ones(float* p_dst, int row, int column)
 {
-    memset(p_dst, 1, row * column * sizeof(float));
+    for (int i = 0; i < row*column; i++)
+        p_dst[i] = 1.0;
 }
 
 
