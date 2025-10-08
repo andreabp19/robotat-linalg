@@ -4,9 +4,9 @@
  * Single header to include all matrix related functions.
  * 
  * Created: 2 Aug 2025
- *          By: Andrea Pineda to combine into a single file the
- *          linear algebra libraries: matf32_math.h, matf32_check.h, matf32_def.h and math_util.c
- *          previously developed by Daniel Pineda.
+ *          By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
+ *          matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
+ *          other collaborators of this project, and to add new functions.
  * 
  * Last modified: 8 Oct 2025
  *          By: Andrea Pineda
