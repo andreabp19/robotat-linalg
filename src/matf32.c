@@ -1,11 +1,12 @@
 /**
  * @file matf32.h
- * @author Andrea Pineda
- * @date Created 2 Aug 2025
+ * Created 2 Aug 2025
+ *          By: Andrea Pineda to combine into a single file the
+ *          linear algebra libraries: matf32_math.h, matf32_check.h, matf32_def.h and math_util.c
+ *          previously developed by Daniel Pineda.
  * 
- * Last Modified: 26 Sep 2025
+ * Last Modified: 8 Oct 2025
  *      By: Andrea Pineda
- *
  */
 
 #include "matf32.h"
@@ -829,8 +830,7 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
 }
 
 
-// fix
-// move to linsolve
+// TODO: Check if it works correctly
 err_status_t
 matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 {
@@ -896,8 +896,7 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
     return MATH_SUCCESS;
 }
 
-
-// move to linsolve
+// TODO: Check if it works correctly
 void 
 solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
 {
@@ -921,7 +920,7 @@ solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row)
 }
 
 
-// move to linsolve
+// TODO: Evaluate how it works again and more in-depth
 err_status_t
 matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 {
@@ -973,39 +972,77 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 }
 
 
-// Tested => Works
-// TODO: fix decimal rounding issues that cause it to sometimes fail the matf32_is_equal comparison as the difference with matlab's result is greater thatn 1E-05 in some elements.
-// TODO: Add SVD as a second method for calculating the pseudoinverse
+// TODO: Test again the original method and the new method with SVD
 err_status_t
-matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv)
+matf32_pinv(const matf32_t* const p_a, matf32_t* const p_dst, pseudoinverse_methods_t method)
 {
-    float trans_a_data[MAX_MAT_SIZE];
-    matf32_t trans_a;
-    matf32_init(&trans_a, p_a->num_rows, p_a->num_cols, trans_a_data);
+    // TODO: Add checks for p_dst dimensions (same as p_a for square matrices and transposed for rectangular matrices)
+
+    float at_data[MAX_MAT_SIZE];
+    matf32_t at;
+    matf32_init(&at, p_a->num_rows, p_a->num_cols, at_data);
 
     float temp_data[MAX_MAT_SIZE];
     matf32_t temp;
     matf32_init(&temp, p_a->num_rows, p_a->num_cols, temp_data);
 
-    // A'
-    matf32_trans(p_a, &trans_a);
-    //printf("A':\n");
-    //matf32_print(&trans_a);
+    float U_data[MAX_MAT_SIZE];
+    matf32_t U;
+    matf32_init(&U, p_a->num_rows, p_a->num_rows, U_data);
 
-    // A'A
-    matf32_mul(&trans_a, p_a, &temp);
-    //printf("A'A:\n");
-    //matf32_print(&temp);
+    float S_data[MAX_MAT_SIZE];
+    matf32_t S;
+    matf32_init(&S, p_a->num_rows, p_a->num_cols, S_data);
 
-    // (A'A)^-1
-    matf32_inv(&temp, &temp);
-    //printf("(A'A)^-1:\n)");
-    //matf32_print(&temp);
+    float V_data[MAX_MAT_SIZE];
+    matf32_t V;
+    matf32_init(&V, p_a->num_cols, p_a->num_cols, V_data);
 
-    // (A'A)^-1 * A'
-    matf32_mul(&temp, &trans_a, p_pinv); 
-    //printf("(A'A)^-1 * A':\n");
-    //matf32_print(p_pinv);
+    float Si_data[MAX_MAT_SIZE];
+    matf32_t Si;
+    matf32_init(&Si, S.num_rows, S.num_cols, Si_data);
+
+    uint16_t n = S.num_cols;
+
+    switch (method)
+    {
+        case BASIC_PINV: // pinv(A) = (A'A)^-1 * A'
+            matf32_trans(p_a, &at); // A'
+            matf32_mul(&at, p_a, &temp); // A'A
+            matf32_inv(&temp, &temp); // (A'A)^-1
+            matf32_mul(&temp, &at, p_dst); // (A'A)^-1 * A'  
+            break;
+
+        case SVD_PINV: // pinv(A) = V* S^-1 * U'
+
+            matf32_copy(p_a, &temp); // temp = A to avoid modifying A with the SVD
+            matf32_jacobi_svd(&temp, &U, &S, &V); // Generate SVD matrices for A
+
+            // Si = Pseudoinverse of S, (Golub, Matrix Computations 5.5.2 A Note About the Pseudoinverse)
+            matf32_zeros(&Si);
+            for (uint16_t k = 0; k < n; ++k)
+            {
+                // For nonzero singular values (sigma), do: 1/sigma
+                if (fabs(S.p_data[k*n + k]) > 1E-05)
+                {
+                    // Save the new value in Si, zero values will already be zero and untouched in Si.
+                    Si.p_data[k*n + k] = 1/S.p_data[k*n + k];
+                }
+                else
+                {
+                    Si.p_data[k*n + k] = 0;
+                }
+            }
+
+            matf32_trans(&U, &U); // U'
+
+            matf32_init(&temp, V.num_rows, Si.num_cols, temp_data); // To save V*S^-1
+            matf32_zeros(&temp); // Clean temp from previous data
+            matf32_mul(&V, &Si, &temp); // V*S^-1
+            matf32_mul(&temp, &U, p_dst); // V*S^-1*U'
+
+            break;
+    }
 }
 
 
@@ -1315,6 +1352,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
         matf32_submatrix_copy(&q_sub, p_q, 0, 0, 0, i, rows, rows-i);
     }
 
+    // Manually set to zero lower triangle of R to ensure it's zero
     for (uint16_t i = 0; i < p_r->num_rows; ++i)
     {
         for(uint16_t j = 0; j < p_r->num_cols; ++j)
@@ -1454,8 +1492,7 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
 }
 
 
-// https://www.math.umd.edu/~petersd/401/cholesk.pdf
-// revise later ----> revised
+// Original algorithm in: https://www.math.umd.edu/~petersd/401/cholesk.pdf
 err_status_t
 matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
 {
@@ -1534,7 +1571,6 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
 }
 
 
-// Tested = Works
 err_status_t
 matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_v, uint16_t j, uint16_t k)
 {
@@ -1590,7 +1626,7 @@ matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_v, uint16_t
     return MATH_SUCCESS;
 }
 
-// Works, but still in testing
+
 err_status_t
 matf32_jacobi_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* const p_s, matf32_t* const p_v)
 {

@@ -3,7 +3,12 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Last modified: 26 Sep 2025
+ * Created: 2 Aug 2025
+ *          By: Andrea Pineda to combine into a single file the
+ *          linear algebra libraries: matf32_math.h, matf32_check.h, matf32_def.h and math_util.c
+ *          previously developed by Daniel Pineda.
+ * 
+ * Last modified: 8 Oct 2025
  *          By: Andrea Pineda
  */
 
@@ -318,15 +323,13 @@ typedef enum
 } err_status_t;
 
 /**
- * @brief Rotation matrix methods implemented
- * 
+ * @brief Available methods to calculate the pseudoinverse of a matrix
  */
 typedef enum
 {
-    GIVENS,
-    JACOBI
-} rotation_method_t;
-
+    BASIC_PINV, // Don't know if there's a specific name to that equation
+    SVD_PINV
+} pseudoinverse_methods_t;
 
 // ----------------------------------------------------------------------------------------------------
 // 2.2. Utility functions for the matf32 structs
@@ -904,6 +907,19 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst);
 
 
 /**
+ * @brief   Calculates the pseudoinverse of a given matrix using the singular values of the SVD decomposition of A
+ * 
+ * @param[in]       p_a     Points to input matrix to work with
+ * @param[in,out]   p_dst   Points to output matrix in which to save the pseudoinverse
+ * @param[in]       method  Enum constant to choose method to calculate the pseudoinverse
+ * 
+ * @return None
+ */
+err_status_t
+matf32_pinv(const matf32_t* const p_a, matf32_t* const p_dst, pseudoinverse_methods_t method);
+
+
+/**
  * @brief   Dot product between two vectors (wether row or column).
  *
  * @param[in]       p_srca  Points to first input vector.
@@ -941,7 +957,15 @@ matf32_vecposmul(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
 void
 matf32_vecpremul(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
 
-// vector lengths taken from matrix dimensions
+/**
+ * @brief   Vector-Vector Multiplication (the result is a matrix)
+ * 
+ * @param[in]       col_vec     Points to a float array representing the column vector
+ * @param[in]       row_vec     Points to a float array representing the row vector
+ * @param[in,out]   p_dst       Points to matrix in which to save the result
+ * 
+ * @return None.
+ */
 void
 matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst);
 
@@ -995,18 +1019,6 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 err_status_t
 matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
 
-
-/**
- * @brief   Calculates the pseudoinverse of a given matrix using the singular values of the SVD decomposition of A
- * 
- * @param[in]       p_a     Matrix to calculate the inverse from
- * @param[in,out]   p_pinv  Matrix to save the pseudoinverse in
- * 
- * @return None
- */
-err_status_t
-matf32_pinv(const matf32_t* const p_a, matf32_t* const p_pinv);
-// Input: S, U and V directly to avoid operating the svd inside the function.
 
 // ----------------------------------------------------------------------------------------------------
 // 4.3. Matrix factorization/decomposition methods
