@@ -5,7 +5,7 @@
  *          matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
  *          other collaborators of this project, and to add new functions..
  * 
- * Last Modified: 8 Oct 2025
+ * Last Modified: 14 Oct 2025
  *      By: Andrea Pineda
  */
 
@@ -1110,6 +1110,29 @@ matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, ma
     }
 }
 
+// TODO: Validate and plot time results
+err_status_t
+matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp)
+{
+    if (!matf32_check_square_matrix(p_src))
+    {
+        return MATH_ARGUMENT_ERROR;
+    }
+
+    matf32_copy(p_src, p_dst);
+
+    float temp_data[MAX_MAT_SIZE];
+    matf32_t temp;
+    matf32_init(&temp, p_src->num_rows, p_dst->num_cols, temp_data);
+
+    for (uint16_t k = 1; k < exp; ++k)
+    {
+        matf32_mul(p_dst, p_src, &temp);
+        matf32_copy(&temp, p_dst);
+    }
+
+    return MATH_SUCCESS;
+}
 
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Array of matrices operations

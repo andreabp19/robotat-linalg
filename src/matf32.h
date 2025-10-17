@@ -8,7 +8,7 @@
  *          matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
  *          other collaborators of this project, and to add new functions.
  * 
- * Last modified: 8 Oct 2025
+ * Last modified: 14 Oct 2025
  *          By: Andrea Pineda
  */
 
@@ -969,6 +969,17 @@ matf32_vecpremul(const matf32_t* p_srcm, float* p_srcv, float* p_dst);
 void
 matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst);
 
+/**
+ * @brief   Calculates the power of a matrix to a given exponent
+ * 
+ * @param[in]       p_src   Points to the source matrix
+ * @param[in,out]   p_dst   Points to the output matrix
+ * @param[in]       exp     Indicates the exponent to be used
+ *        
+ * @return Execution status.
+ */
+err_status_t
+matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp);
 
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Array of matrices operations
