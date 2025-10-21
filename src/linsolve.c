@@ -1,7 +1,9 @@
 /**
  * @file linsolve.c
  * 
- * Last modified 21 Sep 2025
+ * Created: 2022
+ *      By: Daniel Pineda
+ * Last modified 26 Sep 2025
  *      By: Andrea Pineda
  */
 
@@ -56,6 +58,7 @@ linsolve_print_method(linsolve_method_t lsm)
             break;
     }
 }
+
 
 linsolve_method_t
 linsolve_get_method(const matf32_t* const p_a)
@@ -164,21 +167,18 @@ linsolve_backward_substitution(const matf32_t* const p_u, const matf32_t* const 
 }
 
 
-// make inline to reduce call stack?
+// TODO: make inline to reduce call stack?
 err_status_t
 linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p_x)
 {
     linsolve_method_t method = linsolve_get_method(p_a);
 
-    printf("\nLinsolve Method: ");
-    linsolve_print_method(method);
-    printf("\n\n");
-
-    return linsolve_method(p_a, p_b, p_x, method);
+    return linsolve_method(p_a, p_b, p_x, method, RECT);
 }
 
+
 err_status_t
-linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
+linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method, linsolve_matrix_shape_t shape)
 {
     err_status_t status;
 
@@ -225,32 +225,24 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
                 return status;
             }
 
-            status = linsolve_qr(&m1, &m2, p_b, p_x);
+            status = linsolve_qr(&m1, &m2, p_b, p_x, shape);
             
             return status;
             break;
 
         case SVD:
             
-            matf32_t* U = &m1;
-            matf32_init(U, p_a->num_rows, p_a->num_rows, m1data);
+            // Copy of A because matf32_jacobi_svd rewrites the input matrix
+            matf32_init(&m1, p_a->num_rows, p_a->num_cols, m1data);
+            matf32_submatrix_copy(p_a, &m1, 0, 0, 0, 0, p_a->num_rows, p_a->num_cols); 
 
-            matf32_t* S = &m2;
-            matf32_init(S, p_a->num_rows, p_a->num_cols, m2data);
+            matf32_init(&m2, p_a->num_rows, p_a->num_rows, m2data); // U
+            matf32_init(&m3, p_a->num_rows, p_a->num_cols, m3data); // S 
+            matf32_init(&m4, p_a->num_cols, p_a->num_cols, m4data); // V
+            
+            matf32_jacobi_svd(&m1, &m2, &m3, &m4); // Generate SVD decomposition for A
 
-            matf32_t* V = &m3;
-            matf32_init(V, p_a->num_cols, p_a->num_cols, m3data);
-
-            matf32_jacobi_svd(p_a, U, S, V); // Generate SVD decomposition for A
-
-            //printf("U:\n");
-            //matf32_print(U);
-            //printf("S:\n");
-            //matf32_print(S);
-            //printf("V:\n");
-            //matf32_print(V);
-
-            status = linsolve_svd(U, S, V, p_b, p_x); // Solve system with the SVD decomposition matrices
+            status = linsolve_svd(&m2, &m3, &m4, p_b, p_x); // Solve system with the SVD decomposition matrices
 
             return status;
             break;
@@ -280,8 +272,10 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
     }
 }
 
+
+// TODO: Test that the matrix shape selection works as intended.
 err_status_t
-linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x)
+linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x, linsolve_matrix_shape_t shape)
 {
     err_status_t status;
 
@@ -304,18 +298,25 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
     matf32_trans(p_q, &trans_q);
     matf32_mul(&trans_q, p_b, &y);
 
-    // R from full QR (as matf32_qr) is n x (n-1), with an extra row of zeros.
-    // Take away the extra row of zeros to turn it into upper triangular and solve with backward substitution.
+    // Solve depending on the shape of the matrix
+    switch (shape)
+    {
+        // R is already square and upper triangle, so no issue with backward subs
+        case SQUARE: 
+            status = linsolve_backward_substitution(p_r, &y, p_x);
+            break;
+
+        // R from full QR (as matf32_qr) is n x (n-1), with an extra row of zeros.
+        // Take away the extra row of zeros to turn it into upper triangular and solve with backward substitution.
+        case RECT:
+            matf32_submatrix_copy(p_r, &sub_R, 0, 0, 0, 0, sub_R.num_rows, sub_R.num_cols);
+            status = linsolve_backward_substitution(&sub_R, &y, p_x);
+            break;
+    }
     
-    matf32_submatrix_copy(p_r, &sub_R, 0, 0, 0, 0, sub_R.num_rows, sub_R.num_cols);
-    // Uncomment to solve nonsquare matrices
-    //status = linsolve_backward_substitution(&sub_R, &y, p_x);
-
-    // Use this one instead to solve square matrices
-    status = linsolve_backward_substitution(p_r, &y, p_x);
-
     return status;
 }
+
 
 err_status_t
 linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x, uint16_t* p_index)
@@ -349,7 +350,7 @@ linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_
         }
     }
 
-    // Solve with forward subtitution (and then backward substitution in the next steps), using b_permuted to match the permuted LU
+    // Solve with forward and backward substitution, using b_permuted to match the permuted LU
     status = linsolve_forward_substitution(p_l, &b_permuted, &y);
 
     if (MATH_SUCCESS != status)
@@ -361,6 +362,7 @@ linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_
 
     return status;
 }
+
 
 err_status_t
 linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* const p_x)
@@ -391,7 +393,6 @@ linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* con
 }
 
 
-// Works, but still in testing
 err_status_t
 linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_t* const p_v, const matf32_t* const p_b, matf32_t* const p_x)
 {
@@ -424,7 +425,7 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
     for (uint16_t k = 0; k < n; ++k)
     {
         // For nonzero singular values (sigma), do: 1/sigma
-        if (fabs(p_s->p_data[k*n + k]) > 1E-02)
+        if (fabs(p_s->p_data[k*n + k]) > 1E-05)
         {
             // Save the new value in Si, zero values will already be zero and untouched in Si.
             Si->p_data[k*n + k] = 1/p_s->p_data[k*n + k];
@@ -435,26 +436,9 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
         }
     }
 
-    //float cond_S = 0;
-    //matf32_cond(p_s, &cond_S);
-    //printf("Condition number S: %.9f\n", cond_S);
-
-    //float cond_Si = 0;
-    //matf32_cond(Si, &cond_Si);
-    //printf("Condition number Si: %.9f\n\n", cond_Si);
-
-    //printf("Si:\n");
-    //matf32_print(Si);
-
     matf32_trans(p_u, U_trans); // U'
-    //printf("Ut:\n");
-    //matf32_print(U_trans);
     matf32_mul(U_trans, p_b, Utb); // U'b
-    //printf("Utb:\n");
-    //matf32_print(Utb);
     matf32_mul(Si, Utb, SiUtb); // pinv(S)*U'*b
-    //printf("SiUtb:\n");
-    //matf32_print(SiUtb);
     matf32_mul(p_v, SiUtb, p_x); // x = V*pinv(S)*U'*b
 
     return MATH_SUCCESS;
