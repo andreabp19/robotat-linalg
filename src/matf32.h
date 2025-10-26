@@ -3,12 +3,18 @@
  *
  * Single header to include all matrix related functions.
  * 
- * Created: 2 Aug 2025
- *          By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
- *          matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
- *          other collaborators of this project, and to add new functions.
+ * @date 2 Aug 2025
+ *       By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
+ *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
+ *       other collaborators of this project, and to add new functions.
  * 
- * Last modified: 14 Oct 2025
+ * Changes compared with the 2022 version of the library:
+ *      - Modified: moved matf32_cholesky, matf32_lu and matf32_qr from linsolve to matf32,
+ *                  and made changes to algorithms in matf32_cholesky, matf32_lu and ones
+ *      - Added:    matf32_one_sided_jacobi, matf32_jacobi_svd, matf32_cond, matf32_exp,
+ *                  matf32_check_symposdef and matf32_pinv
+ * 
+ * Last modified: 26 Oct 2025
  *          By: Andrea Pineda
  */
 
@@ -24,7 +30,7 @@
 #include <stdbool.h>                    // For bool datatype.
 #include <time.h>                       // For srand, clock.
 
-#include "constants.h"
+#include "constants.h"                  // Robotat Linalg constant values
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,12 +46,13 @@ extern "C" {
 
 /**
  * @brief   Find the dot product of two vectors, pointed by p_srca and p_srcb, of the same size.
+ * Assign to a float variable to store the result. Both vectores need to have the same length.
  *
  * @param[in]   p_srca  Points to vector 1.
  * @param[in]   p_srcb  Points to vector 2.
  * @param[in]   length  Length of vectors.
  *
- * @return Dot product between the vectors.
+ * @return Float with computed value of the dot product between the input vectors.
  */
 float
 dot(float* p_srca, float* p_srcb, uint16_t length);
@@ -65,9 +72,9 @@ eye(float* p_dst, uint16_t row, uint16_t column);
 
 
 /**
- * @brief   Creates a diagonal matrix array pointed by p_dst with the size row x column,
- * from a vector pointed by p_src. Notice that the row of vector x need to be the same
- * length as the column of the matrix.
+ * @brief   Creates a diagonal matrix array from the vector pointed by p_src and storing the 
+ * result into a vector pointed by p_dst, with size row x column. Notice that the row of vector x
+ * needs to have the same length as the column of the matrix.
  *
  * @param[in]       p_src       Points to vector with diagonal entries.
  * @param[in,out]   p_dst       Points to array to allocate the diagonal matrix.
@@ -81,7 +88,7 @@ diag(float* p_src, float* p_dst, int row_d, int column_d);
 
 
 /**
- * @brief   Turn all elements of the matrix array pointed by p_dst, size row x column, into 0.
+ * @brief   Turn into 0 all the elements of the matrix array pointed by p_dst (size row x column).
  *
  * @param[in,out]   p_dst   Points to zero matrix array.
  * @param[in]       row     Number or rows.
@@ -94,7 +101,7 @@ zeros(float* p_dst, int row, int column);
 
 
 /**
- * @brief   Turn all elements of the matrix array pointed by p_dst, size row x column, into 1.
+ * @brief   Turn into 1 all the elements of the matrix array pointed by p_dst (size row x column).
  *
  * @param[in,out]   p_dst   Points to ones matrix array.
  * @param[in]       row     Number or rows.
@@ -112,7 +119,7 @@ ones(float* p_dst, int row, int column);
  * @param[in, out]  p_dst   Points to random vector to create.
  * @param[in]       length  Vector length.
  * @param[in]       mu      Mean.
- * @param[in]       sigma   Standar deviation.
+ * @param[in]       sigma   Standard deviation.
  *
  * @return  None.
  */
@@ -122,25 +129,28 @@ randn(float* p_dst, uint16_t length, float mu, float sigma);
 
 /**
  * @brief   Calculates the norm of a given matrix (euclidean for vectors, frobenius for matrices).
+ * Assign to a float variable to store the result of the norm.
  *
  * @param[in,out]   p_src   Points to matrix array.
  * @param[in]       row     Number or rows.
  * @param[in]       column  Number of columns.
  *
- * @return Norm of matrix or vector.
+ * @return Float with computed value of the norm of the matrix/vector.
  */
 float
 norm(float* p_src, int row, int column);
 
 
 /**
- * @brief   Multiplies a vector by a scalar.
+ * @brief   Multiplies a vector by a scalar, stores the result in a vector (can be the same
+ * as the input vector or a different vector).
  *
  * @param[in]    p_src   Vector to scale.
  * @param[in]    length  Vector size.
- * @param[in]    scalar     Factor to scale the vector.
- * @param[out]   p_dst   Scaled vector.
+ * @param[in]    scalar  Factor to scale the vector.
+ * @param[out]   p_dst   Scaled vector (output vector).
  *
+ * @return None.
  */
 void
 scale(float* p_src, uint16_t length, float scalar, float* p_dst);
@@ -154,26 +164,24 @@ scale(float* p_src, uint16_t length, float scalar, float* p_dst);
  * @brief   Size-aware matrix copy.
  *
  * @param[in]       p_src   Points to matrix to copy from.
- * @param[in, out]  p_dst   Points to matrix to copy to.
- * @param[in]       row     Amount of rows.
- * @param[in]       column  Amount of columns.
+ * @param[in,out]   p_dst   Points to matrix to copy to.
+ * @param[in]       row     Number of rows of the matrix.
+ * @param[in]       column  Number of columns of the matrix.
  *
- * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ * @return None.
  */
 void
 copy(float* p_src, float* p_dst, int row, int column);
 
 
 /**
- * @brief   Prints array to console (formatted).
+ * @brief   Prints an array to the console (formatted).
  *
- * @param[in]   p_src   Points to array to print.
+ * @param[in]   p_src   Points to array to be printed.
  * @param[in]   row     Number of rows.
  * @param[in]   column  Number of columns.
  *
- * @return  None.
+ * @return None.
  */
 void
 print(float* p_src, uint16_t row, uint16_t column);
@@ -186,18 +194,24 @@ print(float* p_src, uint16_t row, uint16_t column);
  * @param[in]   lower_limit     Lower saturation threshold.
  * @param[in]   upper_limit     Upper saturation threshold.
  * 
- * @return  Saturated output.
+ * @return  Float with the saturated output
+ *              upper_limit :   if input > upper_limit.
+ *              lower_limit :   if input < lower_limit.
+ *              input       :   if none of the former cases apply.
  */
 float
 saturation(float input, float lower_limit, float upper_limit);
 
 
 /**
- * @brief   Gets the input's sign.
+ * @brief   Gets the input's sign by checking if the number is greater, equal to, or less than 0.
  *
  * @param[in]   number      Input value.
  * 
- * @return  Sign of input.
+ * @return  Sign of input, indicated by:
+ *               1 :    if the number is greater than 0 (positive sign).
+ *              -1 :    if the number is below 0 (negative sign).
+ *               0 :    if the number is equal to 0 (no sign as it's 0).
  */
 float
 sign(float number);
@@ -209,7 +223,7 @@ sign(float number);
  * @param[in]   p_src   Points to input array.
  * @param[in]   length  Array length.
  *
- * @return  Mean of array.
+ * @return  Float containing the computed mean of the array.
  */
 float
 mean(float* p_src, uint16_t length);
@@ -222,34 +236,38 @@ mean(float* p_src, uint16_t length);
  * @param[in]   p_src   Points to input array.
  * @param[in]   length  Array length.
  *
- * @return  Standard deviation of array.
+ * @return  Float with the standard deviation of the array.
  */
 float
 std_dev(float* p_src, uint16_t length);
 
 
 /**
- * @brief   Compares two arrays.
+ * @brief   Checks if two arrays are equal, taking into account a margin or tolerance.
+ * For this, it uses the function is_equal_margin.
  *
  * @param[in]   p_a     Points to first array.
  * @param[in]   p_b     Points to second array.
  * @param[in]   length  Arrays length.
  *
- * @return  If arrays values are equal.
+ * @return  Comparison result
+ *              True  : If arrays are equal within the tolerance.
+ *              False : If arrays are not equal (the tolerance is surpassed at least once).
  */
 bool
 is_equal(float* p_a, float* p_b, uint16_t length);
 
 
 /**
- * @brief   Compares two floats with a given precision.
+ * @brief   Compares two floats with a given precision or tolerance.
  *
  * @param[in]   a   First value.
  * @param[in]   b   Second vaue.
  *
- * @return  If values are equal within precision.
+ * @return  Comparison result
+ *              True  : If both values are equal within the precision/tolerance.
+ *              False : If both values are not equal (the difference surpasses the precision/tolerance).
  */
-// static keyword fixes unexplained error of undefined ref when incuding constants.h in math_util.h
 static inline bool
 is_equal_margin(float a, float b)
 {
@@ -258,11 +276,14 @@ is_equal_margin(float a, float b)
 
 
 /**
- * @brief   Checks if input is greater or lesser than given bound.
+ * @brief   Checks if input is greater or lesser than a given bound.
  * 
- * @param[in]   num     Value to check
+ * @param[in]   num     Value to check.
  * 
- * @return Returns FLT_MAX or -FLT_MAX depending on input value.
+ * @return Returns a value depending on the input value
+ *               FLT_MAX : if num > FLT_MAX
+ *              -FLT_MAX : if num < -FLT_MAX
+ *                   num : if none of the previous cases apply.
  */
 static inline float
 inf_bound(float num)
@@ -272,12 +293,13 @@ inf_bound(float num)
 
 
 /**
- * @brief   Changes NaN and Inf alues to zero.
+ * @brief   Changes NaN and Inf values to zero.
  * Needed to avoid errors in cases where irrelevant elements end set as NaN or Inf.
  *
  * @param[in]   p_a     Points to array.
  * @param[in]   length  Array length.
  *
+ * @return None.
  */
 void
 zero_patch(float* p_a, uint16_t length);
@@ -299,9 +321,9 @@ zero_patch(float* p_a, uint16_t length);
  */
 typedef struct
 { 
-    uint16_t num_rows;  /**< Number of rows of the matrix. */
-    uint16_t num_cols;  /**< Number of columns of the matrix. */
-    float* p_data;      /**< Points to the data of the matrix. */
+    uint16_t num_rows;  /** Number of rows of the matrix. */
+    uint16_t num_cols;  /** Number of columns of the matrix. */
+    float* p_data;      /** Points to the data of the matrix. */
 } matf32_t;
 
 
@@ -312,14 +334,14 @@ typedef struct
  */
 typedef enum
 {
-    MATH_SUCCESS,
-    MATH_ARGUMENT_ERROR,
-    MATH_LENGTH_ERROR,
-    MATH_SIZE_MISMATCH,
-    MATH_NANINF,
-    MATH_SINGULAR,
-    MATH_TEST_FAILURE,
-    MATH_DECOMPOSITION_FAILURE
+    MATH_SUCCESS,               /** Successfull mathematical operation. */
+    MATH_ARGUMENT_ERROR,        /** Error in an input matf32_t instance. */
+    MATH_LENGTH_ERROR,          /** Incorrect size for one of the dimensions of a matf32_t instance. */
+    MATH_SIZE_MISMATCH,         /** matf32_t matrix dimensions don't match and thus cannot be operated as needed. */
+    MATH_NANINF,                /** Result has NaN or Inf values. */
+    MATH_SINGULAR,              /** Matrix is singular or close to singular and may impact negatively the precision of the results. */
+    MATH_TEST_FAILURE,          /** Matrix operation failure. */
+    MATH_DECOMPOSITION_FAILURE  /** Matrix factorization or decomposition failed. */
 } err_status_t;
 
 /**
@@ -327,8 +349,8 @@ typedef enum
  */
 typedef enum
 {
-    BASIC_PINV, // Don't know if there's a specific name to that equation
-    SVD_PINV
+    BASIC_PINV, /** Pseudoinverse calculated as pinv(A) = (A'A)^-1 * A' */
+    SVD_PINV    /** Pseudoinverse calculated with the SVD matrices: A = USV', so that pinv(A) = VSU' */
 } pseudoinverse_methods_t;
 
 // ----------------------------------------------------------------------------------------------------
@@ -343,16 +365,16 @@ typedef enum
  * @param[in]       num_cols    Number of columns in the matrix.
  * @param[in]       p_data      Points to the matrix data array.
  * 
- * @return  None
+ * @return  None.
  */
 void
 matf32_init(matf32_t* const instance, uint16_t num_rows, uint16_t num_cols, float* p_data);
 
 
 /**
- * @brief   Prints matrix data to console (formatted).
+ * @brief   Prints matrix data to console (formatted to print as a matrix).
  *
- * @param[in]   p_src   Points to input matrix.
+ * @param[in]   p_src   Points to matrix to be printed.
  *
  * @return  None.
  */
@@ -361,7 +383,8 @@ matf32_print(const matf32_t* p_src);
 
 
 /**
- * @brief   Prints error status to console.
+ * @brief   Prints error status err_status_t to console.
+ * For example: prints MATH_SUCESS for MATH_SUCCESS, MATH_SINGULAR for MATH_SINGULAR, etc.
  *
  * @param[in]   err   Error stats value to print.
  *
@@ -371,12 +394,14 @@ void
 err_status_print(err_status_t err);
 
 /**
- * @brief   Calculates conditioning number of a matrix
+ * @brief   Calculates condition number of a matrix.
+ * This routine is useful for monitoring the behavior of matrices, as a higher
+ * condition number may lead to approximation issues or unexpected behavior in some operations.
  * 
- * @param[in]   p_src   Input matrix
- * @param[in]   p_cond  Points to float to store conditioning number
+ * @param[in]   p_src   Points to matrix from which to calculate the condition number.
+ * @param[in]   p_cond  Points to float to store condition number.
  * 
- * @return  None
+ * @return  None.
  */
 void 
 matf32_cond(const matf32_t* const p_src, float* p_cond);
@@ -387,14 +412,14 @@ matf32_cond(const matf32_t* const p_src, float* p_cond);
  * WARNING: this routine uses mathematical indexing, which means that the first element of the matrix has
  * index (1,1), i.e. matf32_get(A, i, j, &element) => element = A->p_data[(i-1)*A->num_cols + (j-1)].
  * 
- * @param[in]       p_src   Points to matrix.
- * @param[in]       row     Row of element.
- * @param[in]       col     Column of element.
- * @param[in, out]  dst     Points to variable to store element.
+ * @param[in]      p_src   Points to matrix to be indexed.
+ * @param[in]      row     Row of element.
+ * @param[in]      col     Column of element.
+ * @param[in,out]  dst     Points to variable to store element.
  * 
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
 matf32_get(const matf32_t* p_src, uint16_t row, uint16_t col, float* dst)
@@ -409,19 +434,19 @@ matf32_get(const matf32_t* p_src, uint16_t row, uint16_t col, float* dst)
 
 
 /**
- * @brief   Sets an specific element in a matrix.
+ * @brief   Sets a chosen value to a specific element of a matrix.
  * 
  * WARNING: this routine uses mathematical indexing, which means that the first element of the matrix has
  * index (1,1), i.e. matf32_set(A, i, j, value) => A->p_data[(i-1)*A->num_cols + (j-1)] = value.
  *
- * @param[in, out]  p_src   Points to matrix.
- * @param[in]       row     Row of element.
- * @param[in]       col     Column of element.
- * @param[in]       value     Value of element to set.
+ * @param[in,out]  p_src   Points to matrix.
+ * @param[in]      row     Row of element.
+ * @param[in]      col     Column of element.
+ * @param[in]      value     Value of element to set.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
 matf32_set(matf32_t* const p_src, uint16_t row, uint16_t col, float value)
@@ -440,7 +465,7 @@ matf32_set(matf32_t* const p_src, uint16_t row, uint16_t col, float value)
  * @param[in]   p_srca  Points to first input matrix.
  * @param[in]   p_srcb  Points to second input matrix.
  *
- * @return  true if matrices have the same size, false otherwise.
+ * @return  Returns true if matrices have the same size, false otherwise.
  */
 static inline bool
 matf32_is_same_size(const matf32_t* p_srca, const matf32_t* p_srcb)
@@ -456,7 +481,7 @@ matf32_is_same_size(const matf32_t* p_srca, const matf32_t* p_srcb)
  * @param[in]   rows    Amount of rows.
  * @param[in]   cols    Amount of cols.
  *
- * @return  true if the matrix has the specified size, false otherwise.
+ * @return  Returns true if the matrix has the specified size, false otherwise.
  */
 static inline bool
 matf32_size_check(const matf32_t* p_src, uint16_t rows, uint16_t cols)
@@ -468,12 +493,12 @@ matf32_size_check(const matf32_t* p_src, uint16_t rows, uint16_t cols)
 /**
  * @brief   Size-aware matrix copy.
  *
- * @param[in]       p_src   Points to matrix to copy from.
- * @param[in, out]  p_dst   Points to matrix to copy to.
+ * @param[in]      p_src   Points to matrix to copy from.
+ * @param[in,out]  p_dst   Points to matrix to copy to.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
 matf32_copy(const matf32_t* p_src, matf32_t* p_dst)
@@ -495,9 +520,9 @@ matf32_copy(const matf32_t* p_src, matf32_t* p_dst)
  * defined to have the max number of rows and columns. Use matf32_reshape_safe if you want to
  * automatically verify if the reshape is possible given the input matrix dimensions.
  *
- * @param[in, out]  p_src       Points to matrix to reshape.
- * @param[in]       new_rows    New number of rows.
- * @param[in]       new_cols    New number of columns.
+ * @param[in,out]  p_src       Points to matrix to reshape.
+ * @param[in]      new_rows    New number of rows.
+ * @param[in]      new_cols    New number of columns.
  *
  * @return  None.
  */
@@ -515,13 +540,13 @@ matf32_reshape(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
  * WARNING: this routine is unable to reshape a matrix to a bigger size. Use matf32_reshape if you want
  * to do this.
  *
- * @param[in, out]  p_src       Points to matrix to reshape.
- * @param[in]       new_rows    New number of rows.
- * @param[in]       new_cols    New number of columns.
+ * @param[in,out]  p_src       Points to matrix to reshape.
+ * @param[in]      new_rows    New number of rows.
+ * @param[in]      new_cols    New number of columns.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
 matf32_reshape_safe(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
@@ -540,8 +565,27 @@ matf32_reshape_safe(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
 // 2.3. Submatrix operations for the matf32 structs
 // ----------------------------------------------------------------------------------------------------
 
-// hacer vesion indice progra y version indice matematico
-
+/**
+ * @brief   Copies a specified number of rows and columns from a matrix into another matrix.
+ * That means, it can either copy an entire matrix to another one, or just a submatrix of the former.
+ * 
+ * @warning This routine uses zero-based indexing, that means, the origin and destination rows and columns
+ * are introduced with values starting in zero (instead of 1 as in mathematical indexing). Do not confuse with
+ * the number of rows and columns to copy in total, as that is the actual amount of rows and columns to be copied.
+ * 
+ * @param[in]       p_src       Points to the origin matrix from which to copy data.
+ * @param[in,out]   p_dst       Points to the destination matrix on which to store the copied data. 
+ * @param[in]       src_row     Origin row from which to start copying data from the origin matrix (zero-indexed).
+ * @param[in]       src_col     Origin column from which to start copying data from the origin matrix (zero-indexed).
+ * @param[in]       dst_row     Row in which to start saving the copied data in the destination matrix (zero-indexed).
+ * @param[in]       dst_col     Column in which to start saving the copied data in the destination matrix (zero-indexed).
+ * @param[in]       rows        Number of rows to copy in total (starting to count from the origin row and until reaching this rows value).
+ * @param[in]       cols        Number of columns to copy in total (starting to count from the origin column and until reaching this cols value).
+ * 
+ * @return Execution status.
+ *              MATH_SIZE_MISMATCH :    If the number of rows or columns to be copied surpasses the available rows or columns in any of the matrices.
+ *              MATH_SUCCESS       :    If the operation is completed without issue.
+ */
 err_status_t
 matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
                       const uint16_t src_row, const uint16_t src_col,
@@ -550,11 +594,11 @@ matf32_submatrix_copy(const matf32_t* const p_src, matf32_t* const p_dst,
 
 
 /**
- * @brief   Sets a matrix row to a value.
+ * @brief   Sets all elements in a matrix row to a specified value.
  *
- * @param[in, out]  p_dst   Points to matrix to edit.
- * @param[in]       row     Number of row to set as a value.
- * @param[in]       val     Value to set the row to.
+ * @param[in,out]  p_dst  Points to matrix to edit.
+ * @param[in]      row    Number of row to set as a value.
+ * @param[in]      val    Value to set the row to.
  *
  * @return None.
  */
@@ -563,11 +607,11 @@ matf32_set_row(matf32_t* const p_dst, uint16_t row, float val);
 
 
 /**
- * @brief   Sets a matrix col to a value.
+ * @brief   Sets all elements in a matrix column to a specified value.
  *
- * @param[in, out]  p_dst   Points to matrix to edit.
- * @param[in]       col     Number of column to set as a value.
- * @param[in]       val     Value to set the row to.
+ * @param[in,out]  p_dst   Points to matrix to edit.
+ * @param[in]      col     Number of column to set as a value.
+ * @param[in]      val     Value to set the row to.
  *
  * @return None.
  */
@@ -593,7 +637,7 @@ matf32_eye(matf32_t* const p_dst);
 /**
  * @brief   Sets a matrix structure to a diagonal matrix, created from a given vector.
  *
- * @param[in]       p_src       Points to vector with diagonal entries.
+ * @param[in]       p_src       Points to vector with the diagonal entries to be used.
  * @param[in,out]   p_dst       Points to matrix to allocate the diagonal matrix.
  *
  * @return None.
@@ -605,7 +649,7 @@ matf32_diag(float* p_src, matf32_t* const p_dst);
 /**
  * @brief   Sets a matrix structure to the zero matrix.
  *
- * @param[in, out]  p_dst   Points to matrix to allocate the zero matrix.
+ * @param[in,out]  p_dst   Points to matrix to allocate the zero matrix.
  *
  * @return None.
  */
@@ -649,10 +693,9 @@ matf32_randn(matf32_t* const p_dst, float mu, float sigma);
  * @param[in]   p_mat Points to the matrix to test.
  *
  * @return  Execution status
- *              true  :     Operation successful.
+ *              true  :     Matrix is square.
  *              false :     Matrix is not square.
  */
-// static keyword fixes explained error of undefined ref when incuding constants.h in math_util.h
 static inline bool 
 matf32_check_square_matrix(const matf32_t* const p_mat)
 {
@@ -665,7 +708,7 @@ matf32_check_square_matrix(const matf32_t* const p_mat)
  * @param[in]   p_mat Points to the matrix to test.
  *
  * @return  Execution status
- *              true  :     Operation successful.
+ *              true  :     Matrix is upper triangular.
  *              false :     Matrix is not upper triangular.
  */
 bool
@@ -677,7 +720,7 @@ matf32_check_triangular_upper(const matf32_t* const p_mat);
  * @param[in]   p_mat Points to the matrix to test.
  *
  * @return  Execution status
- *              true  :     Operation successful.
+ *              true  :     Matrix is lower triangular.
  *              false :     Matrix is not lower triangular.
  */
 bool
@@ -786,7 +829,7 @@ matf32_check_symposdef(const matf32_t* const p_mat);
  *
  * @param[in]       p_src  Points input matrix.
  *
- * @return  Norm of te matrix.
+ * @return  Float with the norm of the input matrix.
  */
 inline float
 matf32_norm(const matf32_t* p_src)
@@ -796,44 +839,49 @@ matf32_norm(const matf32_t* p_src)
 
 
 /**
- * @brief   Adds two matrices. Both need to be of the same dimension.
+ * @brief   Adds two matrices and saves the result in another matrix. The result can
+ * be saved either in a new matf32_t matrix or in one of the input matrices (overwriting its previous contents).
+ * Both must have the same dimensions.
  *
  * @param[in]       p_srca  Points to first input matrix structure.
  * @param[in]       p_srcb  Points to second input matrix structure.
  * @param[in, out]  p_dst   Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
 matf32_add(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
 
 
 /**
- * @brief   Substracts two matrices. Both need to be of the same dimension.
+ * @brief   Substracts two matrices and saves the result in another matrix. The result can
+ * be saved either in a new matf32_t matrix or in one of the input matrices (overwriting its previous contents).
+ * Both need to be of the same dimension.
  *
  * @param[in]       p_srca  Points to first input matrix structure.
  * @param[in]       p_srcb  Points to second input matrix structure.
  * @param[in, out]  p_dst   Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
 matf32_sub(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
 
 
 /**
- * @brief   Multiplies a matrix by a scalar, element-wise.
+ * @brief   Multiplies a matrix by a scalar, element-wise, and saves the result in another matrix. The result can
+ * be saved either in a new matf32_t matrix or in one of the input matrices (overwriting its previous contents).
  *
  * @param[in]       p_src   Points to input matrix.
  * @param[in]       scalar  Scaling factor.
  * @param[in, out]  p_dst   Points to output matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SUCCESS       :    Operation successful.
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
@@ -841,13 +889,17 @@ matf32_scale(const matf32_t* p_src, float scalar, matf32_t* p_dst);
 
 
 /**
- * @brief   Transposes a matrix.
+ * @brief   Transposes a matrix and saves the result in another matrix.
+ * 
+ * @warning If the matrix is square, the transpose can be saved in the input matrix
+ * (replacing its previous content) without issue. Otherwise (if the matrix is rectangular), it
+ * either has to be reshaped first, or a new matrix be used, to match the transposed dimensions.
  *
  * @param[in]       p_src   Points to input matrix.
  * @param[in, out]  p_dst   Points to output matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SUCCESS       :    Operation successful.
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
@@ -856,15 +908,19 @@ matf32_trans(const matf32_t* p_src, matf32_t* p_dst);
 
 /**
  * @brief   Multiplies two matrices. The number of columns of the first matrix must be the same as
- * the number of rows of the second matrix. Output matrix cannot be the same as one of the inputs.
+ * the number of rows of the second matrix.
+ * 
+ * @warning The result CANNOT be stored in any of the input matrices. Instead, a matrix different to both
+ * input matrices must be used to save the result. This is to avoid losing data during the multiplication.
  *
  * @param[in]       p_srca  Points to first input matrix structure.
  * @param[in]       p_srcb  Points to second input matrix structure.
  * @param[in, out]  p_dst   Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :   Operation successful.
+ *              MATH_SIZE_MISMATCH  :   Input matrices cannot be multiplied due to rows and cols number mismatch.
+ *              MATH_ARGUMENT_ERROR :   One of the input matrices is set as the output, which is not allowed.
  */
 err_status_t
 matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
@@ -913,7 +969,8 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst);
  * @param[in,out]   p_dst   Points to output matrix in which to save the pseudoinverse
  * @param[in]       method  Enum constant to choose method to calculate the pseudoinverse
  * 
- * @return None
+ * @return Execution status.
+ *              MATH_SUCCESS : Completed operation without issue.
  */
 err_status_t
 matf32_pinv(const matf32_t* const p_a, matf32_t* const p_dst, pseudoinverse_methods_t method);
@@ -927,6 +984,8 @@ matf32_pinv(const matf32_t* const p_a, matf32_t* const p_dst, pseudoinverse_meth
  * @param[in]       p_dst   Points to scalar result.
  *
  * @return  Execution status.
+ *              MATH_SUCCESS        :   Completed operation without issue.
+ *              MATH_SIZE_MISMATCH  :   Input vectors have different amount of elements.
  */
 err_status_t
 matf32_dot(const matf32_t* const p_srca, const matf32_t* const p_srcb, float* const p_dst);
@@ -970,13 +1029,18 @@ void
 matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, matf32_t* const p_dst);
 
 /**
- * @brief   Calculates the power of a matrix to a given exponent
+ * @brief   Calculates the power of a matrix to a given exponent.
+ * 
+ * @warning This routine currently works exclusively with square matrices. So error is returned
+ * if a rectangular matrix is introduced as argument.
  * 
  * @param[in]       p_src   Points to the source matrix
  * @param[in,out]   p_dst   Points to the output matrix
  * @param[in]       exp     Indicates the exponent to be used
  *        
  * @return Execution status.
+ *              MATH_SUCCESS        :   Completed operation without issue.
+ *              MATH_ARGUMENT_ERROR :   Input matrix is not square.
  */
 err_status_t
 matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp);
@@ -993,8 +1057,8 @@ matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp);
  * @param[in, out]  p_dst       Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
 matf32_arr_add(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
@@ -1008,8 +1072,8 @@ matf32_arr_add(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  * @param[in, out]  p_dst       Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
 matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
@@ -1024,8 +1088,8 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  * @param[in, out]  p_dst       Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
 matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_dst);
@@ -1035,47 +1099,73 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 // 4.3. Matrix factorization/decomposition methods
 // ----------------------------------------------------------------------------------------------------
 
-// Maybe move this to matf32.h
+/**
+ * @brief   Computes the Householder QR factorization of a matrix A, saving the Q and R factors in 
+ * different matrices.
+ * 
+ * @param[in]       p_a     Points to the matrix to be factorized/decomposed into a QR factorization.
+ * @param[in,out]   p_q     Points to a matrix where the Q factor will be saved.
+ * @param[in,out]   p_r     Points to a matrix where the R factor will be saved.
+ * 
+ * @return Execution status.
+ *              MATH_SUCCESS : Operation completed without issue.
+ */
 err_status_t
 matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
 
 
 /**
  * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
- * such that PA = LU.
+ * such that PA = LU, and saves the L and U factors in different matrices, and the list
+ * of permutations applied are saved in an array.
+ * 
+ * @warning In this algorithm, A will not be equal to LU (that is, A != LU), instead: PA = LU. This 
+ * is because of the pivoting or permutations implemented. If you want A = LU, the same permutations
+ * should be applied to LU (such as it's done in the linsolve library to solve Ax = b through LU). The
+ * permutations are saved in an array (p_index) so that:
+ *      p_index[0] means: Row 0 must be switched with the row number saved in p_index[0].
+ *      p_index[1] means: Row 1 must be switched with the row number saved in p_index[1].
+ *      and so on...
  *
- * @param[in]       p_a   Points to square matrix to decompose.
- * @param[in, out]  p_l     Points to the lower result of the decomposition.
- * @param[in, out]  p_u     Points to the upper of the decomposition.
- * @param[in, out]  p_index Saved indexes for permutation
+ * @param[in]      p_a      Points to square matrix to decompose.
+ * @param[in,out]  p_l      Points to the lower result of the decomposition.
+ * @param[in,out]  p_u      Points to the upper of the decomposition.
+ * @param[in,out]  p_index  Saved indexes for permutation
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
+ *              MATH_SUCCESS       :    Operation successful.
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
- *              MATH_SINGULAR :         Matrix is singular.
  */
 err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_t* p_index);
 
 
 /**
- * @brief   Calculates the Cholesky decomposition of a matrix.
+ * @brief   Calculates the Cholesky decomposition of a matrix A = LL', where L is a lowe triangular matrix.
+ * 
+ * @warning This routine saves the Cholesky Factor matrix L in upper triangular form, that is L', due to the
+ * specific algorithm implemented. Depending on the application, it may be required as lower triangular, for which
+ * it can be transposed and used without issue. In case of needing both the upper and lower triangular forms, either
+ * transpose as needed for each step of the operation or use a temporal matrix to save the other form.
  *
  * @param[in]           p_a    Points to matrix to factorize.
  * @param[in,out]       p_c    Points to lower triangular factorized matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SIZE_MISMATCH  :    The size of matrix p_a or p_c are not equal.
+ *              MATH_ARGUMENT_ERROR :    The input matrix is either not square or not symmetric.
  */
 err_status_t
 matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c);
 
 
 /**
- * @brief   Generates and applies a one-sided jacobi rotation to matrix A
+ * @brief   Generates and applies a one-sided jacobi rotation to matrix A and saves the result
+ * as A = AV and V (an orthonormal matrix to accumulate the rotations applied).
  * 
- * @warning This routine OVERWRITES matrix A.
+ * @warning This routine OVERWRITES matrix A and replaces it with AV. If the original A is needed
+ * later, it's recommended to pass as argument to this function a copy of A.
  * 
  * @param[in]       p_a     Points to input matrix (square matrix)
  * @param[in,out]   p_v     Points to matrix to save the orthonormal matrix V
@@ -1090,6 +1180,9 @@ matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_v, uint16_t
 
 /**
  * @brief   Calculates the SVD of a matrix using using the one-sided Jacobi algorithm
+ * 
+ * @warning This routine OVERWRITES matrix A and replaces it with AV. If the original A is needed
+ * later, it's recommended to pass as argument to this function a copy of A.
  * 
  * @param[in]       p_a     Points to input matrix (square matrix)
  * @param[in,out]   p_u     Points to matrix to save the orthogonal matrix U
