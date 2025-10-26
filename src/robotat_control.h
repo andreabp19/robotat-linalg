@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 15 Sep 2025
+ * Last modified: 26 Oct 2025
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -22,9 +22,10 @@
 #include <float.h>
 #include <string.h>
 #include <stdarg.h>
-//#include "robotat_linalg.h"
+
 #include "matf32.h"
 #include "linsolve.h"
+#include "quadprog.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,13 +36,6 @@ extern "C" {
 // Data structures, enums and type definitions
 // ====================================================================================================
 // NOTE: these should not be manipulated directly, use the init, setter and getter routines instead.
-
-// POSSIBLE TODO:
-// LQI
-// MPC
-// Funciones con espacio de estados:
-//      - ej. función para un ciclo de simulación, con forward euler y runge kutta para propagar un step hacia adelante en la simulacion del estado siguiente,
-//              usando el valor del estado actual y las condiciones iniciales.
 
 /**
  * @brief   Discretization specification data type.
@@ -64,16 +58,19 @@ typedef enum
  */
 typedef struct
 {
-    float kp;                       /**< Proportional gain. */
-    float ki;                       /**< Integral gain. */
-    float kd;                       /**< Derivative gain. */
-    float e_k_1;                    /**< Last error. */
-    float u_k_1;                    /**< Last controller output. */
-    float i_min;                    /**< Lower integrator saturation threshold. */
-    float i_max;                    /**< Upper integrator saturation threshold. */
-    float tau;                      /**< Time constant of the derivative HPF. */
-    float dt;                       /**< Sampling period. */
-    ctr_discretizations_t pid_alg;  /**< Specifies the discretization scheme to be used. */
+    float kp;                       /** Proportional gain. */
+    float ki;                       /** Integral gain. */
+    float kd;                       /** Derivative gain. */
+    float e_k;                      /** Error */
+    float e_k_1;                    /** Last error. */
+    float e_k_2;                    /** Error previous to last error */
+    float u_k_1;                    /** Last controller output. */
+    float u_k_2;                    /** Control output previous to last controller output */
+    float i_min;                    /** Lower integrator saturation threshold. */
+    float i_max;                    /** Upper integrator saturation threshold. */
+    float tau;                      /** Time constant of the derivative HPF. */
+    float dt;                       /** Sampling period. */
+    ctr_discretizations_t pid_alg;  /** Specifies the discretization scheme to be used. */
 } ctr_pid_t;
 
 
@@ -125,7 +122,6 @@ typedef struct
 } ctr_kalman_t;
 
 
-
 // ====================================================================================================
 // Public function prototypes
 // ====================================================================================================
@@ -173,7 +169,6 @@ ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizat
  * 
  * @return  None.
  */
-// Tested => Works
 static inline void
 ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
 {
@@ -374,13 +369,12 @@ ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
     memcpy(estimate, kf->xhat->p_data, kf->xhat->num_rows * sizeof(float));
 }
 
-
 // ====================================================================================================
-// 4. Utility functions
+// 5. Utility functions
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
-// 4.1. Printing functions
+// 5.1. Printing functions
 // ----------------------------------------------------------------------------------------------------
 
 /**
@@ -401,7 +395,7 @@ ctr_pid_print(ctr_pid_t* const p_pid);
  * @return None
  */
 void
-ctr_discretizations_print(ctr_discretizations_t pid_ag);
+ctr_discretizations_print(ctr_discretizations_t pid_alg);
 
 /**
  * @brief   Prints the ctr_sys_lti_t struct in formatted text

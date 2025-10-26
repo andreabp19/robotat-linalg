@@ -2,7 +2,7 @@
 /**
  * @author Miguel Zea
  * 
- * Last modified: 16 Sep 2025
+ * Last modified: 26 Oct 2025
  * 		By: Andrea Pineda
  * 
  */
@@ -20,6 +20,8 @@ static float m4data[MAX_MAT_SIZE];
 static matf32_t m4;
 static float m5data[MAX_MAT_SIZE];
 static matf32_t m5;
+static float m6data[MAX_MAT_SIZE];
+static matf32_t m6;
 
 // ====================================================================================================
 // Public function definitions
@@ -34,8 +36,11 @@ ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizat
 {
 	va_list ap;
 
+	pid->e_k = 0;
 	pid->e_k_1 = 0;
+	pid->e_k_2 = 0;
 	pid->u_k_1 = 0;
+	pid->u_k_2 = 0;
 	// If unspecified, don't saturate the integrator.
 	pid->i_min = FLT_MIN + 1;
 	pid->i_max = FLT_MAX - 1;
@@ -69,40 +74,82 @@ ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizat
 	va_end(ap);
 }
 
-
+// TODO: Change to my version of the equations that I used in matlab
 float
 ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k)
 {
-	float u_k = 0;
 	float e_k;
+	float e_k_1 = pid->e_k_1;
+	float e_k_2 = pid->e_k_2;
+	float u_k = 0;
+	float u_k_1 = pid->u_k_1;
+	float u_k_2 = pid->u_k_2;
+	
 	float E_k;
+	float a0;
+
+	float kp = pid->kp;
+	float ki = pid->ki;
+	float kd = pid->kd;
+	float T = pid->dt;
+	float tau = pid->tau;
 
 	e_k = r_k - y_k;
 
 	switch (pid->pid_alg)
 	{
 	case PURE_DISCRETE:
-		E_k = saturation(pid->e_k_1 + e_k, pid->i_min, pid->i_max);
-		u_k = pid->kp * e_k + pid->ki * E_k + pid->kd * (e_k - pid->e_k_1);
+		// Original equations
+		//E_k = saturation(pid->e_k_1 + e_k, pid->i_min, pid->i_max);
+		//u_k = pid->kp * e_k + pid->ki * E_k + pid->kd * (e_k - pid->e_k_1);
+		
+		u_k = kp*e_k + ki*(e_k_1 + e_k) + kd*(e_k - e_k_1);
+		
 		break;
 
 	case FWD_EULER:
-		E_k = saturation(pid->dt * pid->e_k_1 + pid->u_k_1, pid->i_min, pid->i_max);
-		u_k = pid->kp * e_k + pid->ki * E_k +
-			pid->kd * (pid->tau * e_k - pid->tau * pid->e_k_1 - (pid->dt * pid->tau - 1) * pid->u_k_1);
+		//E_k = saturation(pid->dt * pid->e_k_1 + pid->u_k_1, pid->i_min, pid->i_max);
+		//u_k = pid->kp * e_k + pid->ki * E_k +
+		//	pid->kd * (pid->tau * e_k - pid->tau * pid->e_k_1 - (pid->dt * pid->tau - 1) * pid->u_k_1);
+		
+		a0 = tau;
+		u_k = (kp*tau + ki*tau + kd)*e_k
+			+ (kp*(T - 2*tau) + ki*(T - tau) - 2*kd)*e_k_1
+			+ (kp*(tau - T) + kd)*e_k_2
+			- (T - 2*tau)*u_k_1
+			- (tau - T)*u_k_2;
+		u_k = u_k / a0;
+		
 		break;
 
 	case BWD_EULER:
-		E_k = saturation(pid->dt * e_k + pid->u_k_1, pid->i_min, pid->i_max);
-		u_k = pid->kp * e_k + pid->ki * E_k +
-			(pid->kd / (pid->dt * pid->tau + 1)) * (pid->tau * e_k - pid->tau * pid->e_k_1 + pid->u_k_1);
+		//E_k = saturation(pid->dt * e_k + pid->u_k_1, pid->i_min, pid->i_max);
+		//u_k = pid->kp * e_k + pid->ki * E_k +
+		//	(pid->kd / (pid->dt * pid->tau + 1)) * (pid->tau * e_k - pid->tau * pid->e_k_1 + pid->u_k_1);
+		
+		a0 = T + tau;
+            u_k = (kp*(T + tau) + ki*(T + tau) + kd)*e_k
+                + (-kp*(2*tau + T) - ki*tau - 2*kd)*e_k_1
+                + (kp*tau + kd)*e_k_2
+                + (2*tau + T)*u_k_1
+                - (tau)*u_k_2;
+            u_k = u_k / a0;
+		
 		break;
 
 	case TUSTIN:
-		E_k = saturation((pid->dt / 2) * (e_k + pid->e_k_1) + pid->u_k_1, pid->i_min, pid->i_max);
-		u_k = pid->kp * e_k + pid->ki * E_k +
-			((pid->kd * 2 * pid->tau) / (pid->dt * pid->tau + 2)) *
-			(e_k - pid->e_k_1) - ((pid->dt * pid->tau - 2) / (pid->dt * pid->tau + 2)) * pid->u_k_1;
+		//E_k = saturation((pid->dt / 2) * (e_k + pid->e_k_1) + pid->u_k_1, pid->i_min, pid->i_max);
+		//u_k = pid->kp * e_k + pid->ki * E_k +
+		//	((pid->kd * 2 * pid->tau) / (pid->dt * pid->tau + 2)) *
+		//	(e_k - pid->e_k_1) - ((pid->dt * pid->tau - 2) / (pid->dt * pid->tau + 2)) * pid->u_k_1;
+		
+		a0 = 2*tau + T;
+		u_k = (kp*(2*tau + T) + 0.5*ki*(2*tau + T) + 2*kd)*e_k
+			+ (-kp*4*tau + 0.5*ki*(-2*tau + T) - 4*kd)*e_k_1
+			+ (kp*(2*tau - T) + 2*kd)*e_k_2
+			+ (4*tau)*u_k_1
+			- (2*tau - T)*u_k_2;
+		u_k = u_k / a0;
 		break;
 
 		// TODO: Implement ZOH discretization for the PID controller. 
@@ -114,7 +161,9 @@ ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k)
 		break;
 	}
 
+	pid->e_k_2 = pid->e_k_1;
 	pid->e_k_1 = e_k;
+	pid->u_k_2 = pid->u_k_1;
 	pid->u_k_1 = u_k;
 
 	return u_k;
@@ -786,14 +835,12 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 //	return MATH_SUCCESS;
 //}
 
-
-
 // ====================================================================================================
-// 4. Utility functions
+// 5. Utility functions
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
-// 4.1. Printing functions
+// 5.1. Printing functions
 // ----------------------------------------------------------------------------------------------------
 
 void 
