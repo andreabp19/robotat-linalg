@@ -396,10 +396,9 @@ err_status_t
 linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_t* const p_v, const matf32_t* const p_b, matf32_t* const p_x)
 {
     /**
-     * Procedure based on Watkins, Fundamentals of Matrix Computations, 4.3 The SVD and the Least Squares Problem,
+     * Procedure: Based on Watkins, Fundamentals of Matrix Computations, 4.3 The SVD and the Least Squares Problem,
      * but modified to use the pseudoinverse instead of the inverse and without intermediate subvectors.
      * 
-     * Right now, exclusive for SQUARE matrices, have to adjust dimension checks for rectangular matrices.
      * With svd(A) = USV'
      * 
      * x = V*pinv(S)*U'*b
