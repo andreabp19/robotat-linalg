@@ -1,6 +1,7 @@
 /**
- * @file matf32.h
- * @date 2 Aug 2025
+ * @file matf32.c
+ * Created: 2 Aug 2025
+ * Last Modified: 26 Oct 2026
  *       By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
  *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
  *       other collaborators of this project, and to add new functions..
