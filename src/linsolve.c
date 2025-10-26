@@ -3,7 +3,7 @@
  * 
  * Created: 2022
  *      By: Daniel Pineda
- * Last modified 26 Sep 2025
+ * Last modified 26 Oct 2025
  *      By: Andrea Pineda
  */
 
@@ -273,7 +273,6 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
 }
 
 
-// TODO: Test that the matrix shape selection works as intended.
 err_status_t
 linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x, linsolve_matrix_shape_t shape)
 {
@@ -421,7 +420,7 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
     matf32_t* U_trans = &m8;
     matf32_init(U_trans, p_u->num_cols, p_u->num_rows, m8data);
 
-    // Si = pinv(S) (Golub, Matrix Computations 5.5.2 A Note About the Pseudoinverse)
+    // Si = pinv(S) = reciprocate each element: sigma = 1/sigma (Golub, Matrix Computations 5.5.2 A Note About the Pseudoinverse)
     for (uint16_t k = 0; k < n; ++k)
     {
         // For nonzero singular values (sigma), do: 1/sigma
