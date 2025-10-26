@@ -121,6 +121,29 @@ typedef struct
     matf32_t* P;            /**< Estimation covariance matrix. */
 } ctr_kalman_t;
 
+/**
+ * @brief   Struct for the matrices to be used in the MPC (Unconstrained, Shooting-Based, LTI)
+ * This type of MPC can be either unconstrained or inequality constrained.
+ */
+typedef struct
+{
+    bool state_constraints; /** Boolean: 0=input-only constraints, 1=include state limits as input constraints */
+    float N;                /** Horizon length */
+    float ub;               /** Upper bounds limit */
+    float lb;               /** Lower bounds limit */
+    float** mpc_Q;          /** Points to penalization matrix Q data arrays */
+    float** mpc_R;          /** Points to penalization matrix R data arrays */
+    float** mpc_C;          /** Points to convolution matrix C data arrays */
+    float** mpc_M;          /** Points to data arrays for the powers of A matrix M */
+    matf32_t* u_k;          /** Predicted input trajectory */
+    matf32_t* x_k;          /** Predicted state trajectory */
+    matf32_t* Ain;          /** Inequality restrictions matrix */
+    matf32_t* bin;          /** Inequality restrictions vector */
+    ctr_sys_lti_t* sys;     /** LTI system struct */
+    quadprog_t* qp;         /** Quadratic Program (QP) struct */
+} ctr_mpc_lti_shooting_t;
+
+
 
 // ====================================================================================================
 // Public function prototypes
@@ -368,6 +391,133 @@ ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
 {
     memcpy(estimate, kf->xhat->p_data, kf->xhat->num_rows * sizeof(float));
 }
+
+// ====================================================================================================
+// 4. Model Predictive Control (MPC)
+// ====================================================================================================
+
+/**
+ * @brief   Initializes an unconstrained, shooting-based, LTI, MPC struct.
+ * 
+ * @param[in,out]   mpc                 Points to the corresponding MPC struct.
+ * @param[in]       x0                  Points to the initial operation point matrix
+ * @param[in]       Q                   Points to the quadratic term matrix for the cost function of the QP
+ * @param[in]       c                   Points to the linear term matrix for the cost function of the QP
+ * @param[in]       Qhat                Points to the penalization matrix Q
+ * @param[in]       Rhat                Points to the penalization matrix R
+ * @param[in]       C                   Points to the convolution matrix C
+ * @param[in]       horizon_length      Horizon length (samples).
+ * @param[in]       M                   Points to the horizon length matrix M
+ * @param[in]       u_k                 Points to the input trajectory matrix
+ * @param[in]       x_k                 Points to the state trajectory matrix
+ * 
+ * @return Execution status.
+ */
+err_status_t
+ctr_mpc_unconstrained_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys, matf32_t* const u_k,
+	matf32_t* const x_k, matf32_t* const Ain, matf32_t* const bin, float** const mpc_Q, float** const mpc_R, float** const mpc_C, float** const mpc_M, float N);
+
+
+/**
+ * @brief   Generates the M = [A, A^2, ... , A^N] matrix needed for the MPC, by saving the data of each power of A in a different array (not matrix)
+ * 
+ * @param[in]       mpc         Points to the corresponding MPC struct
+ * @param[in,out]   mpc_M_data  Points to an array of arrays to save the data of each submatrix in M
+ * 
+ * @return Execution status.
+ */
+err_status_t
+ctr_mpc_set_M(ctr_mpc_lti_shooting_t* mpc);
+
+
+/**
+ * @brief   Generates the convolution matrix C for the MPC
+ * 
+ * @param[in,out]   mpc         Points to the corresponding MPC struct
+ * @param[in,out]   mpc_C       Points to an array of arrays to save the data of each submatrix in C
+ * 
+ * @return Execution status.
+ */
+err_status_t
+ctr_mpc_set_C(ctr_mpc_lti_shooting_t* mpc);
+
+
+/**
+ * @brief   Generates the penalization diagonal matrix Q for the MPC
+ * 
+ * @param[in,out]   mpc         Points to the corresponidng MPC struct
+ * @param[in,out]   mpc_Q_data  Points to an array of arrays to save the data of each submatrix in Q
+ * 
+ * @return Execution status.
+ */
+err_status_t
+ctr_mpc_set_Q(ctr_mpc_lti_shooting_t* mpc, matf32_t* const Q, matf32_t* const S);
+
+
+/**
+ * @brief   Generates the penalization diagonal matrix R for the MPC
+ * 
+ * @param[in,out]   mpc         Points to the corresponding MPC struct
+ * @param[in,out]   mpc_R_data  Points to an array of arrays to save the data of each submatrix in R
+ * 
+ * @return Execution status.
+ */
+err_status_t
+ctr_mpc_set_R(ctr_mpc_lti_shooting_t* mpc, matf32_t* const R);
+
+
+/**
+ * @brief   Generates the quadratic term matrix Q for the QP to be solved in the MPC
+ * 
+ * @param[in,out]   mpc     Points to the corresponding MPC struct
+ * @param[in]       qp_Q    Points to the Q matrix
+ * 
+ * @return Execution status.
+ */
+err_status_t
+ctr_mpc_set_qpQ(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q);
+
+
+/**
+ * @brief   Generates  the linear term matrix c for the QP to be solved in the MPC
+ * 
+ * @param[in,out]   mpc     Points to the corresponding MPC struct
+ * @param[in]       qp_C    Points to the c matrix
+ * 
+ * @return Execution status
+ */
+err_status_t
+ctr_mpc_set_qpc(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_c);
+
+/**
+ * @brief   Generates the inequality matrix and vector according to whether only the input or both the input
+ * and state are constrained.
+ * 
+ * @param[in,out]   mpc                 Points to the corresponding MPC struct
+ * @param[in]       ub                  Upper bound
+ * @param[in]       lb                  Lower bound
+ * @param[in]       state_constraints   Boolean: 0=only input constraints, 1=include state constraints as input constraints
+ * 
+ * @return Execution status      
+ */
+err_status_t
+ctr_mpc_set_constraints(ctr_mpc_lti_shooting_t* mpc, float ub, float lb, bool state_constraints);
+
+
+/**
+ * @brief   Updates the input trajectory of the MPC by one step.
+ * 
+ * @param[in,out]   mpc     Points to the corresponding MPC struct.
+ * @param[in]       x_k     Points to the current state trajectory
+ * @param[in]       u_k     Points to the current input trajectory
+ * 
+ * @return Execution status
+ *              MATH_SUCCESS :
+ *              MATH_SIZE_MISMATCH : 
+ */
+err_status_t
+ctr_mpc_update(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q, matf32_t* const qp_c, matf32_t* const x_k, matf32_t* const u_k);
+
 
 // ====================================================================================================
 // 5. Utility functions

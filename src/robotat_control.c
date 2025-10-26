@@ -835,6 +835,561 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 //	return MATH_SUCCESS;
 //}
 
+
+// ====================================================================================================
+// 4. Model Predictive Control (MPC)
+// ====================================================================================================
+
+err_status_t
+ctr_mpc_unconstrained_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys, matf32_t* const u_k,
+	matf32_t* const x_k, matf32_t* const Ain, matf32_t* const bin, float** const mpc_Q, float** const mpc_R, float** const mpc_C, float** const mpc_M, float N)
+{
+	mpc->sys = sys; // Set LTI system for the MPC, but don't initialize it yet
+	mpc->qp = qp; // Set QP for the MPC, but don't initialize it yet
+
+	// MPC Internal Matrices, arrays and floats
+	mpc->u_k = u_k;
+	mpc->x_k = x_k;
+	mpc->N = N;
+	mpc->mpc_Q = mpc_Q;
+	mpc->mpc_R = mpc_R;
+	mpc->mpc_C = mpc_C;
+	mpc->mpc_M = mpc_M;
+	mpc->Ain = Ain;
+	mpc->bin = bin;
+}
+
+
+err_status_t
+ctr_mpc_set_M(ctr_mpc_lti_shooting_t* mpc)
+{
+	uint16_t N = mpc->N; // Horizon length
+
+	matf32_t* const A = mpc->sys->A;
+
+	float** const mpc_M = mpc->mpc_M;
+
+	float temp_data[MAX_MAT_SIZE];
+	matf32_t temp;
+
+	for (uint16_t k = 0; k < N; ++k)
+	{
+		uint16_t exp = k + 1;
+		matf32_init(&temp, A->num_rows, A->num_cols, mpc_M[k]);
+		matf32_exp(A, &temp, exp);
+	}
+
+	for (uint16_t k = 0; k < N; ++k)
+	{
+		printf("M%i:\n", k+1);
+		matf32_init(&temp, A->num_rows, A->num_cols, mpc_M[k]);
+		matf32_print(&temp);
+	}
+
+	return MATH_SUCCESS;
+}
+
+
+err_status_t
+ctr_mpc_set_C(ctr_mpc_lti_shooting_t* mpc)
+{
+	uint16_t N = mpc->N; // Horizon length
+
+	matf32_t* const A = mpc->sys->A;
+	matf32_t* const B = mpc->sys->B;
+
+	float** const mpc_C = mpc->mpc_C;
+
+	matf32_t* Ak = &m1; // To save A^i
+	matf32_init(Ak, A->num_rows, A->num_cols, m1data);
+	matf32_zeros(Ak);
+
+	matf32_t temp;
+
+	// Assign values with row-major indexing of C
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			matf32_init(&temp, A->num_rows, B->num_cols, mpc_C[i*N + j]);
+
+			if (i > j) // Set A^i * B in the lower triangle, with increasing exponents towards the lower rows 
+			{
+				/*
+					The exponent starts in 1 just below the diagonal.
+					Corresponds to: (1,0) => A^1 * B
+									(2,0) => A^2 * B
+									(2,1) => A^1 * B
+									...
+					So the difference between the indices == exponent to be used
+				*/
+
+				uint16_t exp = (i+1) - (j+1); // i,j are zero-indexed so add 1 to fit the algebraic notation above
+
+				matf32_exp(A, Ak, exp); // A^exp
+				matf32_mul(Ak, B, &temp); // A^exp * B
+			}
+
+			if (i == j) // Set data of B in the diagonals
+			{
+				matf32_copy(B, &temp);
+			}
+
+			if (j > i) // Set a zero matrix in the upper triangle
+			{
+				matf32_zeros(&temp);
+			}
+		}
+	}
+}
+
+
+err_status_t
+ctr_mpc_set_Q(ctr_mpc_lti_shooting_t* mpc, matf32_t* const Q, matf32_t* const S)
+{
+	uint16_t N = mpc->N; // Horizon length
+
+	float** const mpc_Q = mpc->mpc_Q;
+
+	matf32_t temp;
+
+	// Row-major indexing for assigning the values of Q
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			matf32_init(&temp, Q->num_rows, Q->num_cols, mpc_Q[i*N + j]);
+
+			if (i == j)
+			{
+				if (i+1 == N) // Assign S instead of Q for the last diagonal value
+				{
+					matf32_copy(S, &temp);
+				}
+				else // Assign Q in all other diagonals
+				{
+					matf32_copy(Q, &temp);
+				}
+			}
+			else
+			{
+				matf32_zeros(&temp);
+			}
+		}
+	}
+
+	return MATH_SUCCESS;
+}
+
+
+err_status_t
+ctr_mpc_set_R(ctr_mpc_lti_shooting_t* mpc, matf32_t* const R)
+{
+	uint16_t N = mpc->N; // Horizon length
+
+	float** const mpc_R = mpc->mpc_R;
+
+	matf32_t temp;
+
+	// Row-major indexing for assigning the values of Q
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			matf32_init(&temp, R->num_rows, R->num_cols, mpc_R[i*N + j]);
+
+			if (i == j)
+			{
+				matf32_copy(R, &temp);
+			}
+			else
+			{
+				matf32_zeros(&temp);
+			}
+		}
+	}
+
+	return MATH_SUCCESS;
+}
+
+
+err_status_t
+ctr_mpc_set_qpQ(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q)
+{
+	uint16_t N = mpc->N; // Horizon length
+	uint16_t n = mpc->sys->A->num_rows;
+	uint16_t m = mpc->sys->B->num_cols;
+
+	float** const mpc_Q = mpc->mpc_Q;
+	float** const mpc_R = mpc->mpc_R;
+	float** const mpc_C = mpc->mpc_C;
+	float** const mpc_M = mpc->mpc_M;
+
+	float CtQ_data[N*n*N*m];
+
+	matf32_t* tmpmat1 = &m1;
+	matf32_t* tmpmat2 = &m2;
+	matf32_t* tmpmat3 = &m3;
+	matf32_t* tmpmat4 = &m4;
+	matf32_t* CtQ = &m5;
+	
+	// Generate Qqp = 2*((C' * Q * C) + R) (C=convolution matrix, Q=penalization matrix)
+
+	matf32_init(tmpmat1, m, n, m1data);
+	matf32_init(tmpmat2, n, n, m2data);
+	matf32_init(tmpmat3, m, n, m3data);
+	matf32_init(tmpmat4, m, n, m4data); // To sum the results for the element i,j
+	matf32_init(CtQ, N*m, N*n, CtQ_data);
+
+	// C' * Q
+	uint16_t ij = 0;
+	uint16_t current_col = 0;
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			matf32_zeros(tmpmat4);
+			for (uint16_t k = 0; k < N; ++k) // Elements in the respective row,col
+			{
+				tmpmat1->p_data = mpc_C[k*N + current_col]; // C'(k,j)
+				tmpmat2->p_data = mpc_Q[k*N + j]; // Q(k,j)
+
+				matf32_mul(tmpmat1, tmpmat2, tmpmat3); // C'(k,j) * Q(k,j)
+				matf32_add(tmpmat4, tmpmat3, tmpmat4); // Add C'(i,k) * Q(i,k) to previous result
+			}
+
+			// Assign to the results matrix, element-by-element because the dimensions won't match the for loops counts
+			for (uint16_t l = 0; l < tmpmat4->num_rows*tmpmat4->num_cols; ++l)
+			{
+				CtQ_data[ij] = tmpmat4->p_data[l];
+				ij += m; // Increase element count
+			}
+		}
+		current_col += 1;
+	}
+
+	matf32_init(tmpmat1, m, n, m1data);
+	matf32_zeros(tmpmat1);
+	matf32_init(tmpmat2, n, m, m2data);
+	matf32_zeros(tmpmat2);
+	matf32_init(tmpmat3, m, m, m3data);
+	matf32_zeros(tmpmat3);
+	matf32_init(tmpmat4, m, m, m4data);
+	matf32_zeros(tmpmat4);
+
+	// C' * Q * C
+	ij = 0;
+	current_col = 0;
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			matf32_zeros(tmpmat4);
+			for (uint16_t k = 0; k < N; ++k) // Elements in the respective row,col
+			{
+				matf32_submatrix_copy(CtQ, tmpmat1, i, current_col, 0, 0, m, n); // CtQ(i,current_col)
+				tmpmat2->p_data = mpc_C[k*N + j]; // C(k,j)
+
+				matf32_mul(tmpmat1, tmpmat2, tmpmat3); // CtQ(k,j) * C(k,j)
+				matf32_add(tmpmat4, tmpmat3, tmpmat4); // Add CtQ(k,j) * C(k,j) to previous result
+
+				current_col += n;
+			}
+			current_col = 0;
+
+			// Assign to the results matrix, element-by-element because the dimensions won't match the for loops counts
+			for (uint16_t l = 0; l < tmpmat4->num_rows*tmpmat4->num_cols; ++l)
+			{
+				qp_Q->p_data[ij] = tmpmat4->p_data[l];
+				ij += m; // Increase element count
+			}
+		}
+	}
+
+	matf32_init(tmpmat1, m, m, m1data);
+	matf32_zeros(tmpmat1);
+
+	// (C' * Q * C) + R
+	ij = 0;
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			tmpmat1->p_data = mpc_R[i*N + j]; // R(i,j)
+			
+			for (uint16_t l = 0; l < tmpmat1->num_rows*tmpmat1->num_cols; ++l)
+			{
+				qp_Q->p_data[ij] += tmpmat1->p_data[l];
+				ij += m; // Increase element count
+			}
+		}
+	}
+
+	// 2*((C' * Q * C) + R)
+	matf32_scale(qp_Q, 2.0, qp_Q);
+}
+
+
+err_status_t
+ctr_mpc_set_qpc(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_c)
+{
+	uint16_t N = mpc->N; // Horizon length
+	uint16_t n = mpc->sys->A->num_rows;
+	uint16_t m = mpc->sys->B->num_cols;
+
+	matf32_t* const x_k = mpc->x_k;
+
+	float** const mpc_Q = mpc->mpc_Q;
+	float** const mpc_C = mpc->mpc_C;
+	float** const mpc_M = mpc->mpc_M;
+
+	float CtQ_data[N*n*N*m];
+	float F_data[N*m*n];
+
+	matf32_t* tmpmat1 = &m1;
+	matf32_t* tmpmat2 = &m2;
+	matf32_t* tmpmat3 = &m3;
+	matf32_t* tmpmat4 = &m4;
+	matf32_t* CtQ = &m5;
+	matf32_t* F = &m6;
+
+	matf32_init(tmpmat1, m, n, m1data);
+	matf32_init(tmpmat2, n, n, m2data);
+	matf32_init(tmpmat3, m, n, m3data);
+	matf32_init(tmpmat4, m, n, m4data); // To sum the results for the element i,j
+	matf32_init(CtQ, N*m, N*n, CtQ_data);
+	matf32_init(F, N*m, n, F_data);
+
+	// C' * Q
+	uint16_t ij = 0;
+	uint16_t current_col = 0;
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		for (uint16_t j = 0; j < N; ++j) // Columns
+		{
+			matf32_zeros(tmpmat4);
+			for (uint16_t k = 0; k < N; ++k) // Elements in the respective row,col
+			{
+				tmpmat1->p_data = mpc_C[k*N + current_col]; // C'(k,j)
+				tmpmat2->p_data = mpc_Q[k*N + j]; // Q(k,j)
+
+				matf32_mul(tmpmat1, tmpmat2, tmpmat3); // C'(k,j) * Q(k,j)
+				matf32_add(tmpmat4, tmpmat3, tmpmat4); // Add C'(i,k) * Q(i,k) to previous result
+			}
+
+			// Assign to the results matrix, element-by-element because the dimensions won't match the for loops counts
+			for (uint16_t l = 0; l < tmpmat4->num_rows*tmpmat4->num_cols; ++l)
+			{
+				CtQ_data[ij] = tmpmat4->p_data[l];
+				ij += m; // Increase element count
+			}
+		}
+		current_col += 1;
+	}
+
+	matf32_init(tmpmat1, m, n, m1data);
+	matf32_zeros(tmpmat1);
+	matf32_init(tmpmat2, n, n, m2data);
+	matf32_zeros(tmpmat2);
+	matf32_init(tmpmat3, m, n, m3data);
+	matf32_zeros(tmpmat3);
+	matf32_init(tmpmat4, m, n, m4data);
+	matf32_zeros(tmpmat4);
+
+	// C' * Q * M
+	ij = 0;
+	current_col = 0;
+	uint16_t current_M = 0;
+	for (uint16_t i = 0; i < N; ++i) // Rows
+	{
+		matf32_zeros(tmpmat4);
+		for (uint16_t k = 0; k < N; ++k) // Elements in the respective row,col
+		{
+			matf32_submatrix_copy(CtQ, tmpmat1, i, current_col, 0, 0, m, n); // CtQ(i,current_col)
+			tmpmat2->p_data = mpc_M[k]; // M(k,j)
+
+			matf32_mul(tmpmat1, tmpmat2, tmpmat3); // CtQ(k,j) * C(k,j)
+			matf32_add(tmpmat4, tmpmat3, tmpmat4); // Add CtQ(k,j) * C(k,j) to previous result
+
+			current_col += n;
+		}
+		current_col = 0;
+		current_M += 1;
+
+		// Assign to the results matrix, element-by-element because the dimensions won't match the for loops counts
+		for (uint16_t l = 0; l < tmpmat4->num_rows*tmpmat4->num_cols; ++l)
+		{
+			F_data[ij] = tmpmat4->p_data[l];
+			ij += m; // Increase element count
+		}
+	}
+
+	// c = 2*F*x_k
+	matf32_mul(F, x_k, qp_c); // qp_c = F*x_k
+	matf32_scale(qp_c, 2.0, qp_c); // qp_c = 2*F*x_k
+}
+
+
+err_status_t
+ctr_mpc_set_constraints(ctr_mpc_lti_shooting_t* mpc, float ub, float lb, bool state_constraints)
+{
+	matf32_t* const A = mpc->sys->A;
+	matf32_t* const B = mpc->sys->B;
+
+	matf32_t* const u_k = mpc->u_k;
+
+	matf32_t* const Ain = mpc->Ain;
+	matf32_t* const bin = mpc->bin;
+
+	uint16_t N = mpc->N; // Horizon length
+
+	// Define dimensions for Ain and bin
+	matf32_init(Ain, 2*N, 2*N, Ain->p_data);
+	matf32_init(bin, 2*N, 1, bin->p_data);
+
+	matf32_t* tmpmat1 = &m1;
+
+	uint16_t row = 0;
+	uint16_t diag = 0;
+
+	if (state_constraints)
+	{
+		/* 	
+			Ain = [A, 0 ... 0; 0, A ... 0; 0 0 -A... 0] -> A in the diagonals so that Ain is 2N x 2N
+			bin = [lb - B*u_k; ub - B*u_k] -> Each vector is N x 1
+		*/
+		matf32_init(tmpmat1, A->num_rows, A->num_cols, m1data);
+		matf32_zeros(tmpmat1);
+		matf32_copy(A, tmpmat1); // tmpmat1 = A
+		matf32_scale(tmpmat1, -1.0, tmpmat1); // tmpmat1 = -A
+
+		// Assign first half of diagonals in Ain to be A
+		for (uint16_t i = 0; i < N/2; ++i)
+		{
+			matf32_submatrix_copy(A, Ain, 0, 0, diag, diag, A->num_rows, A->num_cols);
+			diag += A->num_rows;
+		}
+
+		// Assign second half of diagonals in Ain to be -A
+		for (uint16_t i = 0; i < N/2; ++i)
+		{
+			matf32_submatrix_copy(tmpmat1, Ain, 0, 0, diag, diag, A->num_rows, A->num_cols);
+			diag += A->num_rows;
+		}
+
+		// Calculate state constraints
+
+		matf32_t* Bu_k = &m2;
+		matf32_init(Bu_k, B->num_rows, u_k->num_cols, m2data);
+		matf32_zeros(Bu_k);
+		matf32_scale(B, u_k->p_data[0], Bu_k); // Bu_k = B*u_k
+		printf("B*u_k:\n");
+		matf32_print(Bu_k);
+		printf("u_k[0]: %.9f\n", u_k->p_data[0]);
+
+		matf32_t* x_ub = &m3;
+		matf32_init(x_ub, B->num_rows, u_k->num_cols, m3data);
+		matf32_t* x_lb = &m4;
+		matf32_init(x_lb, B->num_rows, u_k->num_cols, m4data);
+
+		matf32_set_col(x_ub, 0, ub);
+		matf32_set_col(x_lb, 0, lb);
+
+		matf32_sub(x_ub, Bu_k, x_ub);
+		matf32_sub(x_lb, Bu_k, x_lb);
+
+		printf("x_ub = ub:\n");
+		matf32_print(x_ub);
+		printf("x_lb = lb:\n");
+		matf32_print(x_lb);
+
+		row = 0;
+		for (uint16_t i = 0; i < N/2; ++i)
+		{
+			matf32_submatrix_copy(x_ub, bin, 0, 0, row, 0, x_ub->num_rows, x_ub->num_cols);
+			row += x_ub->num_rows;
+		}
+
+		for (uint16_t i = 0; i < N/2; ++i)
+		{
+			matf32_submatrix_copy(x_lb, bin, 0, 0, row, 0, x_lb->num_rows, x_lb->num_cols);
+			row += x_lb->num_rows;
+		}
+	}
+	else // Only constraints for the input vector u_k
+	{
+		/*
+			Ain = [I, 0; 0, I] -> I in the diagonals so that Ain is 2N x 2N
+			bin = [[ub]; [lb]] -> Each vector is N x 1
+		*/
+
+		matf32_init(tmpmat1, N, N, m1data);
+		matf32_zeros(tmpmat1);
+		matf32_eye(tmpmat1); // tmpmat1 = I
+		matf32_submatrix_copy(tmpmat1, Ain, 0, 0, 0, 0, tmpmat1->num_rows, tmpmat1->num_cols);
+
+		for (uint16_t i = N+1; i <= Ain->num_rows; ++i)
+		{
+			matf32_set(Ain, i, i, -1.0); // Set second half of Ain as -I
+		}
+
+		for (uint16_t i = 0; i < bin->num_rows/2; ++i)
+		{
+			matf32_set(bin, i+1, 1, ub); // Set upper bounds in the first half of bin
+		}
+
+		for (uint16_t i = N; i < bin->num_rows; ++i)
+		{
+			matf32_set(bin, i+1, 1, lb); // Set lower bounds in the second half of bin
+		}
+	}
+
+	printf("Ain:\n");
+	matf32_print(Ain);
+	printf("bin:\n");
+	matf32_print(bin);
+
+	return MATH_SUCCESS;
+}
+
+err_status_t
+ctr_mpc_update(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q, matf32_t* const qp_c, matf32_t* const x_k, matf32_t* const u_k)
+{
+	matf32_t* const A = mpc->sys->A;
+	matf32_t* const B = mpc->sys->B;
+	matf32_t* const Ain = mpc->Ain;
+	matf32_t* const bin = mpc->bin;
+
+	// 1. Solve the QP: linsolve for unconstrained, quadprog_sqp (active-set) for inequality constrained
+	if (Ain != NULL && bin != NULL)
+	{
+		quadprog_init(mpc->qp, qp_Q, qp_c, NULL, NULL, Ain, bin, u_k);
+		quadprog_sqp(mpc->qp, u_k);
+	}
+	else
+	{
+		matf32_scale(qp_c, -1.0, qp_c);
+		linsolve(qp_Q, qp_c, u_k); // Solve qp_Q * u_k = -qp_c
+	}
+
+	// 2. Update the value of x_k based on the new u_k
+	matf32_t* Ax_k = &m1;
+	matf32_init(Ax_k, A->num_rows, x_k->num_cols, m1data);
+	matf32_zeros(Ax_k);
+	matf32_mul(A, x_k, Ax_k); // A*x_k
+
+	matf32_t* Bu_k = &m2;
+	matf32_init(Bu_k, B->num_rows, u_k->num_cols, m2data);
+	matf32_zeros(Bu_k);
+	matf32_scale(B, u_k->p_data[0], Bu_k); // B*u_k(1), use only the first element in u_k
+
+	matf32_add(Ax_k, Bu_k, x_k); // x_k = A*x_k + B*u_k(1)
+
+	return MATH_SUCCESS;
+}
+
+
+
 // ====================================================================================================
 // 5. Utility functions
 // ====================================================================================================
