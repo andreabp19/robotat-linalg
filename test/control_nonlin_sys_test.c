@@ -13,7 +13,7 @@
 
 #include "matf32.h"
 #include "robotat_control.h"
-#include "robotat_control_data.h"
+#include "control_nonlin_sys_test_data.h"
 
 // --------------------------------------------------
 // Definitions
@@ -40,7 +40,6 @@ float sys_output_data[MAX_MAT_SIZE];
 matf32_t sys_output;
 
 float sample_time = 0.001;
-uint8_t t = 100;
 
 // --------------------------------------------------
 // Function declarations
@@ -119,37 +118,37 @@ int main(void)
     ctr_sys_lti_init(&linearized_pendulum, &nonlin_state, &A, &B, &C, &D, sample_time);
 
     // Time measurement for ctr_linloc
-    float linloc_time[t];
+    float linloc_time[samples];
     float mean_linloc_time = 0;
-    for (uint8_t i = 0; i < t; i++)
+    for (uint8_t i = 0; i < samples; i++)
     {
         time = clock();
         ctr_linloc(&nonlin_pendulum, &linearized_pendulum, &xss, &uss, delta);
         linloc_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     } 
-    mean_linloc_time = mean(linloc_time, t);
+    mean_linloc_time = mean(linloc_time, samples);
 
     // Time measurement for pendulum_dynamics
-    float pendulum_dynamics_time[t];
+    float pendulum_dynamics_time[samples];
     float mean_pendulum_dynamics_time = 0;
-    for (uint8_t i = 0; i < t; i++)
+    for (uint8_t i = 0; i < samples; i++)
     {
         time = clock();
         pendulum_dynamics(&fss, &xss, &uss);
         pendulum_dynamics_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
-    mean_pendulum_dynamics_time = mean(pendulum_dynamics_time, t);
+    mean_pendulum_dynamics_time = mean(pendulum_dynamics_time, samples);
 
     // Time measurement for pendulum_outputs
-    float pendulum_outputs_time[t];
+    float pendulum_outputs_time[samples];
     float mean_pendulum_outputs_time = 0;
-    for (uint8_t i = 0; i < t; i++)
+    for (uint8_t i = 0; i < samples; i++)
     {
         time = clock();
         pendulum_outputs(&hss, &xss, &uss);
         pendulum_outputs_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
-    mean_pendulum_outputs_time = mean(pendulum_outputs_time, t);
+    mean_pendulum_outputs_time = mean(pendulum_outputs_time, samples);
         
     // Print linearized system
     printf("\n-------------------------\n");
@@ -187,6 +186,8 @@ int main(void)
     // ctr_linear_state_feedback
     // ---------------------------------------------------------------------------
 
+    // Add print and comparison to matlab's result
+
     float x_data[MAX_MAT_SIZE];
     float u_data[MAX_MAT_SIZE];
     float K_data[MAX_MAT_SIZE];
@@ -202,15 +203,15 @@ int main(void)
     matf32_set(&x, 1, 1, 7);
     matf32_set(&x, 2, 1, 5);
 
-    float linear_state_feedback_time[t];
+    float linear_state_feedback_time[samples];
     float mean_linear_state_feedback_time = 0;
-    for (uint8_t i = 0; i < t; i++)
+    for (uint8_t i = 0; i < samples; i++)
     {
         time = clock();
         ctr_linear_state_feedback(&u, &K, &x, &xss, &uss);
         linear_state_feedback_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
-    mean_linear_state_feedback_time = mean(linear_state_feedback_time, t);
+    mean_linear_state_feedback_time = mean(linear_state_feedback_time, samples);
 
     //printf("linear_state_feedback\n");
     //for (uint8_t j = 0; j < t; j++)
@@ -248,9 +249,9 @@ int main(void)
     // ------------------------- Forward euler -------------------------
 
     // Time measurement for ctr_nonlin_simulate using Forward Euler
-    float nonlin_sim_fwd_eul_time[t];
+    float nonlin_sim_fwd_eul_time[samples];
     float mean_nonlin_sim_fwd_eul_time = 0;
-    for (uint8_t i = 0; i < t; i++)
+    for (uint8_t i = 0; i < samples; i++)
     {
         time = clock();
         ctr_sys_nonlin_simulate(&nonlin_pendulum, &x_k, &x_k_1, &u_k, delta, FWD_EULER);
@@ -260,7 +261,7 @@ int main(void)
     printf("x_k_1 - Forward Euler:\n");
     matf32_print(&x_k_1);
 
-    mean_nonlin_sim_fwd_eul_time = mean(nonlin_sim_fwd_eul_time, t);
+    mean_nonlin_sim_fwd_eul_time = mean(nonlin_sim_fwd_eul_time, samples);
 
     bool nonlin_sim_fwd_eul_ans = matf32_is_equal(&x_k_1, &R_x_k_1_fwd_eul);
     printf("nonlin_simulate, mean_time(s): %.9f, ForwardEuler: %s\n\n", mean_nonlin_sim_fwd_eul_time, nonlin_sim_fwd_eul_ans?"success":"failure");
@@ -276,9 +277,9 @@ int main(void)
     // ------------------------- Runge-Kutta 4 (RK4) -------------------------
 
     // Time measurement for ctr_nonlin_simulate using Runge-Kutta4
-    float nonlin_sim_rk4_time[t];
+    float nonlin_sim_rk4_time[samples];
     float mean_nonlin_sim_rk4_time = 0;
-    for (uint8_t i = 0; i < t; i++)
+    for (uint8_t i = 0; i < samples; i++)
     {
         time = clock();
         ctr_sys_nonlin_simulate(&nonlin_pendulum, &x_k, &x_k_1, &u_k, delta, RK4);
@@ -288,7 +289,7 @@ int main(void)
     printf("x_k_1 - Runge-Kutta4:\n");
     matf32_print(&x_k_1);
 
-    mean_nonlin_sim_rk4_time = mean(nonlin_sim_rk4_time, t);
+    mean_nonlin_sim_rk4_time = mean(nonlin_sim_rk4_time, samples);
 
     bool nonlin_sim_rk4_ans = matf32_is_equal(&x_k_1, &R_x_k_1_rk4);
     printf("nonlin_simulate, mean_time(s): %.9f, RK4: %s\n", mean_nonlin_sim_rk4_time, nonlin_sim_rk4_ans?"success":"failure");

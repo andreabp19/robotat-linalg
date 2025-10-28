@@ -15,7 +15,7 @@
 #include "matf32.h"
 #include "linsolve.h"
 #include "robotat_control.h"
-#include "robotat_control_data.h"
+#include "control_lti_sys_test_data.h"
 
 // --------------------------------------------------
 // LTI State Space System
@@ -50,8 +50,7 @@ matf32_t C;
 float D_data[MAX_MAT_SIZE];
 matf32_t D;
 
-float sample_time = 2;
-uint8_t t = 100;
+float sample_time = 0.001;
 
 ctr_sys_lti_t sys_fwd_eul;
 ctr_sys_lti_t sys_bwd_eul;
@@ -126,7 +125,7 @@ int main(void)
         printf("\n\n--------------- c2d - Forward Euler ---------------\n\n");
         //printf("--------------------------------------------------\n");
 
-        float c2d_fwd_eul_time[t];
+        float c2d_fwd_eul_time[K];
         float c2d_fwd_eul_mean_time = 0;
 
         // As ctr_c2d overwrites A and B, to test it 100 times with the same values, it's either
@@ -146,7 +145,7 @@ int main(void)
         sys_fwd_eul.is_continuous = true;
         status = ctr_c2d(&sys_fwd_eul, sample_time, FWD_EULER);
 
-        c2d_fwd_eul_mean_time = mean(c2d_fwd_eul_time, t);
+        c2d_fwd_eul_mean_time = mean(c2d_fwd_eul_time, K);
 
         bool c2d_fwd_eul_Ad_ans = matf32_is_equal(&A_fwd_eul, &R_c2d_fwd_eul_Ad);
         bool c2d_fwd_eul_Bd_ans = matf32_is_equal(&B_fwd_eul, &R_c2d_fwd_eul_Bd);
@@ -186,7 +185,7 @@ int main(void)
         matf32_init(&R_c2d_bwd_eul_Ad, A_bwd_eul.num_rows, A_bwd_eul.num_cols, R_c2d_bwd_eul_list_Ad[i]);
         matf32_init(&R_c2d_bwd_eul_Bd, B_bwd_eul.num_rows, B_bwd_eul.num_cols, R_c2d_bwd_eul_list_Bd[i]);
 
-        float c2d_bwd_eul_time[t];
+        float c2d_bwd_eul_time[K];
         float c2d_bwd_eul_mean_time = 0;
 
         /*for (uint8_t i = 0; i < t; i++)
@@ -202,7 +201,7 @@ int main(void)
         sys_bwd_eul.is_continuous = true;
         status = ctr_c2d(&sys_bwd_eul, sample_time, BWD_EULER);
 
-        c2d_bwd_eul_mean_time = mean(c2d_bwd_eul_time, t);
+        c2d_bwd_eul_mean_time = mean(c2d_bwd_eul_time, K);
 
         bool c2d_bwd_eul_Ad_ans = matf32_is_equal(&A_bwd_eul, &R_c2d_bwd_eul_Ad);
         bool c2d_bwd_eul_Bd_ans = matf32_is_equal(&B_bwd_eul, &R_c2d_bwd_eul_Bd);
@@ -242,7 +241,7 @@ int main(void)
         matf32_init(&R_c2d_tustin_Ad, A_tustin.num_rows, A_tustin.num_cols, R_c2d_tustin_list_Ad[i]);
         matf32_init(&R_c2d_tustin_Bd, B_tustin.num_rows, B_tustin.num_cols, R_c2d_tustin_list_Bd[i]);
 
-        float c2d_tustin_time[t];
+        float c2d_tustin_time[K];
         float c2d_tustin_mean_time = 0;
 
         /*for (uint8_t i = 0; i < t; i++)
@@ -258,7 +257,7 @@ int main(void)
         sys_tustin.is_continuous = true;
         status = ctr_c2d(&sys_tustin, sample_time, TUSTIN);
 
-        c2d_tustin_mean_time = mean(c2d_tustin_time, t);
+        c2d_tustin_mean_time = mean(c2d_tustin_time, K);
 
         bool c2d_tustin_Ad_ans = matf32_is_equal(&A_tustin, &R_c2d_tustin_Ad);
         bool c2d_tustin_Bd_ans = matf32_is_equal(&B_tustin, &R_c2d_tustin_Bd);
