@@ -1,7 +1,7 @@
 
 /**
  * @author: Andrea Pineda
- * @date: Created 14 Oct 2025, Last Modified 26 Oct 2025
+ * @date: Created 14 Oct 2025, Last Modified 28 Oct 2025
  * 
  * For testing mpc functions in robotat_control
  */
@@ -20,7 +20,20 @@
 #define ROWS (2)
 #define COLS (1)
 
+static float tmpmat1_data[MAX_MAT_SIZE];
+static matf32_t tmpmat1;
 
+float A_data[ROWS*ROWS] = {1.1, 2.0, 0.0, 0.95};
+matf32_t A;
+
+float B_data[ROWS*COLS] = {0.0, 0.0787};
+matf32_t B;
+
+float C_data[COLS*ROWS] = {-1, 1};
+matf32_t C;
+
+float D_data[MAX_MAT_SIZE];
+matf32_t D;
 
 float u_k_data[MAX_MAT_SIZE];
 matf32_t u_k;
@@ -43,71 +56,39 @@ matf32_t Ain;
 float bin_data[MAX_MAT_SIZE];
 matf32_t bin;
 
-float m1[ROWS*ROWS];
-float m2[ROWS*ROWS];
-float m3[ROWS*ROWS];
-float m4[ROWS*ROWS];
-float* mpc_M[N] = {m1, m2, m3, m4};
+// Memory stack and pointer arrays for MPC matrix M
+float M1_data[MAX_MAT_SIZE];
+matf32_t M1;
+float M2_data[MAX_MAT_SIZE];
+matf32_t M2;
+float M3_data[MAX_MAT_SIZE];
+matf32_t M3;
+float M4_data[MAX_MAT_SIZE];
+matf32_t M4;
 
-float c1[ROWS*ROWS];
-float c2[ROWS*ROWS];
-float c3[ROWS*ROWS];
-float c4[ROWS*ROWS];
-float c5[ROWS*ROWS];
-float c6[ROWS*ROWS];
-float c7[ROWS*ROWS];
-float c8[ROWS*ROWS];
-float c9[ROWS*ROWS];
-float c10[ROWS*ROWS];
-float c11[ROWS*ROWS];
-float c12[ROWS*ROWS];
-float c13[ROWS*ROWS];
-float c14[ROWS*ROWS];
-float c15[ROWS*ROWS];
-float c16[ROWS*ROWS];
-float* mpc_C[N*N] = {c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16};
+float* mpc_M_data[N] = {M1_data, M2_data, M3_data, M4_data};
+matf32_t* mpc_M[N] = {&M1, &M2, &M3, &M4}; // Fix matrix names inside quadprog to avoid conflict with naming this M.
 
-float q1[ROWS*ROWS];
-float q2[ROWS*ROWS];
-float q3[ROWS*ROWS];
-float q4[ROWS*ROWS];
-float q5[ROWS*ROWS];
-float q6[ROWS*ROWS];
-float q7[ROWS*ROWS];
-float q8[ROWS*ROWS];
-float q9[ROWS*ROWS];
-float q10[ROWS*ROWS];
-float q11[ROWS*ROWS];
-float q12[ROWS*ROWS];
-float q13[ROWS*ROWS];
-float q14[ROWS*ROWS];
-float q15[ROWS*ROWS];
-float q16[ROWS*ROWS];
-float* mpc_Q[N*N] = {q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16};
+// Memory stack and pointer arrays for MPC convolution matrix C
+float AB_data[MAX_MAT_SIZE];
+matf32_t AB;
+float A2B_data[MAX_MAT_SIZE];
+matf32_t A2B;
+float A3B_data[MAX_MAT_SIZE];
+matf32_t A3B;
+float C_null_mat_data[MAX_MAT_SIZE];
+matf32_t C_null_mat;
 
-float Qhat_data[MAX_MAT_SIZE];
-matf32_t Qhat;
+// Put C matrices in an array to iterate over them
+float* mpc_C_stack_data[N+1] = {B_data, AB_data, A2B_data, A3B_data, C_null_mat_data};
+matf32_t* mpc_C_stack[N+1] = {&B, &AB, &A2B, &A3B, &C_null_mat};
+matf32_t* mpc_C[N*N]; // Matrix of matrices C. Don't initialize yet.
 
-float r1[ROWS*ROWS];
-float r2[ROWS*ROWS];
-float r3[ROWS*ROWS];
-float r4[ROWS*ROWS];
-float r5[ROWS*ROWS];
-float r6[ROWS*ROWS];
-float r7[ROWS*ROWS];
-float r8[ROWS*ROWS];
-float r9[ROWS*ROWS];
-float r10[ROWS*ROWS];
-float r11[ROWS*ROWS];
-float r12[ROWS*ROWS];
-float r13[ROWS*ROWS];
-float r14[ROWS*ROWS];
-float r15[ROWS*ROWS];
-float r16[ROWS*ROWS];
-float* mpc_R[N*N] = {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16};
+float mpc_Q_data[MAX_MAT_SIZE];
+matf32_t mpc_Q;
 
-float Rhat_data[MAX_MAT_SIZE];
-matf32_t Rhat;
+float mpc_R_data[MAX_MAT_SIZE];
+matf32_t mpc_R;
 
 float u_k_history[2*N];
 float cost_history[2*N];
@@ -127,26 +108,17 @@ matf32_t ct;
 float ctu_data[MAX_MAT_SIZE];
 matf32_t ctu;
 
+bool state_constraints = false;
+
 quadprog_t qp;
 ctr_sys_lti_t sys;
 ctr_mpc_lti_shooting_t mpc;
 
-float A_data[ROWS*ROWS] = {1.1, 2.0, 0.0, 0.95};
-matf32_t A;
-
-float B_data[ROWS*COLS] = {0.0, 0.0787};
-matf32_t B;
-
-float C_data[MAX_MAT_SIZE];
-matf32_t C;
-
-float D_data[MAX_MAT_SIZE];
-matf32_t D;
-
-float sample_time = 0.5;
+float sample_time = 0.01;
 
 int main(void)
 {
+    clock_t time;
 
     matf32_init(&A, ROWS, ROWS, A_data);
     matf32_init(&B, ROWS, COLS, B_data);
@@ -158,8 +130,8 @@ int main(void)
     matf32_init(&bin, N, COLS, bin_data);
     matf32_init(&qp_Q, N*COLS, N*COLS, qp_Q_data);
     matf32_init(&qp_c, N*COLS, COLS, qp_c_data);
-    matf32_init(&Qhat, ROWS, ROWS, Qhat_data);
-    matf32_init(&Rhat, COLS, COLS, Rhat_data);
+    matf32_init(&mpc_R, COLS, COLS, mpc_R_data);
+    matf32_init(&mpc_Q, ROWS, ROWS, mpc_Q_data);
 
     matf32_init(&ut, u_k.num_cols, u_k.num_rows, ut_data);
     matf32_init(&utQ, ut.num_rows, qp_Q.num_cols, utQ_data);
@@ -167,64 +139,80 @@ int main(void)
     matf32_init(&ct, qp_c.num_cols, qp_c.num_rows, ct_data);
     matf32_init(&ctu, ct.num_rows, u_k.num_cols, ctu_data);
 
-    matf32_set(&x_k, 1, 1, 1);
-    matf32_set(&x_k, 2, 1, 1);
-    matf32_set(&C, 1, 1, -1);
-    matf32_set(&C, 1, 2, 1);
-    matf32_set(&Rhat, 1, 1, 0.01);
-    
-    printf("\nA:\n");
+    matf32_set(&mpc_Q, 1, 1, 1);
+    matf32_set(&mpc_Q, 1, 2, -1);
+    matf32_set(&mpc_Q, 2, 1, -1);
+    matf32_set(&mpc_Q, 2, 2, 1);
+
+    matf32_set(&mpc_R, 1, 1, 0.01);
+
+    matf32_ones(&x_k);
+
+    printf("\n------------------------------ LTI System Matrices ------------------------------\n\n");
+    printf("A:\n");
     matf32_print(&A);
     printf("B:\n");
     matf32_print(&B);
     printf("C:\n");
     matf32_print(&C);
-    printf("u_k:\n");
-    matf32_print(&u_k);
-    printf("x_k:\n");
-    matf32_print(&x_k);
-
-    float Ct_data[MAX_MAT_SIZE];
-    matf32_t Ct;
-    matf32_init(&Ct, C.num_cols, C.num_rows, Ct_data);
-    matf32_trans(&C, &Ct); // C'
-    matf32_mul(&Ct, &C, &Qhat);
-    printf("Qhat:\n");
-    matf32_print(&Qhat);
-    printf("Rhat:\n");
-    matf32_print(&Rhat);
 
     ctr_sys_lti_init(&sys, &x_k, &A, &B, &C, &D, sample_time); // x_k_1 = A*x_k + B*u_k, y_k_1 = C*x_k + D*u_k
-    ctr_mpc_unconstrained_lti_init(&mpc, &qp, &sys, &u_k, &x_k, NULL, NULL, mpc_Q, mpc_R, mpc_C, mpc_M, N);
+    ctr_mpc_lti_init(&mpc, &qp, &sys, &u_k, &x_k, NULL, NULL, &mpc_Q, &mpc_R, &mpc_Q, mpc_C, mpc_M, N, state_constraints);
+    ctr_mpc_set_M(&mpc, mpc_M_data); // Initialize and define the matrices for mpc_M
+    ctr_mpc_set_C(&mpc, mpc_C_stack, mpc_C_stack_data); // Initialize and define matrices and pointer array for mpc_C
+    ctr_mpc_set_qpQ(&mpc, &qp_Q); // Compute values for qp_Q
+    ctr_mpc_set_qpc(&mpc, &qp_c); // Compute vales for qp_c
 
-    err_status_t status;
+    printf("\n------------------------------ mmpc_M Submatrices ------------------------------\n\n");
+    printf("M = [A, A^2, ..., A^N]'\n\n\n");
+    printf("M = {&M1, &M2, ..., &MN}'\n\n\n");
+    for (uint16_t i = 0; i < N; ++i)
+    {
+        printf("mpc_M(%i) = M%i\n", i, i+1);
+        matf32_print(mpc_M[i]);
+    }
 
-    ctr_mpc_set_M(&mpc);
-    ctr_mpc_set_C(&mpc);
-    ctr_mpc_set_Q(&mpc, &Qhat, &Qhat);
-    ctr_mpc_set_R(&mpc, &Rhat);
-    ctr_mpc_set_qpQ(&mpc, &qp_Q);
-    //ctr_mpc_set_constraints(&mpc, 1, -1, 0);
+    printf("\n------------------------------ mpc_C Matrix Stack ------------------------------\n\n");
+    printf("mpc_C_Stack[N] = {B, AB, (A^2)B, ..., (A^N)*B}\n\n\n");
+    for (uint16_t i = 0; i <= N; ++i)
+    {
+        printf("mpc_C_stack[%i]:\n", i);
+        matf32_print(mpc_C_stack[i]);
+    }
 
+    printf("\n------------------------------ mpc_C Submatrices ------------------------------\n\n");
+    printf("C = [   B        0      0    0]\n");
+    printf("    [   AB       B      0    0]\n");
+    printf("    [(A^2)*B     AB     B    0]\n");
+    printf("    [(A^3)*B  (A^2)*B   AB   B]\n\n\n");
+    for (uint16_t i = 0; i < N; ++i)
+    {
+        for (uint16_t j = 0; j < N; ++j)
+        {
+            printf("mpc_C(%i,%i)\n", i+1, j+1);
+            matf32_print(mpc_C[i*N + j]);
+        }
+    }
+
+    printf("\n------------------------------ MPC Quadratic Program Matrices ------------------------------\n\n");
     printf("qp_Q:\n");
     matf32_print(&qp_Q);
+    printf("qp_c:\n");
+    matf32_print(&qp_c);
+
+    printf("\n----------------------------------------------------------------------\n");
+    printf("MPC Solution\n");
+    printf("----------------------------------------------------------------------\n");
+
+    //mpc.state_constraints = true;
+    //ctr_mpc_set_constraints(&mpc, 10, -10);
 
     for (uint16_t k = 0; k < 2*N; ++k)
     {
-        printf("\n-------------------------\n");
-        printf("k = %i:\n", k);
-        printf("-------------------------\n");
         ctr_mpc_set_qpc(&mpc, &qp_c);
-        //printf("qp_c:\n");
-        //matf32_print(&qp_c);
-        //printf("u_k0: %.9f\n", u_k.p_data[0]);
-        //ctr_mpc_set_constraints(&mpc, 10, -10, 1);
+        //ctr_mpc_set_constraints(&mpc, 10, -10);
         ctr_mpc_update(&mpc, &qp_Q, &qp_c, &x_k, &u_k);
-        u_k_history[k] = u_k.p_data[0];
-        printf("x_k:\n");
-        matf32_print(&x_k);
-        printf("u_k:\n");
-        matf32_print(&u_k);
+        //u_k_history[k] = u_k.p_data[0];
 
         // q = (1/2)*u'Qu + c'u
         matf32_trans(&u_k, &ut); // u'
@@ -233,26 +221,49 @@ int main(void)
         matf32_scale(&utQu, 0.5, &utQu); // (1/2)*u'Qu
 
         matf32_trans(&qp_c, &ct); // c'
+        matf32_scale(&ct, -1, &ct); // For some reason the values flipped sign when transposing
         matf32_mul(&ct, &u_k, &ctu); // c'u
         matf32_add(&utQu, &ctu, &utQu); // (1/2)*u'Qu + c'u
         cost_history[k] = utQu.p_data[0];
     }
 
-    printf("\n-------------------------\n");
+    printf("\n----------------------------------------\n");
+    printf("Final x_k:\n");
+    printf("----------------------------------------\n");
+    matf32_print(&x_k);
+
+    printf("\n----------------------------------------\n");
     printf("u_k_history:\n");
-    printf("-------------------------\n");
+    printf("----------------------------------------\n");
     for (uint16_t k = 0; k < 2*N; ++k)
     {
         printf("%.9f\n", u_k_history[k]);
     }
     printf("\n");
 
-    printf("\n-------------------------\n");
+    printf("\n----------------------------------------\n");
     printf("cost_history: q = (1/2)*u'Qu + c'u\n");
-    printf("-------------------------\n");
+    printf("----------------------------------------\n");
     for (uint16_t k = 0; k < 2*N; ++k)
     {
         printf("%.9f\n", cost_history[k]);
     }
     printf("\n");
+
+    // Mean Time Measurement for solving the MPC
+    //float mean_mpc_lti_time = 0;
+    //for (uint16_t i = 0; i < 100; ++i)
+    //{
+    //    matf32_ones(&x_k);
+    //    matf32_zeros(&u_k);
+    //    time = clock();
+    //    for (uint16_t k = 0; k < 2*N; ++k)
+    //    {
+    //        ctr_mpc_set_qpc(&mpc, &qp_c);
+    //        //ctr_mpc_set_constraints(&mpc, 10, -10);
+    //        ctr_mpc_update(&mpc, &qp_Q, &qp_c, &x_k, &u_k);
+    //    }
+    //    mean_mpc_lti_time += (float)(clock()-time)/CLOCKS_PER_SEC;
+    //}
+    //printf("Mean Time (s): %.9f\n\n", mean_mpc_lti_time/100);
 }
