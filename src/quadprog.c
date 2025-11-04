@@ -1,13 +1,14 @@
 /**
  * @file quadprog.c
  * 
- * Last modified: 26 Oct 2025
+ * Last modified: 4 Nov 2025
  */
 
 #include <stdint.h>
 
 #include "quadprog.h"
 
+// TODO: Change M, y and n to kkt_M, kkt_y and kkt_n to avoid errors when naming variables M, y and n in the main program.
 float M_data[MAX_MAT_SIZE];
 matf32_t M;
 
@@ -351,6 +352,10 @@ quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
 quadprog_status_t
 quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 {
+    // ---------------------------------------------------------------------------
+    // 0. Define some pointers and variables to use
+    // ---------------------------------------------------------------------------
+
     const matf32_t* p_Q = p_qp->p_Q;
     const matf32_t* p_c = p_qp->p_c;
     const matf32_t* p_Aeq = p_qp->p_Aeq;
@@ -361,36 +366,39 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     uint16_t rows = p_qp->p_Q->num_rows + p_qp->p_Aeq->num_rows; 
     uint16_t cols = p_qp->p_Q->num_cols + p_qp->p_Aeq->num_rows; // Aeq is used transposed here
 
-    // init matrices
+    // ---------------------------------------------------------------------------
+    // 1. Build KKT System My = n
+    // ---------------------------------------------------------------------------
+
+    // --------------- Initialize matrices ---------------
+    
     matf32_init(&M, rows, cols, M_data);
     matf32_zeros(&M);
-
     matf32_init(&y, rows, 1, y_data); // y_data includes lambda
     matf32_zeros(&y);
-
     matf32_init(&n, rows, 1, n_data);
     matf32_zeros(&n);
-
     matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
-
-    // Create KKT matrix M = [Q Aeq'; Aeq 0]
+    
+    // --------------- Create KKT matrix M = [Q Aeq'; Aeq 0] ---------------
+    
     matf32_submatrix_copy(p_Q, &M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
     matf32_submatrix_copy(p_Aeq, &M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
     matf32_trans(p_Aeq, &temp_Aeq); // Aeq'
     matf32_submatrix_copy(&temp_Aeq, &M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
 
-    // Create matrix n = [c, beq], as the algorithm says: n = [-c -beq] and then invert the sign of n
+    // --------------- Create KKT matrix n = [c, beq] ---------------
+    
     matf32_submatrix_copy(p_c, &n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
     matf32_submatrix_copy(p_beq, &n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
-    //printf("M:\n");
-    //matf32_print(&M);
-    //printf("n:\n");
-    //matf32_print(&n);
+    // ---------------------------------------------------------------------------
+    // 2. Generate LDL' Factorization
+    // ---------------------------------------------------------------------------
 
-    // Generate LDL' Factorization
-
-    float alpha = (1 + sqrt(17))/8; // As Bunch and Parlett's algorithm says
+    // --------------- Variables to be used ---------------
+    
+    float alpha = (1 + sqrt(17))/8; // Best value for alpha, according to Bunch and Parlett's algorithm
     float mu0 = 0;
     float mu1 = 0;
     uint16_t s = 0;
@@ -398,24 +406,24 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     uint16_t exj = 0;
     uint16_t exii = 0;
 
-    float P_data[MAX_MAT_SIZE];
-    matf32_t P; // Permutation matrix
-    matf32_init(&P, M.num_rows, M.num_cols, P_data);
-    matf32_eye(&P); // Initialize as the identity matrix
+    // --------------- Matrices for the permutations ---------------
+    
+    matf32_t* P = &m1; // Full permutation matrix P
+    matf32_init(P, M.num_rows, M.num_cols, m1data); // Initialize P
+    matf32_eye(P); // P = I (Identity matrix)
 
-    float Pi_row_data[MAX_MAT_SIZE];
-    matf32_t Pi_row;
-    matf32_init(&Pi_row, 1, M.num_cols, Pi_row_data);
+    // Pi_row, Pj_row and P_row to save rows of P to be permutted
+    matf32_t* Pi_row = &m2; // For saving row i 
+    matf32_init(Pi_row, 1, M.num_cols, m2data); // Initialize Pi_row
 
-    float Pj_row_data[MAX_MAT_SIZE];
-    matf32_t Pj_row;
-    matf32_init(&Pj_row, 1, M.num_cols, Pj_row_data);
+    matf32_t* Pj_row = &m3; // For saving row j
+    matf32_init(Pj_row, 1, M.num_cols, m3data); // Initialize Pj_row
 
-    float P_row_data[MAX_MAT_SIZE];
-    matf32_t P_row;
-    matf32_init(&P_row, 1, M.num_cols, P_row_data);
+    matf32_t* P_row = &m4; // For saving a copy of a row
+    matf32_init(P_row, 1, M.num_cols, m4data); // Initialize P_row 
 
-    // Identify indices for permutations
+    // --------------- Identify indices for the permutations ---------------
+    
     for (uint16_t i = 0; i < M.num_rows; ++i)
     {
         for (uint16_t j = 0; j < M.num_rows; ++j)
@@ -438,110 +446,75 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
         }
     }
 
-    //printf("exii: %i\n", exii);
-    //printf("exi: %i\n", exi);
-    //printf("exj: %i\n", exj);
-    //printf("mu0: %.9f\n", mu0);
-    //printf("mu1: %.9f\n\n", mu1);
-
-    //printf("P:\n");
-    //matf32_print(&P);
-
-    // Generate permutation matrix
+    // --------------- Generate Permutation Matrix P ---------------
+    
     if (mu1 >= alpha*mu0)
     {
         s = 1; // 1-by-1 pivot matrix E
 
         // Save current rows P(exii,:) and P(1,:)
-        matf32_submatrix_copy(&P, &Pi_row, exii, 0, 0, 0, 1, M.num_cols); // Pi_row = P(exii,:)
-        matf32_submatrix_copy(&P, &P_row, 0, 0, 0, 0, 1, M.num_cols); // P_row = P(1,:)
+        matf32_submatrix_copy(P, Pi_row, exii, 0, 0, 0, 1, M.num_cols); // Pi_row = P(exii,:)
+        matf32_submatrix_copy(P, P_row, 0, 0, 0, 0, 1, M.num_cols); // P_row = P(1,:)
 
         // Switch rows P(exii,:) and P(1,:) with each other
-        matf32_submatrix_copy(&Pi_row, &P, 0, 0, 0, 0, 1, M.num_cols); // P(1,:) = P(exii,:)
-        matf32_submatrix_copy(&P_row, &P, 0, 0, exii, 0, 1, M.num_cols); // P(exii,:) = P(1,:)
+        matf32_submatrix_copy(Pi_row, P, 0, 0, 0, 0, 1, M.num_cols); // P(1,:) = P(exii,:)
+        matf32_submatrix_copy(P_row, P, 0, 0, exii, 0, 1, M.num_cols); // P(exii,:) = P(1,:)
     }
     else
     {
+        // TODO: Check this TODO because I don't remember if I fixed it or not D:
         // TODO: Debug this case because LDL' reconstruction doesn't match PMP'
         s = 2; // 2-by-2 pivot matrix E
 
         // Switch rows P(exi,:) and P(1,:)
-        matf32_submatrix_copy(&P, &Pi_row, exi, 0, 0, 0, 1, M.num_cols); // Pi_row = P(exi,:)
-        matf32_submatrix_copy(&P, &P_row, 0, 0, 0, 0, 1, M.num_cols); // P_row = P(1,:)
+        matf32_submatrix_copy(P, Pi_row, exi, 0, 0, 0, 1, M.num_cols); // Pi_row = P(exi,:)
+        matf32_submatrix_copy(P, P_row, 0, 0, 0, 0, 1, M.num_cols); // P_row = P(1,:)
 
-        matf32_submatrix_copy(&Pi_row, &P, 0, 0, 0, 0, 1, M.num_cols); // P(1,:) = P(exi,:)
-        matf32_submatrix_copy(&P_row, &P, 0, 0, exi, 0, 1, M.num_cols); // P(exi,:) = P(1:0)
+        matf32_submatrix_copy(Pi_row, P, 0, 0, 0, 0, 1, M.num_cols); // P(1,:) = P(exi,:)
+        matf32_submatrix_copy(P_row, P, 0, 0, exi, 0, 1, M.num_cols); // P(exi,:) = P(1:0)
 
         // Switch rows P(exj,:) and P(2,:)
-        matf32_submatrix_copy(&P, &Pj_row, exj, 0, 0, 0, 1, M.num_cols); // Pj_row = P(exj,:)
-        matf32_submatrix_copy(&P, &P_row, 1, 0, 0, 0, 1, M.num_cols); // P_row = P(2,:)
+        matf32_submatrix_copy(P, Pj_row, exj, 0, 0, 0, 1, M.num_cols); // Pj_row = P(exj,:)
+        matf32_submatrix_copy(P, P_row, 1, 0, 0, 0, 1, M.num_cols); // P_row = P(2,:)
 
-        matf32_submatrix_copy(&Pj_row, &P, 0, 0, 1, 0, 1, M.num_cols); // P(2,:) = P(exj,:)
-        matf32_submatrix_copy(&P_row, &P, 0, 0, exj, 0, 1, M.num_cols); // P(exj,:) = P(1:0)
+        matf32_submatrix_copy(Pj_row, P, 0, 0, 1, 0, 1, M.num_cols); // P(2,:) = P(exj,:)
+        matf32_submatrix_copy(P_row, P, 0, 0, exj, 0, 1, M.num_cols); // P(exj,:) = P(1:0)
     }
 
-    //printf("s: %i\n\n", s);
+    matf32_t* Pt = &m2;
+    matf32_init(Pt, P->num_cols, P->num_rows, m2data);
+    matf32_zeros(Pt);
 
-    //printf("P:\n");
-    //matf32_print(&P);
+    matf32_t* PM = &m3;
+    matf32_init(PM, P->num_rows, M.num_cols, m3data);
+    matf32_zeros(PM);
 
-    // Calculate PMP'
+    matf32_t* PMPt = &m4;
+    matf32_init(PMPt, P->num_rows, P->num_rows, m4data);
+    matf32_zeros(PMPt);
 
-    float Pt_data[MAX_MAT_SIZE];
-    matf32_t Pt;
-    matf32_init(&Pt, P.num_cols, P.num_rows, Pt_data);
+    matf32_mul(P, &M, PM); // PM = P*M
+    matf32_trans(P, Pt); // P = P'
+    matf32_mul(PM, Pt, PMPt); // PMPt = P*M*P'
 
-    float PM_data[MAX_MAT_SIZE];
-    matf32_t PM;
-    matf32_init(&PM, P.num_rows, M.num_cols, PM_data);
+    // --------------- Extract Submatrices from PMP' ---------------
 
-    float PMPt_data[MAX_MAT_SIZE];
-    matf32_t PMPt;
-    matf32_init(&PMPt, P.num_rows, P.num_rows, PMPt_data);
+    matf32_t* E = &m3; // E for saving: PMPt(1:s, 1:s)
+    matf32_init(E, s, s, m3data); // Initialize E
+    matf32_zeros(E); // Erase previous data in m3data
 
-    matf32_mul(&P, &M, &PM); // PM = P*M
-    //printf("PM:\n");
-    //matf32_print(&PM);
+    matf32_t* C = &m5; // C for saving: PMPt(s+1:end, 1:s)
+    matf32_init(C, M.num_rows-s, s, m5data); // Initialize C
 
-    matf32_trans(&P, &Pt); // P = P'
-    //printf("P':\n");
-    //matf32_print(&Pt);
-    
-    matf32_mul(&PM, &Pt, &PMPt); // PMPt = P*M*P'
-    //printf("PMP':\n");
-    //matf32_print(&PMPt);
+    matf32_t* B = &m6; // B for saving: PMPt(s+1:end, s+1:end)
+    matf32_init(B, M.num_rows-s, M.num_cols-s, m6data); // Initialize B
 
-    // Extract submatrices from PMP'
+    // Assign values for matrices E, C and B
+    matf32_submatrix_copy(PMPt, E, 0, 0, 0, 0, E->num_rows, E->num_cols); // E = PMPt(1:s, 1:s)
+    matf32_submatrix_copy(PMPt, C, s, 0, 0, 0, C->num_rows, C->num_cols); // C = PMPt(s+1:end, 1:s)
+    matf32_submatrix_copy(PMPt, B, s, s, 0, 0, B->num_rows, B->num_cols); // B = PMPt(s+1:end, s+1:end)
 
-    float E_data[MAX_MAT_SIZE];
-    matf32_t E;
-    matf32_init(&E, s, s, E_data);
-
-    float C_data[MAX_MAT_SIZE];
-    matf32_t C;
-    matf32_init(&C, M.num_rows-s, s, C_data);
-
-    float B_data[MAX_MAT_SIZE];
-    matf32_t B;
-    matf32_init(&B, M.num_rows-s, M.num_cols-s, B_data);
-
-    matf32_submatrix_copy(&PMPt, &E, 0, 0, 0, 0, E.num_rows, E.num_cols); // E = PMPt(1:s, 1:s)
-    matf32_submatrix_copy(&PMPt, &C, s, 0, 0, 0, C.num_rows, C.num_cols); // C = PMPt(s+1:end, 1:s)
-    matf32_submatrix_copy(&PMPt, &B, s, s, 0, 0, B.num_rows, B.num_cols); // B = PMPt(s+1:end, s+1:end)
-
-    //printf("E:\n");
-    //matf32_print(&E);
-    //printf("C:\n");
-    //matf32_print(&C);
-
-    //float condB = 0;
-    //matf32_cond(&B, &condB);
-    //printf("Condition number B: %.9f\n\n", condB);
-
-    //printf("B:\n");
-    //matf32_print(&B);
-
-    // Generate lower triangle matrix L and diagonal matrix D
+    // --------------- Generate lower triangle matrix L and diagonalmatrix D ---------------
 
     float L_data[MAX_MAT_SIZE];
     matf32_t L;
@@ -549,142 +522,82 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     matf32_zeros(&L);
     matf32_eye(&L);
 
-    float Ei_data[MAX_MAT_SIZE];
-    matf32_t Ei;
-    matf32_init(&Ei, E.num_rows, E.num_cols, Ei_data);
-    matf32_inv(&E, &Ei);
+    matf32_t* Ei = &m7; // Ei for saving: E^-1
+    matf32_init(Ei, E->num_rows, E->num_cols, m7data); // Initialize Ei
+    matf32_inv(E, Ei); // Ei = E^-1
 
-    //float condE = 0;
-    //matf32_cond(&E, &condE);
-    //printf("Condition number E: %.9f\n\n", condE);
+    matf32_t* CEi = &m8; // CEi for saving: C*E^-1
+    matf32_init(CEi, C->num_rows, Ei->num_cols, m8data); // Initialize CEi
+    matf32_mul(C, Ei, CEi); // CEi = C*E^-1
 
-    //printf("inv(E):\n");
-    //matf32_print(&Ei);
+    // Assign values for L = [Is 0; C*E^-1 In-s]
+    matf32_submatrix_copy(CEi, &L, 0, 0, s, 0, CEi->num_rows, CEi->num_cols); 
 
-    //float condEi = 0;
-    //matf32_cond(&Ei, &condEi);
-    //printf("Condition number inv(E): %.9f\n\n", condEi);
-
-    float CEi_data[MAX_MAT_SIZE];
-    matf32_t CEi;
-    matf32_init(&CEi, C.num_rows, Ei.num_cols, CEi_data);
-
-    matf32_mul(&C, &Ei, &CEi);
-    //printf("C*E^-1:\n");
-    //matf32_print(&CEi);
-
-    matf32_submatrix_copy(&CEi, &L, 0, 0, s, 0, CEi.num_rows, CEi.num_cols); // L = [Is 0; C*E^-1 In-s]
-
-    //printf("L:\n");
-    //matf32_print(&L);
-
-    float D_data[MAX_MAT_SIZE];
-    matf32_t D;
-    matf32_init(&D, M.num_rows, M.num_cols, D_data);
-    matf32_zeros(&D);
+    matf32_t* D = &m7; // D for saving [E 0; 0 C*E^-1*C']
+    matf32_init(D, M.num_rows, M.num_cols, m7data); // Initialize D
+    matf32_zeros(D); // Erase previous data in m7data
     
-    float Ct_data[MAX_MAT_SIZE];
-    matf32_t Ct;
-    matf32_init(&Ct, C.num_cols, C.num_rows, Ct_data);
+    matf32_t* Ct = &m9; // Ct for the transpose of C
+    matf32_init(Ct, C->num_cols, C->num_rows, m9data); // Initialize Ct
 
-    float CEiCt_data[MAX_MAT_SIZE];
-    matf32_t CEiCt;
-    matf32_init(&CEiCt, C.num_rows, C.num_rows, CEiCt_data);
+    matf32_t* CEiCt = &m10; // CEiCt for saving: C*E^-1*C'
+    matf32_init(CEiCt, C->num_rows, C->num_rows, m10data); // Initialize CEiCt
+    matf32_trans(C, Ct); // Ct = C'
+    matf32_mul(CEi, Ct, CEiCt); // C = C*E^-1*C'
 
-    float B_CEiCt_data[MAX_MAT_SIZE];
-    matf32_t B_CEiCt;
-    matf32_init(&B_CEiCt, C.num_rows, C.num_rows, B_CEiCt_data);
+    matf32_t* B_CEiCt = &m8; // B_CEiCt for saving: B - C*E^-1*C'
+    matf32_init(B_CEiCt, C->num_rows, C->num_rows, m8data);
+    matf32_zeros(B_CEiCt); // Erase previous data in m8data
+    matf32_sub(B, CEiCt, B_CEiCt); // CEiCt = B - C*E^-1*C'
 
-    matf32_trans(&C, &Ct); // Ct = C'
-    //printf("C':\n");
-    //matf32_print(&Ct);
+    // Assign values for D = [E 0; 0 CEiCt]
+    matf32_submatrix_copy(E, D, 0, 0, 0, 0, E->num_rows, E->num_cols);
+    matf32_submatrix_copy(B_CEiCt, D, 0, 0, E->num_rows, E->num_cols, B_CEiCt->num_rows, B_CEiCt->num_cols);
+
+    matf32_t* Lt = &m3; // Lt for the transpose of L
+    matf32_init(Lt, L.num_cols, L.num_rows, m3data); // Initialize Lt
+    matf32_zeros(Lt); // Erase previous data in m3data
+
+    // ---------------------------------------------------------------------------
+    // 3. Solve KKT system My = n with the LDL' Factorization
+    // ---------------------------------------------------------------------------
+
+    // --------------- Solve linear system: L*z1 = Pb ---------------
     
-    matf32_mul(&CEi, &Ct, &CEiCt); // C = C*E^-1*C'
-    //printf("C*E^-1*C':\n");
-    //matf32_print(&CEiCt);
+    matf32_t* z1 = &m5; // Define z1
+    matf32_init(z1, M.num_rows, 1, m5data); // Initialize z1
+    matf32_zeros(z1); // Erase previous data in m5data
 
-    matf32_sub(&B, &CEiCt, &B_CEiCt); // CEiCt = B - C*E^-1*C'
-    //printf("B - C*E^-1*C':\n");
-    //matf32_print(&B_CEiCt);
+    matf32_t* Pb = &m6; // Define Pb
+    matf32_init(Pb, P->num_rows, n.num_cols, m6data); // Initialize Pb
+    matf32_zeros(Pb); // Erase previous data in m6data
 
-    // D = [E 0; 0 CEiCt]
-    matf32_submatrix_copy(&E, &D, 0, 0, 0, 0, E.num_rows, E.num_cols);
-    matf32_submatrix_copy(&B_CEiCt, &D, 0, 0, E.num_rows, E.num_cols, B_CEiCt.num_rows, B_CEiCt.num_cols);
+    matf32_mul(P, &n, Pb); // Pb = P*n (n = b, just different notation)
+    linsolve(&L, Pb, z1); // Solve L*z1 = Pb
 
-    //printf("D:\n");
-    //matf32_print(&D);
+    // --------------- Solve linear system: D*z2 = z1 ---------------
+    
+    matf32_t* z2 = &m6; // z2 for the solution of D*z2 = z1
+    matf32_init(z2, M.num_rows, 1, m6data); // Initialize z2
+    matf32_zeros(z2); // Erase previous data in m6data
 
-    // Reconstruction PAP' = LDL' for debugging
-    float Lt_data[MAX_MAT_SIZE];
-    matf32_t Lt;
-    matf32_init(&Lt, L.num_cols, L.num_rows, Lt_data);
+    linsolve(D, z1, z2); // Solve D*z2 = z1
 
-    float LD_data[MAX_MAT_SIZE];
-    matf32_t LD;
-    matf32_init(&LD, L.num_rows, D.num_cols, LD_data);
+    // --------------- Solve linear system: L'*z3 = z2 ---------------
+    
+    matf32_t* z3 = &m5; // Define z3
+    matf32_init(z3, M.num_rows, 1, m5data); // Initialize z3
+    matf32_zeros(z3); // Erase previous data in m5data
 
-    float LDLt_data[MAX_MAT_SIZE];
-    matf32_t LDLt;
-    matf32_init(&LDLt, L.num_rows, Lt.num_cols, LDLt_data);
+    matf32_trans(&L, Lt); // L = L'
+    linsolve(Lt, z2, z3); // Solve L'*z3 = z2
 
-    matf32_mul(&L, &D, &LD);
-    //printf("LD:\n");
-    //matf32_print(&LD);
-    matf32_trans(&L, &Lt);
-    matf32_mul(&LD, &Lt, &LDLt);
-    //printf("LDL':\n");
-    //matf32_print(&LDLt);
+    // --------------- Calculate QP solution vector y = P'*z3 ---------------
+    
+    matf32_init(&y, M.num_rows, 1, y_data); // Initialize y
+    matf32_mul(Pt, z3, &y); // y = P'*z3
 
-    // Solve My = n with LDL' Factorization
-
-    float z1_data[MAX_MAT_SIZE];
-    matf32_t z1;
-    matf32_init(&z1, M.num_rows, 1, z1_data);
-
-    float Pb_data[MAX_MAT_SIZE];
-    matf32_t Pb;
-    matf32_init(&Pb, P.num_rows, n.num_cols, Pb_data);
-
-    matf32_mul(&P, &n, &Pb); // Pb = P*n
-    //printf("Pb:\n");
-    //matf32_print(&Pb);
-    linsolve(&L, &Pb, &z1); // Solve L*z1 = Pb
-    //printf("z1:\n");
-    //matf32_print(&z1);
-
-    float z2_data[MAX_MAT_SIZE];
-    matf32_t z2;
-    matf32_init(&z2, M.num_rows, 1, z2_data);
-
-    linsolve(&D, &z1, &z2); // Solve D*z2 = z1
-    //printf("z2:\n");
-    //matf32_print(&z2);
-
-    float z3_data[MAX_MAT_SIZE];
-    matf32_t z3;
-    matf32_init(&z3, M.num_rows, 1, z3_data);
-
-    matf32_trans(&L, &Lt); // L = L'
-    //printf("L':\n");
-    //matf32_print(&Lt);
-    linsolve(&Lt, &z2, &z3); // Solve L'*z3 = z2
-    //printf("z3:\n");
-    //matf32_print(&z3);
-
-    matf32_init(&y, M.num_rows, 1, y_data);
-
-    matf32_mul(&Pt, &z3, &y); // x = P'*z3
-    //printf("y:\n");
-    //matf32_print(&y);
-
-    float My_data[MAX_MAT_SIZE];
-    matf32_t My;
-    matf32_init(&My, M.num_rows, y.num_cols, My_data);
-    matf32_mul(&M, &y, &My);
-    //printf("My:\n");
-    //matf32_print(&My);
-
-    // Save the part of y that corresponds to the solution x of the QP
+    // y = [x lambda]', so save x and discard the lambda (lagrange multipliers)
     matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
     return QP_SUCESS;
