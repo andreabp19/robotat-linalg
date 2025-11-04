@@ -1,7 +1,7 @@
 /**
  * @file quadprog.c
  * 
- * Last modified: 24 Sep 2025
+ * Last modified: 26 Oct 2025
  */
 
 #include <stdint.h>
@@ -20,6 +20,26 @@ matf32_t n;
 float temp_Aeq_data[MAX_MAT_SIZE];
 matf32_t temp_Aeq;
 
+static float m1data[MAX_MAT_SIZE];
+static matf32_t m1;
+static float m2data[MAX_MAT_SIZE];
+static matf32_t m2;
+static float m3data[MAX_MAT_SIZE];
+static matf32_t m3;
+static float m4data[MAX_MAT_SIZE];
+static matf32_t m4;
+static float m5data[MAX_MAT_SIZE];
+static matf32_t m5;
+static float m6data[MAX_MAT_SIZE];
+static matf32_t m6;
+static float m7data[MAX_MAT_SIZE];
+static matf32_t m7;
+static float m8data[MAX_MAT_SIZE];
+static matf32_t m8;
+static float m9data[MAX_MAT_SIZE];
+static matf32_t m9;
+static float m10data[MAX_MAT_SIZE];
+static matf32_t m10;
 
 void
 quadprog_init(quadprog_t* const p_qp,
@@ -62,50 +82,70 @@ quadprog_status_print(quadprog_status_t status)
 
 // TODO: Add linsolve method in the arguments to select solver method for equality-restricted QPs
 quadprog_status_t
-quadprog(quadprog_t* p_qp, matf32_t* const p_x)
+quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadprog_method_t method)
 {
-    // badly defined
+    // Add checks for the dimensions of Aeq and beq (rows should match) and same for Ain and bin
+
+    // Badly defined
     if ((NULL == p_qp->p_Q) && (NULL == p_qp->p_c))
     {
         return QP_BAD_DEFINED;
     }
 
-    // not restricted
+    // Unrestricted QP (solve with linsolve)
     if ((NULL == p_qp->p_Aeq) && (NULL == p_qp->p_beq) &&
         (NULL == p_qp->p_Ain) && (NULL == p_qp->p_bin))
     {
-        return QP_NOT_RESTRICTED;
+        matf32_init(&m1, p_qp->p_c->num_rows, p_qp->p_c->num_cols, m1data);
+
+        matf32_scale(p_qp->p_c, -1.0, &m1); // m = -c
+        return linsolve(p_qp->p_Q, &m1, p_x); // LU or SVD
     }
 
-    // iterative method
-    if (NULL != p_qp->p_x0)
-    {
-        // todo
-    }
-
-    // equality restrictions
+    // Equality restrictions (solve with normal linsolve methods or specific KKT methods)
     if ((NULL == p_qp->p_Ain) && (NULL == p_qp->p_bin))
     {
-        // Add a condition to check the dimensions of Aeq: if square, use quadprog_qp, if rectangular use quadprog_qp_nullspace
+        if (!set_linsolve_method) // Chooses between KKT-specific methods 
+        {
+            if (!matf32_check_square_matrix(p_qp->p_Aeq)) // Rectangular Aeq
+            {
+                return quadprog_qp_nullspace(p_qp, p_x); // Nullspace method for the KKT system
+            }
+            else
+            {
+                return quadprog_qp_ldlt(p_qp, p_x); // LDL' factorization of the KKT system
+            }
+        }
+        else // Solve KKT system with linsolve methods (not specific methods for KKT but valid)
+        {
+            switch (method)
+            {
+                case QP_LU: 
+                    return quadprog_qp_linsolve(p_qp, p_x, LU);
+                    break;
 
-        return quadprog_qp(p_qp, p_x, LU);
+                case QP_SVD:
+                    return quadprog_qp_linsolve(p_qp, p_x, SVD);
+                    break;
+
+                case QP_QR:
+                    return quadprog_qp_linsolve(p_qp, p_x, QR);
+                    break;
+            }
+        }
+
+         
     }
 
-    // inequality restrictions
+    // Inequality restrictions (solve with active set)
     if ((NULL != p_qp->p_Ain) && (NULL != p_qp->p_bin))
     {
         return quadprog_sqp(p_qp, p_x);
     }
-
-    // general solver? something that can solve a QP with any mix of conditions
 }
 
-// TODO: reorder in
-// quadprog_qp for simple case
-// quadprog_sqp for inequality case
-// better error handling
 quadprog_status_t
-quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
+quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
 {
     /** 
      * Creates a KKT system and applies a linsolve method to it in order to solve the QP
@@ -127,6 +167,8 @@ quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
      *  
     */
 
+    err_status_t status;
+
     const matf32_t* p_Q = p_qp->p_Q;
     const matf32_t* p_c = p_qp->p_c;
     const matf32_t* p_Aeq = p_qp->p_Aeq;
@@ -136,8 +178,6 @@ quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
 #ifdef MATH_MATRIX_CHECK
     // TODO: add size checks for matrices, use above comment as guide
 #endif
-
-    err_status_t status;
 
     uint16_t rows = p_qp->p_Q->num_rows + p_qp->p_Aeq->num_rows; 
     uint16_t cols = p_qp->p_Q->num_cols + p_qp->p_Aeq->num_rows; // Aeq is used transposed here
@@ -154,183 +194,160 @@ quadprog_qp(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
 
     matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
 
-    /** Create KKT matrix M = [Q Aeq'; Aeq 0] */
+    // Create KKT matrix M = [Q Aeq'; Aeq 0]
     matf32_submatrix_copy(p_Q, &M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
     matf32_submatrix_copy(p_Aeq, &M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
     matf32_trans(p_Aeq, &temp_Aeq); // Aeq'
     matf32_submatrix_copy(&temp_Aeq, &M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
 
-    /** Create matrix n = [c, beq], as the algorithm says: n = [-c -beq] and then invert the sign of n */
+    // Create matrix n = [c, beq], as the algorithm says: n = [-c -beq] and then invert the sign of n
     matf32_submatrix_copy(p_c, &n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
     matf32_submatrix_copy(p_beq, &n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
-    /** Solve linear system My = n using linsolve's methods */
-    status = linsolve_method(&M, &n, &y, method);
-    
-    // For debugging: Print method, and also print conditioning number of the input matrix M to check which is using
+    // Solve linear system My = n using linsolve's methods
+    status = linsolve_method(&M, &n, &y, method, SQUARE);
 
-    float cond_M = 0;
-    float cond_Q = 0;
-    float cond_Aeq = 0;
-
-    //printf("Q (%i,%i):\n", p_Q->num_rows, p_Q->num_cols);
-    //matf32_print(p_Q);
-
-    //printf("Aeq (%i,%i):\n", p_Aeq->num_rows, p_Aeq->num_cols);
-    //matf32_print(p_Aeq);
-
-    //printf("M (%i,%i):\n", M.num_rows, M.num_cols);
-    //matf32_print(&M);
-
-    //matf32_cond(p_Q, &cond_Q);
-    //matf32_cond(p_Aeq, &cond_Aeq);
-    //matf32_cond(&M, &cond_M);
-    //printf("Condition number of Q: %.9f\n", cond_Q);
-    //printf("Condition number of A: %.9f\n", cond_Aeq);
-    //printf("Condition number of M: %.9f\n", cond_M);
-
-    /** Save the part of y that corresponds to the solution x of the QP */
+    // Save the part of y that corresponds to the solution x of the QP
     matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
     return QP_SUCESS;
 }
 
 
-// In progress
+// TODO: Test again after changing the matrices to reusable pointers
 quadprog_status_t 
 quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
 {
     /**
-     * Solves the KKT system of an equality-constrained QP using the null-space method
+     *  Procedure:
+     *  
+     *  Solves the KKT system of an equality-constrained QP using the null-space method. Based on
+     *  Nocedal, Numerical Optimization, 16.2 Direct Solution of the KKT System.
+     *  
+     *  From the KKT system:
      * 
-     * From the KKT system: |Q A'||  -p  | = |g| , where A (m x n) with m <= n with full rank (m)
-     *                      |A 0 ||lambda|   |h|   also, h = Ax - b (n x 1), and g = c + Gx (G_cols x 1) 
+     *      |Q   Aeq'||  -p  | = |g| 
+     *      |Aeq  0  ||lambda|   |h|   
+     *  
+     *  where Aeq (m x n) with m <= n with full rank (m), while for h and g:
      * 
-     * Defining p = Y*py + Z*pz where:
-     *      Y is (n x m)
-     *      Z is (n x (n-m))
-     *      such that [Y|Z] is nonsingular
+     *      h = Ajp_k - b (n x 1),
+     *      g = c + Gx (G_cols x 1) 
      * 
-     * In other words, from A' = QR, we subdivide Q = [Q1|Q2], such that:
+     *  Defining:
+     * 
+     *      p = Y*py + Z*pz
+     * 
+     *  where Y (n x m) and Z (n x (n-m)), such that a matrix [Y|Z] is nonsingular. In other words,
+     *  calculate the QR factorization of the transposed matrix Aeq and subdivide the Q factor: 
+     * 
+     *      Aeq' = QR,
+     * 
+     *      Q = [Q1|Q2],
+     * 
      *      Y = Q1 (n x m)
      *      Z = Q2 (n x (n-m))
+     *  
+     *  To get py, solve:
      * 
-     * To get py, solve: (AY)*py = -h
-     * (If m = n, the problem gets reduced to solving the above as Z = 0)
+     *      (AY)*py = -h
+     *  
+     *  (If m = n, the problem gets reduced to solving the above as Z = 0, which means the Q and c of the QP are not
+     *  actually taken into account and the result may be valid but may not be the minimum for both the cost and constraints).
+     *  
+     *  To get pz, solve:
      * 
-     * To get pz, solve: (Z'*G*Z)*pz = -Z'*G*Y*py - Z'*g
+     *      (Z'*Q*Z)*pz = -Z'*Q*Y*py - Z'*g
+     *  
+     *  Then, having all needed matrices, compute:
      * 
-     * Then, compute p = Y*py + Z*pz
+     *      p = Y*py + Z*pz
+     *  
+     *  And if the Lagrange Multipliers are needed, solve the following system for lambda:
      * 
-     * And for the Lagrange multipliers solve for lambda: (AY)'*lambda = Y'*(g + G*p)
+     *      (AY)'*lambda = Y'*(g + G*p)
      */
 
-    // Add dimension checks to avoid computing extra steps if m = n
-    // TODO: Rewrite quadprog_qp_nullspace to reutilize some matrices instead of creating so many matrices
+    // TODO: Add dimension checks to avoid computing extra steps if m = n
 
     uint16_t m = p_qp->p_Aeq->num_rows;
     uint16_t n = p_qp->p_Aeq->num_cols;
 
-    float Aeqt_data[MAX_MAT_SIZE];
-    matf32_t Aeqt;
-    matf32_init(&Aeqt, p_qp->p_Aeq->num_cols, p_qp->p_Aeq->num_rows, Aeqt_data);
+    matf32_t* Aeqt = &m1;
+    matf32_init(Aeqt, p_qp->p_Aeq->num_cols, p_qp->p_Aeq->num_rows, m1data);
+    matf32_t* Q = &m2;
+    matf32_init(Q, n, n, m2data);
+    matf32_t* R = &m3;
+    matf32_init(R, n, n-1, m3data);
 
-    float Q_data[MAX_MAT_SIZE];
-    matf32_t Q;
-    matf32_init(&Q, n, n, Q_data);
+    matf32_trans(p_qp->p_Aeq, Aeqt); // Aeq'
+    matf32_qr(Aeqt, Q, R); // Aeq' = QR
 
-    float R_data[MAX_MAT_SIZE];
-    matf32_t R;
-    matf32_init(&R, n, n-1, R_data);
+    // Define matrices for p = Y*py + Z*pz
+    matf32_t* Y = &m3;
+    matf32_init(Y, n, m, m3data);
+    matf32_zeros(Y);
+    matf32_t* py = &m4;
+    matf32_init(py, m, 1, m4data);
+    matf32_t* Z = &m5;
+    matf32_init(Z, n, n-m, m5data);
+    matf32_t* pz = &m6;
+    matf32_init(pz, n-m, p_x->num_cols, m6data);
 
-    float Y_data[MAX_MAT_SIZE];
-    matf32_t Y;
-    matf32_init(&Y, n, m, Y_data);
+    // Calculate Y*py
 
-    float Z_data[MAX_MAT_SIZE];
-    matf32_t Z;
-    matf32_init(&Z, n, n-m, Z_data);
+    matf32_submatrix_copy(Q, Y, 0, 0, 0, 0, Q->num_rows, m); // Y = Q(:,1:m)
+    
+    matf32_t* AY = &m7;
+    matf32_init(AY, p_qp->p_Aeq->num_rows, Y->num_cols, m7data);
 
-    float py_data[MAX_MAT_SIZE];
-    matf32_t py;
-    matf32_init(&py, m, 1, py_data);
+    matf32_mul(p_qp->p_Aeq, Y, AY); // py = Y*(Aeq\beq) = (Aeq*Y)\b
+    linsolve(AY, p_qp->p_beq, py); // py = AY\beq
+    matf32_mul(Y, py, p_x); // p_x = Y*py
 
-    float pz_data[MAX_MAT_SIZE];
-    matf32_t pz;
-    matf32_init(&pz, n-m, p_x->num_cols, pz_data);
+    // Calculate Z*pz
 
-    float AY_data[MAX_MAT_SIZE];
-    matf32_t AY;
-    matf32_init(&AY, p_qp->p_Aeq->num_rows, Y.num_cols, AY_data);
+    matf32_submatrix_copy(Q, Z, 0, m, 0, 0, Q->num_rows, n-m); // Z = Q(:,m+1:end)
+    
+    matf32_t* ZtG = &m7;
+    matf32_init(ZtG, Z->num_rows, p_qp->p_Q->num_cols, m7data);
+    matf32_zeros(ZtG); // Erase previous data in m7
+    matf32_t* ZtGZ = &m1;
+    matf32_init(ZtGZ, Z->num_cols, Z->num_cols, m1data);
+    matf32_t* ZtGY = &m8;
+    matf32_init(ZtGY, Z->num_rows, Y->num_cols, m8data);
+    matf32_t* Ztc = &m9;
+    matf32_init(Ztc, Z->num_cols, p_qp->p_c->num_cols, m9data);
+    
+    matf32_trans(Z, Z); // Z = Z'
+    matf32_mul(Z, p_qp->p_c, Ztc); // Z'c
+    matf32_mul(Z, p_qp->p_Q, ZtG); // Z'G
+    matf32_trans(Z, Z); // Z = (Z')' = Z
+    matf32_mul(ZtG, Z, ZtGZ); // Z'GZ
+    matf32_mul(ZtG, Y, ZtGY); // Z'GY
 
-    float Zt_data[MAX_MAT_SIZE];
-    matf32_t Zt;
-    matf32_init(&Zt, Z.num_cols, Z.num_rows, Zt_data);
+    matf32_t* ZtGYpy = &m7;
+    matf32_init(ZtGYpy, Z->num_cols, py->num_cols, m7data);
+    matf32_zeros(ZtGYpy); // Erase previous data in m7
+    matf32_mul(ZtGY, py, ZtGYpy); // Z'GYpy
+    
+    matf32_t* p = &m9;
+    matf32_init(p, Z->num_cols, p_qp->p_c->num_cols, m9data);
+    matf32_add(ZtGYpy, Ztc, p); // p = Z'GYpy - Z'c
+    matf32_scale(p, -1.0, p); // p = -Z'GYpy - Z'c
 
-    float ZtG_data[MAX_MAT_SIZE];
-    matf32_t ZtG;
-    matf32_init(&ZtG, Zt.num_rows, p_qp->p_Q->num_cols, ZtG_data);
+    matf32_t* Zpz = &m10;
+    matf32_init(Zpz, Z->num_rows, pz->num_cols, m10data);
+    linsolve(ZtGZ, p, pz); // Solve (Z'Gz)pz = -Z'GYpy - Z'c for pz
+    matf32_mul(Z, pz, Zpz); // Zpz
 
-    float ZtGZ_data[MAX_MAT_SIZE];
-    matf32_t ZtGZ;
-    matf32_init(&ZtGZ, Z.num_cols, Z.num_cols, ZtGZ_data);
-
-    float Ztc_data[MAX_MAT_SIZE];
-    matf32_t Ztc;
-    matf32_init(&Ztc, Zt.num_rows, p_qp->p_c->num_cols, Ztc_data);
-
-    float ZtGY_data[MAX_MAT_SIZE];
-    matf32_t ZtGY;
-    matf32_init(&ZtGY, Zt.num_rows, Y.num_cols, ZtGY_data);
-
-    float ZtGYpy_data[MAX_MAT_SIZE];
-    matf32_t ZtGYpy;
-    matf32_init(&ZtGYpy, Zt.num_rows, py.num_cols, ZtGYpy_data);
-
-    float Ypy_data[MAX_MAT_SIZE];
-    matf32_t Ypy;
-    matf32_init(&Ypy, Y.num_rows, py.num_cols, Ypy_data);
-
-    float Zpz_data[MAX_MAT_SIZE];
-    matf32_t Zpz;
-    matf32_init(&Zpz, Z.num_rows, pz.num_cols, Zpz_data);
-
-    /** Calculate py (if A is square, this is the only part executed, which may not lead to the optimal solution) */
-
-    matf32_trans(p_qp->p_Aeq, &Aeqt); // Aeq'
-    matf32_qr(&Aeqt, &Q, &R); // Aeq' = QR
-    matf32_submatrix_copy(&Q, &Y, 0, 0, 0, 0, Q.num_rows, m); // Y = Q(:,1:m)
-    matf32_mul(p_qp->p_Aeq, &Y, &AY); // py = Y*(Aeq\beq) = (Aeq*Y)\b
-
-    linsolve(&AY, p_qp->p_beq, &py); // Solve Aeq*py = beq for py
-    matf32_mul(&Y, &py, &Ypy);
-
-    /** Calculate pz */
-
-    matf32_submatrix_copy(&Q, &Z, 0, m, 0, 0, Q.num_rows, n-m); // Z = Q(:,m+1:end)
-    matf32_trans(&Z, &Zt); // Z'
-
-    matf32_mul(&Zt, p_qp->p_Q, &ZtG); // Z'G
-    matf32_mul(&ZtG, &Z, &ZtGZ); // Z'GZ
-
-    matf32_mul(&Zt, p_qp->p_c, &Ztc); // Z'c
-
-    matf32_mul(&ZtG, &Y, &ZtGY); // Z'GY
-    matf32_mul(&ZtGY, &py, &ZtGYpy); // Z'GYpy
-
-    matf32_init(&y, Zt.num_rows, p_qp->p_c->num_cols, y_data);
-    matf32_add(&ZtGYpy, &Ztc, &y); // y = Z'GYpy - Z'c
-    matf32_scale(&y, -1.0, &y); // y = -Z'GYpy - Z'c
-
-    linsolve(&ZtGZ, &y, &pz); // Solve (Z'Gz)pz = -Z'GYpy - Z'c for pz
-    matf32_mul(&Z, &pz, &Zpz); // Zpz
-
-    matf32_add(&Ypy, &Zpz, p_x); // Solution for the system
+    matf32_add(p_x, Zpz, p_x); // p_x = Y*py + Z*pz
 
     return QP_SUCESS;
 }
 
 
+// TODO: Rewrite to implement reusable matrix pointers (consider moving the factorization to matf32 and creating linsolve_ldlt to shorten de function)
 quadprog_status_t
 quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 {
@@ -356,13 +373,13 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 
     matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
 
-    /** Create KKT matrix M = [Q Aeq'; Aeq 0] */
+    // Create KKT matrix M = [Q Aeq'; Aeq 0]
     matf32_submatrix_copy(p_Q, &M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
     matf32_submatrix_copy(p_Aeq, &M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
     matf32_trans(p_Aeq, &temp_Aeq); // Aeq'
     matf32_submatrix_copy(&temp_Aeq, &M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
 
-    /** Create matrix n = [c, beq], as the algorithm says: n = [-c -beq] and then invert the sign of n */
+    // Create matrix n = [c, beq], as the algorithm says: n = [-c -beq] and then invert the sign of n
     matf32_submatrix_copy(p_c, &n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
     matf32_submatrix_copy(p_beq, &n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
@@ -371,7 +388,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     //printf("n:\n");
     //matf32_print(&n);
 
-    /** Generate LDL' Factorization */
+    // Generate LDL' Factorization
 
     float alpha = (1 + sqrt(17))/8; // As Bunch and Parlett's algorithm says
     float mu0 = 0;
@@ -380,8 +397,6 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     uint16_t exi = 0;
     uint16_t exj = 0;
     uint16_t exii = 0;
-
-    //printf("alpha = %.9f\n\n", alpha);
 
     float P_data[MAX_MAT_SIZE];
     matf32_t P; // Permutation matrix
@@ -620,7 +635,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     //printf("LDL':\n");
     //matf32_print(&LDLt);
 
-    /** Solve My = n with LDL' Factorization */
+    // Solve My = n with LDL' Factorization
 
     float z1_data[MAX_MAT_SIZE];
     matf32_t z1;
@@ -669,7 +684,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     //printf("My:\n");
     //matf32_print(&My);
 
-    /** Save the part of y that corresponds to the solution x of the QP */
+    // Save the part of y that corresponds to the solution x of the QP
     matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
     return QP_SUCESS;
@@ -680,197 +695,458 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 quadprog_status_t
 quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
 {
-    /*
-        Express active set of inequalities as equalities
-
-        solve each iteration with quadsolve_qp
-
-        next iteration x = x + alpha*p;
-
+    /**
+     *  Based in the Algorithm 5.4 of Martins, Engineering Design Optimization, modified to manage cases with both equality and inequality constraints.
+     *  The original algorithm in the book solves the KKT system: 
+     * 
+     *      | Q   Aeq' A_w' | |   p_k     |     | Q*x_k + c |
+     *      | Aeq  0    0   | | lambda_eq | = - |     0     | 
+     *      | A_w  0    0   | | lambda_wk |     |     0     |
+     *  
+     *  which is explained to apply assuming the equality contraints were already fulfilled.
+     *
+     *  In this function, it's applied without that assumption, so that all constraints are considered in the algorithm. So it's broken down in four cases:
+     *
+     *      - Case 1: Equality and Active Inequality Constraints:    | Q   Aeq' A_w' | |   p_k     |     |   Q*x_k + c   |
+     *                                                               | Aeq  0    0   | | lambda_eq | = - | Aeq*x_k - beq | 
+     *                                                               | A_w  0    0   | | lambda_wk |     | A_w*x_k - b_w |
+     *
+     *      - Case 2: Equality Constraints (no Active Inequalities):     | Q    Aeq' | |    p_k    | = - |   Q*x_k + c   |  
+     *                                                                   | Aeq   0   | | lambda_eq |     | Aeq*x_k - beq |
+     *
+     *      - Case 3: Active Inequality Constraints:     | Q    A_w' | |    p_k    | = - |   Q*x_k + c   |
+     *                                                   | A_w   0   | | lambda_wk |     | A_w*x_k - b_w |
+     *
+     *      - Case 4: No constraints: Solve the unconstrained system Q*p_k = -(Q*x_k + c). There are no Lagrange Multipliers in this case.
+     *
+     *  From the systems above, the variables names are as follows:
+     * 
+     *      Q         : Quadratic term matrix of the QP
+     *      c         : Linear term matrix of the QP
+     *      Aeq       : Equality constraints matrix of the QP
+     *      beq       : Equality constraints vector of the QP
+     *      A_w       : Active inequality constraints matrix (Working Set Matrix)
+     *      b_w       : Active inequality constraints vector (Working Set Vector) 
+     * 
+     *      p_k       : Actual solution to the KKT system of a given iteration.
+     *      lambda_eq : Lagrange Multipliers corresponding to equality constraints.
+     *      lambda_wk : Lagrange Multipliers corresponding to inequality constraints. 
+     * 
+     *  This way, if there are no equality constraints or all constraints are inactive, the KKT system is built only with what is actually active/exists,
+     *  which prevents building matrices with too many zeros, and so, reduces the risk of ill-conditioned KKT matrices.
+     *  
+     *  Lagrange multipliers are only considered for active inequality constraints (lambda_wk: lambda working set) to identify the most negative one (sigma),
+     *  and the row corresponding to that multiplier in the Working Set is removed to deactivate that constraint before the next iteration.
+     *  
+     *  In case there's no negative multiplier, sigma is set to a large enough positive value to fulfill the conditions of the remaining steps (sigma = 1/0 = Inf).
+     *  
+     *  The inactive inequality constraints are used to calculate a coefficient alpha, which is used to compute the next step: x_k = x_k + alpha*p_k;
     */
 
-    // 3 Sep 2025: Temporal fix to "discard const qualifier from pointer target type" error in p_Q
-    // Because in matf32_trans(p_Q, p_Q) it's trying to save in a constant matrix
-    float temp_Q_data[MAX_MAT_SIZE];
-    matf32_t temp_Q;
-    matf32_init(&temp_Q, p_qp->p_Q->num_rows, p_qp->p_Q->num_cols, temp_Q_data);
+    err_status_t err_status;
+    quadprog_status_t quadprog_status;
 
-    const matf32_t* p_Q = p_qp->p_Q;
-    const matf32_t* p_c = p_qp->p_c;
-    const matf32_t* p_Aeq = p_qp->p_Aeq;
-    const matf32_t* p_beq = p_qp->p_beq;
-    const matf32_t* p_Ain = p_qp->p_Ain;
-    const matf32_t* p_bin = p_qp->p_bin;
+    const matf32_t* Q = p_qp->p_Q;
+    const matf32_t* c = p_qp->p_c;
+    const matf32_t* Aeq = p_qp->p_Aeq;
+    const matf32_t* beq = p_qp->p_beq;
+    const matf32_t* Ain = p_qp->p_Ain;
+    const matf32_t* bin = p_qp->p_bin;
 
-    matf32_t Aeq_zero, beq_zero;
-    matf32_init(&Aeq_zero, 0, 0, NULL);
-    matf32_init(&beq_zero, 0, 0, NULL);
+    float x_k_data[MAX_MAT_SIZE];
+    matf32_t x_k;
+    matf32_init(&x_k, Q->num_rows, 1, x_k_data);
 
-    if (NULL == p_Aeq)
-    {
-        p_Aeq = &Aeq_zero;
-    }
+    float p_k_data[MAX_MAT_SIZE]; // Subproblem Solution Vector
+    matf32_t p_k;
+    matf32_init(&p_k, Q->num_rows, 1, p_k_data);
 
-    if (NULL == p_beq)
-    {
-        p_beq = &beq_zero;
-    }
+    matf32_t* A_w = &m1; // Working Set constraints matrix
+    matf32_t* b_w = &m2; // Working Set constraints vector
+
+    float lambda_data[MAX_MAT_SIZE];
+    matf32_t lambda; // Lagrange Multipliers Vector
+
+    // Flags
+    bool index_flags[Ain->num_rows]; // Flags for active/inactive inequality rows
+    bool equality_constraints = false; // Flag to check if there exist any equlaity constraint
+    uint16_t working_set_rows = 0; // Counter for the amount of active rows
 
 #ifdef MATH_MATRIX_CHECK
     // TODO: check size, positive definite
 #endif
 
-    // if available, set starting point
+    // If available, set initial point
     if (NULL == p_qp->p_x0)
     {
-        matf32_zeros(p_x);
+        matf32_zeros(&x_k);
     }
     else
     {
-        matf32_copy(p_qp->p_x0, p_x);
+        matf32_copy(p_qp->p_x0, &x_k);
     }
 
-    float p_data[MAX_MAT_SIZE];
-    matf32_t p;
-    matf32_init(&p, p_x->num_rows, 1, p_data);
-
-
-    matf32_t sigma;
-    matf32_init(&sigma, p_Ain->num_rows, 1, y_data+p_Aeq->num_rows+1);
-
-
-    float sub_c_data[MAX_MAT_SIZE];
-    matf32_t sub_c;
-    matf32_init(&sub_c, p_c->num_rows, 1, sub_c_data);
-
-
-    float sub_Aeq_data[MAX_MAT_SIZE];
-    matf32_t sub_Aeq;
-    matf32_init(&sub_Aeq, p_Aeq->num_rows + p_Ain->num_rows, p_Ain->num_cols, sub_Aeq_data);
-    matf32_zeros(&sub_Aeq);
-    matf32_submatrix_copy(p_Aeq, &sub_Aeq, 0, 0, 0, 0, p_Aeq->num_rows, p_Aeq->num_cols);
-
-
-    float sub_beq_data[MAX_MAT_SIZE];
-    matf32_t sub_beq;
-    matf32_init(&sub_beq, p_beq->num_rows + p_bin->num_rows, 1, sub_beq_data);
-    matf32_zeros(&sub_beq);
-
-    bool flags_active_ineqs[p_Ain->num_rows];
-    float alpha_list[p_Ain->num_rows];
-
-    for (uint16_t i = 0; i < p_Ain->num_rows; ++i)
+    // Set all flags to zero to ensure there's no garbage values
+    for (uint16_t i = 0; i < Ain->num_rows; ++i)
     {
-        flags_active_ineqs[i] = false;
+        index_flags[i] = false;
     }
 
-
-    float Ain_row_data[MAX_MAT_SIZE];
-    matf32_t Ain_row;
-    matf32_init(&Ain_row, 1, p_Ain->num_cols, Ain_row_data);
-
-    // printf("Q:\n");
-    // matf32_print(p_Q);
-
-    // printf("sub_c:\n");
-    // matf32_print(&sub_c);
-
-    // printf("sub_Aeq:\n");
-    // matf32_print(&sub_Aeq);
-
-    // printf("sub_beq:\n");
-    // matf32_print(&sub_beq);
-
-    quadprog_t subproblem;
-    quadprog_init(&subproblem, p_Q, &sub_c, &sub_Aeq, &sub_beq, NULL, NULL, NULL);
-
-
-
-    for (uint16_t i = 0; i < MAX_ITERATION_COUNT_SQP; ++i)
+    // Check Aeq and beq dimensions
+    if (NULL != Aeq && NULL != beq)
     {
-        printf("--------------------------------------------------\n");
-        printf("QUADPROG_SQP ITERATION: %i\n", i+1);
-        printf("--------------------------------------------------\n\n");
+        if (Aeq->num_rows > 0 && beq->num_rows > 0)
+            equality_constraints = true;
+    }
 
-        // prepare subproblem c vector
-        matf32_trans(p_Q, &temp_Q);
-        matf32_mul(&temp_Q, p_x, &sub_c);
-        matf32_trans(&temp_Q, &temp_Q);
-        matf32_add(p_c, &sub_c, &sub_c);
-        matf32_scale(&sub_c, -1, &sub_c);
+    matf32_t* temp_row = &m3;
 
-        quadprog_qp(&subproblem, &p, LU);
+    uint16_t active_index = 0;
+    for (uint16_t i = 0; i < Ain->num_rows; ++i)
+    {
+        matf32_init(temp_row, 1, Ain->num_cols, m3data);
+        matf32_zeros(temp_row);
+        matf32_submatrix_copy(Ain, temp_row, i, 0, 0, 0, 1, Ain->num_cols); // temp_row = Ain(i,:)
 
-        printf("sub_c:\n");
-        matf32_print(&sub_c);
+        // Condition to identify active rows: Ain(i,:)*x_k - bin
+        matf32_init(temp_row, 1, Ain->num_cols, m3data);
+        matf32_zeros(temp_row);
+        matf32_submatrix_copy(Ain, temp_row, i, 0, 0, 0, 1, Ain->num_cols); // temp_row = Ain(i,:)
 
-        printf("p:\n");
-        matf32_print(&p);
+        float Ajp_b = 0;
+        // Calculate Ain(i,:)*x - bin(i,:)
+        matf32_dot(temp_row, &x_k, &Ajp_b); // Ajp_k_b = Ain(i,:)*x
+        Ajp_b = Ajp_b - bin->p_data[i]; // Ajp_k_b = Ain(i,:)*x - bin(i,:)
 
-        matf32_scale(&sigma, -1, &sigma);
-
-        // p < err
-        if (matf32_is_equal_scalar(&p, 0))
+        // Active rows that fullfill Ajp_k - b smaller than the tolerance 1E-05
+        if (fabs(Ajp_b) < 1E-05)
         {
-            if (matf32_is_equal_less_scalar(&sigma, 0))
+            index_flags[i] = true;
+            working_set_rows += 1;
+            active_index += 1;
+        }
+    }
+
+    // Main Loop to solve the problem
+    for (uint16_t i = 0; i < 30; ++i)
+    {
+        matf32_t* l = &m4;
+        matf32_zeros(&p_k);
+
+        if (equality_constraints) // Equality contraints exist
+        {
+            if (working_set_rows > 0) // Equality Constraints + Active Inequality Constraints
             {
+                //printf("Iteration %i, Case 1: Active Constraints + Active Inequality Constraints QP\n\n", i+1);
+
+                // Create A_w and b_w
+                matf32_init(A_w, working_set_rows, Ain->num_cols, m1data);
+                matf32_zeros(A_w);
+                matf32_init(b_w, working_set_rows, 1, m2data);
+                matf32_zeros(b_w);
+
+                // Solve the problem depending on the active rows
+                uint16_t current_row = 0;
+                for (uint16_t i = 0; i < Ain->num_rows; ++i)
+                {
+                    // Assign active rows to the Working set matrices A_w and b_w
+                    if (index_flags[i])
+                    {
+                        matf32_init(temp_row, 1, Ain->num_cols, m3data); // Define matrix for A_w row
+                        matf32_submatrix_copy(Ain, temp_row, i, 0, 0, 0, 1, Ain->num_cols); // temp_row = Ain(i,:)
+                        matf32_submatrix_copy(temp_row, A_w, 0, 0, current_row, 0, 1, Ain->num_cols); // A_w(current_row,:) = Ain(i,:)
+                        
+                        matf32_set_row(b_w, current_row, bin->p_data[i]); // Assign b_w row
+
+                        current_row += 1;
+                    }
+                }
+
+                // Create KKT Matrix M 
+                matf32_init(&M, Q->num_rows+Aeq->num_rows+A_w->num_rows, Q->num_cols+Aeq->num_rows+A_w->num_rows, M_data);
+                matf32_zeros(&M);
+                
+                // M = [Q 0 0; Aeq 0 0; A_w 0 0]
+                matf32_submatrix_copy(Q, &M, 0, 0, 0, 0, Q->num_rows, Q->num_cols); // Copy Q into M
+                matf32_submatrix_copy(Aeq, &M, 0, 0, Q->num_rows, 0, Aeq->num_rows, Aeq->num_cols); // Copy Aeq into M
+                matf32_submatrix_copy(A_w, &M, 0, 0, Q->num_rows+Aeq->num_rows, 0, A_w->num_rows, A_w->num_cols); // Copy A_w into M
+
+                // M = [Q Aeq' 0; Aeq 0 0; A_w 0 0]
+                matf32_t* Aeqt = &m5;
+                matf32_init(Aeqt, Aeq->num_cols, Aeq->num_rows, m5data);
+                matf32_trans(Aeq, Aeqt); // Aeq'
+                matf32_submatrix_copy(Aeqt, &M, 0, 0, 0, Q->num_cols, Aeqt->num_rows, Aeqt->num_cols); // Copy Aeq' into M
+
+                // M = [Q Aeq' A_w'; Aeq 0 0; A_w 0 0]
+                matf32_t* A_wt = &m5;
+                matf32_init(A_wt, A_w->num_cols, A_w->num_rows, m5data);
+                matf32_zeros(A_wt);
+                matf32_trans(A_w, A_wt);
+                matf32_submatrix_copy(A_wt, &M, 0, 0, 0, Q->num_cols+Aeq->num_rows, A_wt->num_rows, A_wt->num_cols); // Save A_w' into M
+
+                // Create KKT vector l
+                matf32_init(l, Q->num_rows+Aeq->num_rows+A_w->num_rows, 1, m4data);
+
+                // l = [Q*x_k + c; 0; 0]
+                matf32_t* Qx_c = &m5;
+                matf32_init(Qx_c, Q->num_rows, x_k.num_cols, m5data);
+                matf32_mul(Q, &x_k, Qx_c);
+                matf32_add(Qx_c, c, Qx_c);
+                matf32_submatrix_copy(Qx_c, l, 0, 0, 0, 0, Qx_c->num_rows, 1); // Copy -Q*x_k -b into l
+
+                // l = [Q*x_k + c; Aeq*x_k - beq; 0] 
+                matf32_t* Aeqx_b = &m6;
+                matf32_init(Aeqx_b, Aeq->num_rows, x_k.num_cols, m6data);
+                matf32_mul(Aeq, &x_k, Aeqx_b);
+                matf32_sub(Aeqx_b, beq, Aeqx_b);
+                matf32_submatrix_copy(Aeqx_b, l, 0, 0, Qx_c->num_rows, 0, Aeqx_b->num_rows, 1); // Copy Aeq*x_k - beq into l
+
+                // l = [Q*x_k + c; Aeq*x_k - beq; A_w*x_k - b_w]
+                matf32_t* Awx_b = &m5;
+                matf32_init(Awx_b, A_w->num_rows, x_k.num_cols, m5data);
+                matf32_mul(A_w, &x_k, Awx_b);
+                matf32_sub(Awx_b, b_w, Awx_b);
+                matf32_submatrix_copy(Awx_b, l, 0, 0, Q->num_rows+Aeq->num_rows, 0, Awx_b->num_rows, 1); // Copy A_w*x_k - b_w into l
+
+                // l = -[Q*x_k + c; Aeq*x_k - beq; A_w*x_k - b_w]
+                matf32_scale(l, -1.0, l);
+
+                float p_data[MAX_MAT_SIZE];
+                matf32_t p;
+                matf32_init(&p, l->num_rows, 1, p_data);
+
+                err_status = linsolve(&M, l, &p);
+                matf32_init(&lambda, A_w->num_rows, 1, lambda_data);
+                matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
+                matf32_submatrix_copy(&p, &lambda, Q->num_rows+Aeq->num_rows, 0, 0, 0, lambda.num_rows, 1);
+            }
+            else // Equality Constraints + Inactive inequality constraints
+            {
+                //printf("Iteration %i, Case 2: Active Constraints QP + No Inequality Constraints\n\n", i+1);
+
+                // M = [Q Aeq'; Aeq 0]
+                matf32_init(&M, Q->num_rows+Aeq->num_rows, Q->num_cols+Aeq->num_rows, M_data);
+                matf32_zeros(&M);
+                matf32_submatrix_copy(Q, &M, 0, 0, 0, 0, Q->num_rows, Q->num_cols); // Copy Q into M
+                matf32_submatrix_copy(Aeq, &M, 0, 0, Q->num_rows, 0, Aeq->num_rows, Aeq->num_cols); // Copy Aeq into M
+
+                matf32_t* Aeqt = &m5;
+                matf32_init(Aeqt, Aeq->num_cols, Aeq->num_rows, m5data);
+                matf32_trans(Aeq, Aeqt); // Aeq'
+                matf32_submatrix_copy(Aeqt, &M, 0, 0, 0, Q->num_cols, Aeqt->num_rows, Aeqt->num_cols); // Copy Aeq' into M
+
+                // l = [-Q*x_k - c; Aeq*x_k - beq]
+                matf32_init(l, Q->num_rows + Aeq->num_rows, 1, m4data);
+
+                // -Q*x_k - c
+                matf32_t* Qx_c = &m5;
+                matf32_init(Qx_c, Q->num_rows, x_k.num_cols, m5data);
+                matf32_mul(Q, &x_k, Qx_c);
+                matf32_scale(Qx_c, -1.0, Qx_c);
+                matf32_sub(Qx_c, c, Qx_c);
+                matf32_submatrix_copy(Qx_c, l, 0, 0, 0, 0, Qx_c->num_rows, 1); // Copy -Q*x_k -b into l
+
+                // Aeq*x_k - beq
+                matf32_t* Ax_b = &m6;
+                matf32_init(Ax_b, Aeq->num_rows, x_k.num_cols, m6data);
+                matf32_mul(Aeq, &x_k, Ax_b);
+                matf32_sub(Ax_b, beq, Ax_b);
+                matf32_scale(Ax_b, -1.0, Ax_b);
+                matf32_submatrix_copy(Ax_b, l, 0, 0, Qx_c->num_rows, 0, Ax_b->num_rows, 1); // Copy Aeq*x_k - beq into l
+
+                float p_data[MAX_MAT_SIZE];
+                matf32_t p;
+                matf32_init(&p, l->num_rows, 1, p_data);
+
+                err_status = linsolve(&M, l, &p);
+                matf32_init(&lambda, 1, 1, lambda_data);
+                matf32_zeros(&lambda);
+                matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
+            }
+        }
+        else // No equality constraints exist
+        {
+            if (working_set_rows > 0) // No equality constraints + Inequality constraints active
+            {
+                //printf("Iteration %i, Case 3: Inequality Constraints QP + No Equality Constraints\n\n", i+1);
+
+                // Create A_w and b_w
+                matf32_init(A_w, working_set_rows, Ain->num_cols, m1data);
+                matf32_zeros(A_w);
+                matf32_init(b_w, working_set_rows, 1, m2data);
+                matf32_zeros(b_w);
+
+                // Solve the problem depending on the active rows
+                uint16_t current_row = 0;
+                for (uint16_t i = 0; i < Ain->num_rows; ++i)
+                {
+                    // Assign active rows to the Working set matrices A_w and b_w
+                    // For now, this will be zero as no flags are being activates, so I'll assume this works.
+                    if (index_flags[i])
+                    {
+                        matf32_init(temp_row, 1, Ain->num_cols, m3data); // Define matrix for A_w row
+                        matf32_submatrix_copy(Ain, temp_row, i, 0, 0, 0, 1, Ain->num_cols); // temp_row = Ain(i,:)
+                        matf32_submatrix_copy(temp_row, A_w, 0, 0, current_row, 0, 1, Ain->num_cols); // A_w(current_row,:) = Ain(i,:)
+                        
+                        matf32_set_row(b_w, current_row, bin->p_data[i]); // Assign b_w row
+
+                        current_row += 1;
+                    }
+                }
+
+                // M = [Q A_w'; A_w 0]
+                matf32_init(&M, Q->num_rows+A_w->num_rows, Q->num_cols+A_w->num_rows, M_data);
+                matf32_zeros(&M);
+                matf32_submatrix_copy(Q, &M, 0, 0, 0, 0, Q->num_rows, Q->num_cols);
+                matf32_submatrix_copy(A_w, &M, 0, 0, Q->num_rows, 0, A_w->num_rows, A_w->num_cols);
+
+                matf32_t* A_wt = &m5;
+                matf32_init(A_wt, A_w->num_cols, A_w->num_rows, m5data);
+                matf32_zeros(A_wt);
+                matf32_trans(A_w, A_wt);
+                matf32_submatrix_copy(A_wt, &M, 0, 0, 0, Q->num_cols, A_wt->num_rows, A_wt->num_cols);
+
+                // n = [-Q*x_k - c; A_w*x_k - b_w]
+                matf32_init(l, Q->num_rows + A_w->num_rows, 1, m4data);
+                matf32_zeros(l);
+
+                matf32_t* Qx_c = &m5;
+                matf32_init(Qx_c, Q->num_rows, x_k.num_cols, m5data);
+                matf32_mul(Q, &x_k, Qx_c);
+                matf32_scale(Qx_c, -1.0, Qx_c);
+                matf32_sub(Qx_c, c, Qx_c);
+                matf32_submatrix_copy(Qx_c, l, 0, 0, 0, 0, Qx_c->num_rows, 1);
+
+                matf32_t* Ax_b = &m6;
+                matf32_init(Ax_b, A_w->num_rows, x_k.num_cols, m6data);
+                matf32_mul(A_w, &x_k, Ax_b);
+                matf32_sub(Ax_b, b_w, Ax_b);
+                matf32_submatrix_copy(Ax_b, l, 0, 0, Qx_c->num_rows, 0, Ax_b->num_rows, 1);
+
+                float p_data[MAX_MAT_SIZE];
+                matf32_t p;
+                matf32_init(&p, l->num_rows, 1, p_data);
+
+                //printf("M:\n");
+                //matf32_print(&M);
+                //printf("l:\n");
+                //matf32_print(l);
+
+                err_status = linsolve(&M, l, &p);
+                matf32_init(&lambda, Ax_b->num_rows, 1, lambda_data);
+                matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
+                matf32_submatrix_copy(&p, &lambda, Qx_c->num_rows, 0, 0, 0, lambda.num_rows, 1);
+            }
+            else // No equality constraints + No inequality constraints (unconstrained problem)
+            {
+                //printf("Iteration %i, Case 4: Unconstrained QP\n\n", i+1);
+
+                matf32_init(l, Q->num_rows, 1, m4data);
+                matf32_mul(Q, &x_k, l); // n = Q*x
+                matf32_scale(l, -1.0, l); // n = -Q*x
+                matf32_sub(l, c, l); // n = -Q*x - c
+                //printf("Q:\n");
+                //matf32_print(Q);
+                //printf("l:\n");
+                //matf32_print(l);
+                
+                err_status = linsolve(Q, l, &p_k); // Solving Qp = -c because in this case there are no constraints
+                matf32_init(&lambda, 1, 1, lambda_data);
+                matf32_zeros(&lambda); // No constraints = no Lagrange Multipliers
+            }
+        }
+
+        // Identify sigma from the values in lambda
+        float sigma = 0; // To save the most negative Lagrange Multiplier in lambda
+        uint16_t sigma_index = 0; // Index of lambda where sigma is located
+
+        // Find most negative sigma (if available)
+        for (uint16_t k = 0; k < lambda.num_rows; ++k)
+        {
+            //printf("sign lambda.p_data[k]: %.9f\n", sign(lambda.p_data[k]));
+            if (sign(lambda.p_data[k]) < 0) // Get most negative Lagrange Multiplier
+            {
+                //printf("Inside sigma loop\n\n");
+                if (lambda.p_data[k] < sigma)
+                {
+                    sigma = lambda.p_data[k];
+                    sigma_index = k;
+                }
+            }
+        }
+
+        if (sign(sigma) >= 0) // In case there's no negative sigma
+        {
+            sigma = 1.0/0.0; // Infinite to ensure sigma it's big enough
+        }
+
+        // Check whether norm(p_k) smaller than tolerance
+        //printf("norm p_k: %.9f\n", norm(p_k.p_data, p_k.num_rows, p_k.num_cols));
+        if (norm(p_k.p_data, p_k.num_rows, p_k.num_cols) < 1E-05)
+        {
+            // If sigma is positive, that means the KKT conditions are fulfilled = Problem solved
+            if (sigma >= 0)
+            {
+                matf32_copy(&x_k, p_x);
                 return QP_SUCESS;
             }
-
-            for (uint16_t j = 0; j < sigma.num_rows; ++j)
+            else // sigma is negative, then remove the corresponding condition from the working set
             {
-                if (sigma.p_data[j] > 0)
-                {
-                    matf32_set_row(&sub_Aeq, j, 0);
-                    flags_active_ineqs[j] = 0;
-                }
+                // Zero out the corresponding index to exclude it from the working set
+                index_flags[sigma_index] = 0;
+
+                // Reduce working_set_rows count
+                working_set_rows = working_set_rows - 1;
+
+                // Zero out the corresponding rows in the Working Set
+                matf32_set_row(A_w, sigma_index, 0);
+                matf32_set_row(b_w, sigma_index, 0);
             }
         }
         else
         {
-            float alpha = 1.0/0.0;
-            float alpha_temp = 0;
-            uint16_t alpha_index = 0;
+            float alpha = 1.0; // Initial value as the book indicates
+            float alpha_b = 0;
+            int16_t blocking_index = -1; // 0 is a valid index, so control value is -1
 
-            for (uint16_t j = 0; j < p_Ain->num_rows; ++j)
+            float Ajp = 0;
+            float Ajx = 0;
+            for (uint16_t j = 0; j < Ain->num_rows; ++j)
             {
-                matf32_submatrix_copy(p_Ain, &Ain_row, j, 0, 0, 0, 1, p_Ain->num_cols);
-
-                float ain_row_p = 0;
-                matf32_dot(&Ain_row, &p, &ain_row_p);
-
-                float ain_row_x = 0;
-                matf32_dot(&Ain_row, p_x, &ain_row_x);
-
-                if (1 == flags_active_ineqs[j] || ain_row_p >= 0)
+                if (!index_flags[j])
                 {
-                    continue;
-                }
-                else
-                {
-                    alpha_temp = (ain_row_x + p_bin->p_data[j])/ain_row_p;
-                }
+                    matf32_init(temp_row, 1, Ain->num_cols, m3data);
+                    matf32_zeros(temp_row); // Clean temp_row from previous data
+                    matf32_submatrix_copy(Ain, temp_row, j, 0, 0, 0, 1, Ain->num_cols); // temp_row = A_w(j,:)
+                    matf32_dot(temp_row, &p_k, &Ajp); // Ajp_k = A_w(j,:)*p_k
 
-                if (alpha_temp < alpha)
-                {
-                    alpha = alpha_temp;
-                    alpha_index = j;
+                    // If A_w(j,:)*p_k is greater than a tolerance
+                    if (Ajp > 1E-05)
+                    {
+                        matf32_dot(temp_row, &x_k, &Ajx); // A_w(j,:)*x_k
+                        Ajx = bin->p_data[j] - Ajx; // b_w(j) - A_w(j,:)*x_k
+                        alpha_b = Ajx/Ajp;
+
+                        // If alpha_b is smaller than alpha, update alpha and set blocking index
+                        if (alpha_b < alpha)
+                        {
+                            alpha = alpha_b;
+                            blocking_index = j;
+                        }
+                    }
                 }
             }
 
-            if (alpha < 1)
+            // If there's a blocking index (blocking_index 0 or greater), add it to the working set
+            if (blocking_index > -1)
             {
-                matf32_submatrix_copy(p_Ain, &sub_Aeq,
-                                        alpha_index, 0,
-                                        p_Aeq->num_rows + alpha_index, 0,
-                                        1, p_Ain->num_cols);
-
-                flags_active_ineqs[alpha_index] = 1;
-
-                matf32_scale(&p, alpha, &p);
+                working_set_rows = working_set_rows + 1;
+                index_flags[blocking_index] = 1;
             }
 
-            matf32_sub(p_x, &p, p_x);
+            // x_k = x_k + alpha*p_k
+            matf32_scale(&p_k, alpha, &p_k); // p_k = alpha*p_k
+            matf32_add(&x_k, &p_k, &x_k); // x_k = x_k + alpha*p_k
         }
     }
 }
