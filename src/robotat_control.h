@@ -415,8 +415,8 @@ ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
  * @return Execution status.
  */
 err_status_t
-ctr_mpc_unconstrained_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys, matf32_t* const u_k,
-	matf32_t* const x_k, matf32_t* const Ain, matf32_t* const bin, matf32_t* const mpc_Q, matf32_t* const mpc_R, matf32_t* const mpc_S, matf32_t** const mpc_C, matf32_t** const mpc_M, float N);
+ctr_mpc_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys, matf32_t* const u_k, matf32_t* const x_k, matf32_t* const Ain,
+    matf32_t* const bin, matf32_t* const mpc_Q, matf32_t* const mpc_R, matf32_t* const mpc_S, matf32_t** const mpc_C, matf32_t** const mpc_M, float N, bool state_constraints);
 
 
 /**
@@ -486,22 +486,19 @@ ctr_mpc_set_qpc(ctr_mpc_lti_shooting_t* mpc, matf32_t* qp_c);
 err_status_t
 ctr_mpc_update(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q, matf32_t* const qp_c, matf32_t* const x_k, matf32_t* const u_k);
 
-///**
-// * @brief   Generates the inequality matrix and vector according to whether only the input or both the input
-// * and state are constrained.
-// * 
-// * @param[in,out]   mpc                 Points to the corresponding MPC struct
-// * @param[in]       ub                  Upper bound
-// * @param[in]       lb                  Lower bound
-// * @param[in]       state_constraints   Boolean: 0=only input constraints, 1=include state constraints as input constraints
-// * 
-// * @return Execution status      
-// */
-//err_status_t
-//ctr_mpc_set_constraints_float(ctr_mpc_lti_shooting_t* mpc, float ub, float lb, bool state_constraints);
-//
-//
-
+/**
+ * @brief   Generates the inequality matrix and vector according to whether only the input or both the input
+ * and state are constrained.
+ * 
+ * @param[in,out]   mpc                 Points to the corresponding MPC struct
+ * @param[in]       ub                  Upper bound
+ * @param[in]       lb                  Lower bound
+ * @param[in]       state_constraints   Boolean: 0=only input constraints, 1=include state constraints as input constraints
+ * 
+ * @return Execution status      
+ */
+err_status_t
+ctr_mpc_set_constraints(ctr_mpc_lti_shooting_t* mpc, float ub, float lb);
 
 
 // ====================================================================================================

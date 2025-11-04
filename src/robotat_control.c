@@ -820,8 +820,8 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 // ====================================================================================================
 
 err_status_t
-ctr_mpc_unconstrained_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys, matf32_t* const u_k,
-	matf32_t* const x_k, matf32_t* const Ain, matf32_t* const bin, matf32_t* const mpc_Q, matf32_t* const mpc_R, matf32_t* const mpc_S, matf32_t** const mpc_C, matf32_t** const mpc_M, float N)
+ctr_mpc_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys, matf32_t* const u_k, matf32_t* const x_k, matf32_t* const Ain,
+    matf32_t* const bin, matf32_t* const mpc_Q, matf32_t* const mpc_R, matf32_t* const mpc_S, matf32_t** const mpc_C, matf32_t** const mpc_M, float N, bool state_constraints)
 {
 	mpc->sys = sys; // Set LTI system for the MPC, but don't initialize it yet
 	mpc->qp = qp; // Set QP for the MPC, but don't initialize it yet
@@ -837,6 +837,8 @@ ctr_mpc_unconstrained_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_
 	mpc->mpc_M = mpc_M;
 	mpc->Ain = Ain;
 	mpc->bin = bin;
+
+	mpc->state_constraints = state_constraints;
 }
 
 err_status_t
@@ -1047,10 +1049,15 @@ ctr_mpc_update(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q, matf32_t* cons
 	matf32_t* const Ain = mpc->Ain;
 	matf32_t* const bin = mpc->bin;
 
+	float u0_data[MAX_MAT_SIZE];
+	matf32_t u0;
+	matf32_init(&u0, u_k->num_rows, u_k->num_cols, u0_data);
+	matf32_copy(u_k, &u0);
+
 	// 1. Solve the QP: linsolve for unconstrained, quadprog_sqp (active-set) for inequality constrained
 	if (Ain != NULL && bin != NULL)
 	{
-		quadprog_init(mpc->qp, qp_Q, qp_c, NULL, NULL, Ain, bin, u_k);
+		quadprog_init(mpc->qp, qp_Q, qp_c, NULL, NULL, Ain, bin, &u0);
 		quadprog_sqp(mpc->qp, u_k);
 	}
 	else
@@ -1075,128 +1082,109 @@ ctr_mpc_update(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q, matf32_t* cons
 	return MATH_SUCCESS;
 }
 
+err_status_t
+ctr_mpc_set_constraints(ctr_mpc_lti_shooting_t* mpc, float ub, float lb)
+{
+	matf32_t* const A = mpc->sys->A;
+	matf32_t* const B = mpc->sys->B;
+	matf32_t* const u_k = mpc->u_k;
+	matf32_t* const Ain = mpc->Ain;
+	matf32_t* const bin = mpc->bin;
 
-//err_status_t
-//ctr_mpc_set_constraints(ctr_mpc_lti_shooting_t* mpc, float ub, float lb, bool state_constraints)
-//{
-//	matf32_t* const A = mpc->sys->A;
-//	matf32_t* const B = mpc->sys->B;
-//
-//	matf32_t* const u_k = mpc->u_k;
-//
-//	matf32_t* const Ain = mpc->Ain;
-//	matf32_t* const bin = mpc->bin;
-//
-//	uint16_t N = mpc->N; // Horizon length
-//
-//	// Define dimensions for Ain and bin
-//	matf32_init(Ain, 2*N, 2*N, Ain->p_data);
-//	matf32_init(bin, 2*N, 1, bin->p_data);
-//
-//	matf32_t* tmpmat1 = &m1;
-//
-//	uint16_t row = 0;
-//	uint16_t diag = 0;
-//
-//	if (state_constraints)
-//	{
-//		/* 	
-//			Ain = [A, 0 ... 0; 0, A ... 0; 0 0 -A... 0] -> A in the diagonals so that Ain is 2N x 2N
-//			bin = [lb - B*u_k; ub - B*u_k] -> Each vector is N x 1
-//		*/
-//		matf32_init(tmpmat1, A->num_rows, A->num_cols, m1data);
-//		matf32_zeros(tmpmat1);
-//		matf32_copy(A, tmpmat1); // tmpmat1 = A
-//		matf32_scale(tmpmat1, -1.0, tmpmat1); // tmpmat1 = -A
-//
-//		// Assign first half of diagonals in Ain to be A
-//		for (uint16_t i = 0; i < N/2; ++i)
-//		{
-//			matf32_submatrix_copy(A, Ain, 0, 0, diag, diag, A->num_rows, A->num_cols);
-//			diag += A->num_rows;
-//		}
-//
-//		// Assign second half of diagonals in Ain to be -A
-//		for (uint16_t i = 0; i < N/2; ++i)
-//		{
-//			matf32_submatrix_copy(tmpmat1, Ain, 0, 0, diag, diag, A->num_rows, A->num_cols);
-//			diag += A->num_rows;
-//		}
-//
-//		// Calculate state constraints
-//
-//		matf32_t* Bu_k = &m2;
-//		matf32_init(Bu_k, B->num_rows, u_k->num_cols, m2data);
-//		matf32_zeros(Bu_k);
-//		matf32_scale(B, u_k->p_data[0], Bu_k); // Bu_k = B*u_k
-//		printf("B*u_k:\n");
-//		matf32_print(Bu_k);
-//		printf("u_k[0]: %.9f\n", u_k->p_data[0]);
-//
-//		matf32_t* x_ub = &m3;
-//		matf32_init(x_ub, B->num_rows, u_k->num_cols, m3data);
-//		matf32_t* x_lb = &m4;
-//		matf32_init(x_lb, B->num_rows, u_k->num_cols, m4data);
-//
-//		matf32_set_col(x_ub, 0, ub);
-//		matf32_set_col(x_lb, 0, lb);
-//
-//		matf32_sub(x_ub, Bu_k, x_ub);
-//		matf32_sub(x_lb, Bu_k, x_lb);
-//
-//		printf("x_ub = ub:\n");
-//		matf32_print(x_ub);
-//		printf("x_lb = lb:\n");
-//		matf32_print(x_lb);
-//
-//		row = 0;
-//		for (uint16_t i = 0; i < N/2; ++i)
-//		{
-//			matf32_submatrix_copy(x_ub, bin, 0, 0, row, 0, x_ub->num_rows, x_ub->num_cols);
-//			row += x_ub->num_rows;
-//		}
-//
-//		for (uint16_t i = 0; i < N/2; ++i)
-//		{
-//			matf32_submatrix_copy(x_lb, bin, 0, 0, row, 0, x_lb->num_rows, x_lb->num_cols);
-//			row += x_lb->num_rows;
-//		}
-//	}
-//	else // Only constraints for the input vector u_k
-//	{
-//		/*
-//			Ain = [I, 0; 0, I] -> I in the diagonals so that Ain is 2N x 2N
-//			bin = [[ub]; [lb]] -> Each vector is N x 1
-//		*/
-//
-//		matf32_init(tmpmat1, N, N, m1data);
-//		matf32_zeros(tmpmat1);
-//		matf32_eye(tmpmat1); // tmpmat1 = I
-//		matf32_submatrix_copy(tmpmat1, Ain, 0, 0, 0, 0, tmpmat1->num_rows, tmpmat1->num_cols);
-//
-//		for (uint16_t i = N+1; i <= Ain->num_rows; ++i)
-//		{
-//			matf32_set(Ain, i, i, -1.0); // Set second half of Ain as -I
-//		}
-//
-//		for (uint16_t i = 0; i < bin->num_rows/2; ++i)
-//		{
-//			matf32_set(bin, i+1, 1, ub); // Set upper bounds in the first half of bin
-//		}
-//
-//		for (uint16_t i = N; i < bin->num_rows; ++i)
-//		{
-//			matf32_set(bin, i+1, 1, lb); // Set lower bounds in the second half of bin
-//		}
-//	}
-//
-//	printf("Ain:\n");
-//	matf32_print(Ain);
-//	printf("bin:\n");
-//	matf32_print(bin);
-//
-//	return MATH_SUCCESS;
-//}
+	uint16_t N = mpc->N; // Horizon length
+
+	matf32_t* tmpmat1 = &m1;
+
+	uint16_t row = 0;
+	uint16_t diag = 0;
+
+	if (mpc->state_constraints)
+	{
+		/* 	
+			Ain = [A, 0 ... 0; 0, A ... 0; 0 0 -A... 0] -> A in the diagonals so that Ain is 2N x 2N
+			bin = [lb - B*u_k; ub - B*u_k] -> Each vector is N x 1
+		*/
+
+		matf32_init(tmpmat1, A->num_rows, A->num_cols, m1data);
+		matf32_zeros(tmpmat1);
+		matf32_copy(A, tmpmat1); // tmpmat1 = A
+		matf32_scale(tmpmat1, -1.0, tmpmat1); // tmpmat1 = -A
+
+		// Assign first half of diagonals in Ain to be A
+		for (uint16_t i = 0; i < Ain->num_rows/2; ++i)
+		{
+			matf32_submatrix_copy(A, Ain, 0, 0, diag, diag, A->num_rows, A->num_cols);
+			diag += A->num_rows;
+		}
+
+		// Assign second half of diagonals in Ain to be -A
+		for (uint16_t i = 0; i < Ain->num_rows/2; ++i)
+		{
+			matf32_submatrix_copy(tmpmat1, Ain, 0, 0, diag, diag, A->num_rows, A->num_cols);
+			diag += A->num_rows;
+		}
+
+		// Calculate state constraints
+
+		matf32_t* Bu_k = &m2;
+		matf32_init(Bu_k, B->num_rows, u_k->num_cols, m2data);
+		matf32_zeros(Bu_k);
+		matf32_scale(B, u_k->p_data[0], Bu_k); // Bu_k = B*u_k
+
+		matf32_t* x_ub = &m3;
+		matf32_init(x_ub, B->num_rows, u_k->num_cols, m3data);
+		matf32_t* x_lb = &m4;
+		matf32_init(x_lb, B->num_rows, u_k->num_cols, m4data);
+
+		matf32_set_col(x_ub, 0, ub);
+		matf32_set_col(x_lb, 0, lb);
+
+		matf32_sub(x_ub, Bu_k, x_ub);
+		matf32_sub(x_lb, Bu_k, x_lb);
+
+		row = N/2;
+		for (uint16_t i = 0; i < row; ++i)
+		{
+			matf32_submatrix_copy(x_ub, bin, 0, 0, i, 0, x_ub->num_rows, x_ub->num_cols);
+			i += x_ub->num_rows;
+		}
+
+		for (uint16_t i = 0; i < row; ++i)
+		{
+			matf32_submatrix_copy(x_lb, bin, 0, 0, i+N/2, 0, x_lb->num_rows, x_lb->num_cols);
+			i += x_lb->num_rows;
+		}
+	}
+	else // Only constraints for the input vector u_k
+	{
+		/*
+			Ain = [I, 0; 0, I] -> I in the diagonals so that Ain is N x N
+			bin = [[ub]; [lb]] -> Each vector is N x 1
+		*/
+
+		matf32_init(tmpmat1, N, N, m1data);
+		matf32_zeros(tmpmat1);
+		matf32_eye(tmpmat1); // tmpmat1 = I
+		matf32_submatrix_copy(tmpmat1, Ain, 0, 0, 0, 0, tmpmat1->num_rows, tmpmat1->num_cols);
+
+		for (uint16_t i = Ain->num_rows/2; i < Ain->num_rows; ++i)
+		{
+			matf32_set(Ain, i+1, i+1, -1.0); // Set second half of Ain as -I
+		}
+
+		for (uint16_t i = 0; i < bin->num_rows/2; ++i)
+		{
+			matf32_set(bin, i+1, 1, ub); // Set upper bounds in the first half of bin
+		}
+
+		for (uint16_t i = bin->num_rows/2; i < bin->num_rows; ++i)
+		{
+			matf32_set(bin, i+1, 1, lb); // Set lower bounds in the second half of bin
+		}
+	}
+
+	return MATH_SUCCESS;
+}
 
 
 
