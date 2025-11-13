@@ -88,9 +88,9 @@ int main(void)
     {
         state_dim += 1;
 
-        printf("\n\n----------------------------------------------------------------------\n");
-        printf("n = %i\n", state_dim);
-        printf("----------------------------------------------------------------------\n");
+        //printf("\n\n----------------------------------------------------------------------\n");
+        //printf("n = %i\n", state_dim);
+        //printf("----------------------------------------------------------------------\n");
 
         matf32_init(&state, state_dim, 1, state_data);
         matf32_init(&A_fwd_eul, state_dim, state_dim, A_fwd_eul_list[i]);
@@ -122,7 +122,7 @@ int main(void)
         // ---------------------------------------------------------------------------
 
         //printf("\n--------------------------------------------------\n");
-        printf("\n\n--------------- c2d - Forward Euler ---------------\n\n");
+        //printf("c2d - Forward Euler\n");
         //printf("--------------------------------------------------\n");
 
         float c2d_fwd_eul_time[K];
@@ -131,7 +131,7 @@ int main(void)
         // As ctr_c2d overwrites A and B, to test it 100 times with the same values, it's either
         // to reset the value to the original each loop, or test 100 random matrices and not worry about the result vs matlab when measuring time.
         // Either way, sys_lti.is_continuous must be set to true each cycle in order to be able to operate with ctr_c2d (outside the time measurement).
-        /*for (uint8_t i = 0; i < t; i++)
+        for (uint8_t i = 0; i < K; i++)
         {
             matf32_randn(&A_fwd_eul,0,1);
             matf32_randn(&B_fwd_eul,0,1);
@@ -139,42 +139,44 @@ int main(void)
             time = clock();
             status = ctr_c2d(&sys_fwd_eul, sample_time, FWD_EULER);
             c2d_fwd_eul_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }*/
+        }
 
         // Uncomment this section and comment the loop to test a single operation to compare results with matlab
-        sys_fwd_eul.is_continuous = true;
-        status = ctr_c2d(&sys_fwd_eul, sample_time, FWD_EULER);
+        //sys_fwd_eul.is_continuous = true;
+        //status = ctr_c2d(&sys_fwd_eul, sample_time, FWD_EULER);
 
         c2d_fwd_eul_mean_time = mean(c2d_fwd_eul_time, K);
+        printf("c2d,fwd_euler%i\n",state_dim);
+        printf("%.9f\n", c2d_fwd_eul_mean_time);
 
-        bool c2d_fwd_eul_Ad_ans = matf32_is_equal(&A_fwd_eul, &R_c2d_fwd_eul_Ad);
-        bool c2d_fwd_eul_Bd_ans = matf32_is_equal(&B_fwd_eul, &R_c2d_fwd_eul_Bd);
-        float cond_A_fwd_eul = 0;
-        float cond_B_fwd_eul = 0;
-        matf32_cond(&A_fwd_eul, &cond_A_fwd_eul);
-        matf32_cond(&B_fwd_eul, &cond_B_fwd_eul);
-        printf("Condition number A: %.9f, B: %.9f\n", cond_A_fwd_eul, cond_B_fwd_eul);
-        printf("c2d_fwd_eul,Ad:%s,Bd:%s\n", c2d_fwd_eul_Ad_ans?"success":"failure", c2d_fwd_eul_Bd_ans?"success":"failure"); // Results comparison
+        //bool c2d_fwd_eul_Ad_ans = matf32_is_equal(&A_fwd_eul, &R_c2d_fwd_eul_Ad);
+        //bool c2d_fwd_eul_Bd_ans = matf32_is_equal(&B_fwd_eul, &R_c2d_fwd_eul_Bd);
+        //float cond_A_fwd_eul = 0;
+        //float cond_B_fwd_eul = 0;
+        //matf32_cond(&A_fwd_eul, &cond_A_fwd_eul);
+        //matf32_cond(&B_fwd_eul, &cond_B_fwd_eul);
+        //printf("Condition number A: %.9f, B: %.9f\n", cond_A_fwd_eul, cond_B_fwd_eul);
+        //printf("c2d_fwd_eul,Ad:%s,Bd:%s\n", c2d_fwd_eul_Ad_ans?"success":"failure", c2d_fwd_eul_Bd_ans?"success":"failure"); // Results comparison
         //printf("c2d_fwd_eul%i\n", state_dim);
         //printf("%.9f\n", c2d_fwd_eul_mean_time);
         //printf("c2d_fwd_eul,mean_time(s):%.9f\n", c2d_fwd_eul_mean_time); // Time measurement
 
-        if (!c2d_fwd_eul_Ad_ans || !c2d_fwd_eul_Bd_ans)
-        {
-            printf("Ad result difference:\n");
-            matf32_sub(&A_fwd_eul, &R_c2d_fwd_eul_Ad, &A_fwd_eul);
-            matf32_print(&A_fwd_eul);
-            printf("Bd result difference:\n");
-            matf32_sub(&B_fwd_eul, &R_c2d_fwd_eul_Bd, &B_fwd_eul);
-            matf32_print(&B_fwd_eul);
-        }
+        //if (!c2d_fwd_eul_Ad_ans || !c2d_fwd_eul_Bd_ans)
+        //{
+        //    printf("Ad result difference:\n");
+        //    matf32_sub(&A_fwd_eul, &R_c2d_fwd_eul_Ad, &A_fwd_eul);
+        //    matf32_print(&A_fwd_eul);
+        //    printf("Bd result difference:\n");
+        //    matf32_sub(&B_fwd_eul, &R_c2d_fwd_eul_Bd, &B_fwd_eul);
+        //    matf32_print(&B_fwd_eul);
+        //}
             
         // ---------------------------------------------------------------------------
         // ctr_c2d - Backward Euler
         // ---------------------------------------------------------------------------
 
         //printf("\n--------------------------------------------------\n");
-        printf("\n\n--------------- c2d - Backward Euler ---------------\n\n");
+        //printf("c2d - Backward Euler \n");
         //printf("--------------------------------------------------\n");
 
         // Initialize again A and B
@@ -188,7 +190,7 @@ int main(void)
         float c2d_bwd_eul_time[K];
         float c2d_bwd_eul_mean_time = 0;
 
-        /*for (uint8_t i = 0; i < t; i++)
+        for (uint8_t i = 0; i < K; i++)
         {
             matf32_randn(&A_bwd_eul,0,1);
             matf32_randn(&B_bwd_eul,0,1);
@@ -196,41 +198,43 @@ int main(void)
             time = clock();
             status = ctr_c2d(&sys_bwd_eul, sample_time, BWD_EULER);
             c2d_bwd_eul_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }*/
+        }
 
-        sys_bwd_eul.is_continuous = true;
-        status = ctr_c2d(&sys_bwd_eul, sample_time, BWD_EULER);
+        //sys_bwd_eul.is_continuous = true;
+        //status = ctr_c2d(&sys_bwd_eul, sample_time, BWD_EULER);
 
         c2d_bwd_eul_mean_time = mean(c2d_bwd_eul_time, K);
+        printf("c2d,bwd_euler%i\n",state_dim);
+        printf("%.9f\n", c2d_bwd_eul_mean_time);
 
-        bool c2d_bwd_eul_Ad_ans = matf32_is_equal(&A_bwd_eul, &R_c2d_bwd_eul_Ad);
-        bool c2d_bwd_eul_Bd_ans = matf32_is_equal(&B_bwd_eul, &R_c2d_bwd_eul_Bd);
-        float cond_A_bwd_eul = 0;
-        float cond_B_bwd_eul = 0;
-        matf32_cond(&A_bwd_eul, &cond_A_bwd_eul);
-        matf32_cond(&B_bwd_eul, &cond_B_bwd_eul);
-        printf("Condition number A: %.9f, B: %.9f\n", cond_A_bwd_eul, cond_B_bwd_eul);
-        printf("c2d_bwd_eul,Ad:%s,Bd:%s\n", c2d_bwd_eul_Ad_ans?"success":"failure", c2d_bwd_eul_Bd_ans?"success":"failure"); // Results comparison
+        //bool c2d_bwd_eul_Ad_ans = matf32_is_equal(&A_bwd_eul, &R_c2d_bwd_eul_Ad);
+        //bool c2d_bwd_eul_Bd_ans = matf32_is_equal(&B_bwd_eul, &R_c2d_bwd_eul_Bd);
+        //float cond_A_bwd_eul = 0;
+        //float cond_B_bwd_eul = 0;
+        //matf32_cond(&A_bwd_eul, &cond_A_bwd_eul);
+        //matf32_cond(&B_bwd_eul, &cond_B_bwd_eul);
+        //printf("Condition number A: %.9f, B: %.9f\n", cond_A_bwd_eul, cond_B_bwd_eul);
+        //printf("c2d_bwd_eul,Ad:%s,Bd:%s\n", c2d_bwd_eul_Ad_ans?"success":"failure", c2d_bwd_eul_Bd_ans?"success":"failure"); // Results comparison
         //printf("c2d_bwd_eul%i\n", state_dim);
         //printf("%.9f\n", c2d_bwd_eul_mean_time);
         //printf("c2d_bwd_eul,mean_time(s):%.9f\n", c2d_bwd_eul_mean_time); // Time measurement
 
-        if (!c2d_bwd_eul_Ad_ans || !c2d_bwd_eul_Bd_ans)
-        {
-            printf("\nAd result difference:\n");
-            matf32_sub(&A_bwd_eul, &R_c2d_bwd_eul_Ad, &A_bwd_eul);
-            matf32_print(&A_bwd_eul);
-            printf("Bd result difference:\n");
-            matf32_sub(&B_bwd_eul, &R_c2d_bwd_eul_Bd, &B_bwd_eul);
-            matf32_print(&B_bwd_eul);
-        }
+        //if (!c2d_bwd_eul_Ad_ans || !c2d_bwd_eul_Bd_ans)
+        //{
+        //    printf("\nAd result difference:\n");
+        //    matf32_sub(&A_bwd_eul, &R_c2d_bwd_eul_Ad, &A_bwd_eul);
+        //    matf32_print(&A_bwd_eul);
+        //    printf("Bd result difference:\n");
+        //    matf32_sub(&B_bwd_eul, &R_c2d_bwd_eul_Bd, &B_bwd_eul);
+        //    matf32_print(&B_bwd_eul);
+        //}
 
         // ---------------------------------------------------------------------------
         // ctr_c2d - Tustin
         // ---------------------------------------------------------------------------
 
         //printf("\n--------------------------------------------------\n");
-        printf("\n\n--------------- c2d - Tustin ---------------\n\n");
+        //printf("c2d - Tustin \n");
         //printf("--------------------------------------------------\n");
 
         // Initialize again A and B
@@ -244,7 +248,7 @@ int main(void)
         float c2d_tustin_time[K];
         float c2d_tustin_mean_time = 0;
 
-        /*for (uint8_t i = 0; i < t; i++)
+        for (uint8_t i = 0; i < K; i++)
         {
             matf32_randn(&A_tustin,0,1);
             matf32_randn(&B_tustin,0,1);
@@ -252,33 +256,35 @@ int main(void)
             time = clock();
             status = ctr_c2d(&sys_tustin, sample_time, TUSTIN);
             c2d_tustin_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }*/
+        }
 
-        sys_tustin.is_continuous = true;
-        status = ctr_c2d(&sys_tustin, sample_time, TUSTIN);
+        //sys_tustin.is_continuous = true;
+        //status = ctr_c2d(&sys_tustin, sample_time, TUSTIN);
 
         c2d_tustin_mean_time = mean(c2d_tustin_time, K);
+        printf("c2d,tustin%i\n",state_dim);
+        printf("%.9f\n", c2d_tustin_mean_time);
 
-        bool c2d_tustin_Ad_ans = matf32_is_equal(&A_tustin, &R_c2d_tustin_Ad);
-        bool c2d_tustin_Bd_ans = matf32_is_equal(&B_tustin, &R_c2d_tustin_Bd);
-        float cond_A_tustin = 0;
-        float cond_B_tustin = 0;
-        matf32_cond(&A_tustin, &cond_A_tustin);
-        matf32_cond(&B_tustin, &cond_B_tustin);
-        printf("Condition number A: %.9f, B: %.9f\n", cond_A_tustin, cond_B_tustin);
-        printf("c2d_tustin,Ad:%s,Bd:%s\n", c2d_tustin_Ad_ans?"success":"failure", c2d_tustin_Bd_ans?"success":"failure"); // Results comparison
+        //bool c2d_tustin_Ad_ans = matf32_is_equal(&A_tustin, &R_c2d_tustin_Ad);
+        //bool c2d_tustin_Bd_ans = matf32_is_equal(&B_tustin, &R_c2d_tustin_Bd);
+        //float cond_A_tustin = 0;
+        //float cond_B_tustin = 0;
+        //matf32_cond(&A_tustin, &cond_A_tustin);
+        //matf32_cond(&B_tustin, &cond_B_tustin);
+        //printf("Condition number A: %.9f, B: %.9f\n", cond_A_tustin, cond_B_tustin);
+        //printf("c2d_tustin,Ad:%s,Bd:%s\n", c2d_tustin_Ad_ans?"success":"failure", c2d_tustin_Bd_ans?"success":"failure"); // Results comparison
         //printf("c2d_tustin%i\n", state_dim);
         //printf("%.9f\n", c2d_tustin_mean_time);
         //printf("c2d_tustin,mean_time(s):%.9f\n", c2d_tustin_mean_time); // Time measurement
     
-        if (!c2d_tustin_Ad_ans || !c2d_tustin_Bd_ans)
-        {
-            printf("Ad result difference:\n");
-            matf32_sub(&A_tustin, &R_c2d_tustin_Ad, &A_tustin);
-            matf32_print(&A_tustin);
-            printf("Bd result difference:\n");
-            matf32_sub(&B_tustin, &R_c2d_tustin_Bd, &B_tustin);
-            matf32_print(&B_tustin);
-        }
+        //if (!c2d_tustin_Ad_ans || !c2d_tustin_Bd_ans)
+        //{
+        //    printf("Ad result difference:\n");
+        //    matf32_sub(&A_tustin, &R_c2d_tustin_Ad, &A_tustin);
+        //    matf32_print(&A_tustin);
+        //    printf("Bd result difference:\n");
+        //    matf32_sub(&B_tustin, &R_c2d_tustin_Bd, &B_tustin);
+        //    matf32_print(&B_tustin);
+        //}
     }
 }

@@ -1,10 +1,14 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 3 Sep 2025, last modified: 21 Oct 2025
+ * @date Created 3 Sep 2025, last modified: 4 Nov 2025
  * 
  * For testing quadprog in computer
  */
+
+// ----------------------------------------------------------------------------------------------------
+// Libraries
+// ----------------------------------------------------------------------------------------------------      
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +16,12 @@
 #include <time.h>
 
 #include "quadprog.h"
-#include "quadprog_test_results.h"
+#include "quadprog_qp_test_data.h"
+#include "quadprog_qp_nullspace_test_data.h"
+
+// ----------------------------------------------------------------------------------------------------
+// Variable Definitions
+// ----------------------------------------------------------------------------------------------------
 
 float temp_data[MAX_MAT_SIZE];
 matf32_t temp;
@@ -26,23 +35,50 @@ matf32_t Q;
 float* c_list[10] = {c_data1, c_data2, c_data3, c_data4, c_data5};
 matf32_t c;
 
-float* Aeq_list[10] = {Aeq_data1, Aeq_data2, Aeq_data3, Aeq_data4, Aeq_data5};
+float* Aeq_list[10] = {Aeq_data1, Aeq_data2, Aeq_data3,
+    Aeq_data4, Aeq_data5};
 matf32_t Aeq;
 
-float* beq_list[10] = {beq_data1, beq_data2, beq_data3, beq_data4, beq_data5};
+float* beq_list[10] = {beq_data1, beq_data2, beq_data3,
+    beq_data4, beq_data5};
 matf32_t beq;
 
-float Ain_data[MAX_MAT_SIZE];
-matf32_t Ain;
-
-float bin_data[MAX_MAT_SIZE];
-matf32_t bin;
-
-float* R_x_list[10] = {R_x_data1, R_x_data2, R_x_data3, R_x_data4, R_x_data5};
+float* R_x_list[10] = {R_x_data1, R_x_data2, R_x_data3,
+    R_x_data4, R_x_data5};
 matf32_t R_x;
 
-float* R_Ax_list[10] = {R_Ax_data1, R_Ax_data2, R_Ax_data3, R_Ax_data4, R_Ax_data5};
+float* R_Ax_list[10] = {R_Ax_data1, R_Ax_data2, R_Ax_data3,
+    R_Ax_data4, R_Ax_data5};
 matf32_t R_Ax;
+
+float* Q_nullspace_list[9] = {Q_nullspace_data1, Q_nullspace_data2,
+    Q_nullspace_data3, Q_nullspace_data4, Q_nullspace_data5,
+    Q_nullspace_data6, Q_nullspace_data7, Q_nullspace_data8,
+    Q_nullspace_data9};
+matf32_t Q_nullspace;
+
+float* c_nullspace_list[9] = {c_nullspace_data1, c_nullspace_data2,
+    c_nullspace_data3, c_nullspace_data4, c_nullspace_data5,
+    c_nullspace_data6, c_nullspace_data7, c_nullspace_data8,
+    c_nullspace_data9};
+matf32_t c_nullspace;
+
+float* Aeq_nullspace_list[9] = {Aeq_nullspace_data1, Aeq_nullspace_data2,
+    Aeq_nullspace_data3, Aeq_nullspace_data4, Aeq_nullspace_data5,
+    Aeq_nullspace_data6, Aeq_nullspace_data7, Aeq_nullspace_data8,
+    Aeq_nullspace_data9};
+matf32_t Aeq_nullspace;
+
+float* beq_nullspace_list[9] = {beq_nullspace_data1, beq_nullspace_data2,
+    beq_nullspace_data3, beq_nullspace_data4, beq_nullspace_data5,
+    beq_nullspace_data6, beq_nullspace_data7, beq_nullspace_data8,
+    beq_nullspace_data9};
+matf32_t beq_nullspace;
+
+float* R_nullspace_list[9] = {R_nullspace1, R_nullspace2, R_nullspace3,
+    R_nullspace4, R_nullspace5, R_nullspace6, R_nullspace7,
+    R_nullspace8, R_nullspace9};
+matf32_t R_nullspace;
 
 float x_nullspace_data[MAX_MAT_SIZE];
 matf32_t x_nullspace;
@@ -77,6 +113,10 @@ matf32_t xtQx;
 quadprog_t qp;
 quadprog_t sqp;
 
+// ----------------------------------------------------------------------------------------------------
+// Main
+// ----------------------------------------------------------------------------------------------------
+
 int main(void)
 {
     clock_t time;
@@ -86,6 +126,9 @@ int main(void)
 
     printf("\n\n");
 
+    // ----------------------------------------------------------------------------------------------------
+    // Methods for square Aeq matrices
+    // ----------------------------------------------------------------------------------------------------
     for (uint8_t i = 0; i < 5; i++)
     {
         uint8_t n = i + 1; // i is 1 value below the dimension n, for each matrix
@@ -94,11 +137,6 @@ int main(void)
         matf32_init(&c, n, 1, c_list[i]);
         matf32_init(&Aeq, n, n, Aeq_list[i]);
         matf32_init(&beq, n, 1, beq_list[i]);
-        matf32_init(&Ain, n, n, Ain_data);
-        matf32_init(&bin, n, 1, bin_data);
-
-        matf32_randn(&Ain, 0, 1);
-        matf32_randn(&bin, 0, 1);
 
         matf32_init(&R_x, n, 1, R_x_list[i]);
         matf32_init(&R_Ax, n, 1, R_Ax_list[i]);
@@ -118,18 +156,10 @@ int main(void)
         matf32_init(&temp_difference, n, 1, temp_difference_data);
 
         quadprog_init(&qp, &Q, &c, &Aeq, &beq, NULL, NULL, NULL);
-        quadprog_init(&sqp, &Q, &c, NULL, NULL, &Aeq, &beq, NULL);
 
         printf("\n--------------------------------------------------\n");
         printf("n = %i\n", n);
         printf("--------------------------------------------------\n");
-
-        // ---------------------------------------------------------------------------
-        // Equality Restricted QPs
-        // ---------------------------------------------------------------------------
-        // ---------------------------------------------------------------------------
-        // quadprog: Equality Restrictions (Square Aeq Matrices)
-        // ---------------------------------------------------------------------------
     
         //printf("----- QP Solution x -----\n\n");
         //printf("----- Ax = b Reconstruction -----\n\n");
@@ -139,9 +169,9 @@ int main(void)
         //printf("beq:\n");
         //matf32_print(&beq);
 
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         // quadprog_qp_ldlt'
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         printf("\n-------------------------\n");
         printf("LDL' %ix%i\n", n, n);
         printf("-------------------------\n");
@@ -155,12 +185,16 @@ int main(void)
             qp_ldlt_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
         mean_qp_ldlt_time = mean(qp_ldlt_time, z);
+
+        //printf("x_ldlt:\n");
+        //matf32_print(&x_ldlt);
         
         matf32_mul(&Aeq, &x_ldlt, &Ax);
         bool qp_ldlt_ans = matf32_is_equal(&x_ldlt, &R_x);
         //printf("quadprog_qp_ldlt%i\n", n);
         //printf("%.9f\n", mean_qp_ldlt_time);
-        //printf("quadprog_qp LDL', mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_ldlt_time, qp_ldlt_ans?"success":"failure");
+        printf("quadprog_qp LDL', mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n",
+            mean_qp_ldlt_time, qp_ldlt_ans?"success":"failure");
 
         //printf("Ax LDL':\n");
         //matf32_print(&Ax);
@@ -172,31 +206,34 @@ int main(void)
         matf32_mul(&xtQ, &x_ldlt, &xtQx);
         matf32_scale(&xtQx, 0.5, &xtQx);
 
-        printf("q = (1/2)x'Qx + x'c:\n");
-        matf32_print(&xtQx);
+        //printf("q = (1/2)x'Qx + x'c:\n");
+        //matf32_print(&xtQx);
 
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         // quadprog_qp LU
-        // --------------------------------------------------
-        printf("\n-------------------------\n");
-        printf("LU %ix%i\n", n, n);
-        printf("-------------------------\n");
+        // ---------------------------------------------------------------------------
+        //printf("\n-------------------------\n");
+        //printf("LU %ix%i\n", n, n);
+        //printf("-------------------------\n");
 
         float qp_lu_time[z];
         float mean_qp_lu_time = 0;
         for (uint8_t j = 0; j < z; j++)
         {
             time = clock();
-            quadprog_qp(&qp, &x_lu, LU);
+            quadprog_qp_linsolve(&qp, &x_lu, LU);
             qp_lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
         mean_qp_lu_time = mean(qp_lu_time, z);
+
+        //printf("x_lu:\n");
+        //matf32_print(&x_lu);
 
         matf32_mul(&Aeq, &x_lu, &Ax);
         bool qp_lu_ans = matf32_is_equal(&x_lu, &R_x);
         //printf("quadprog_qp LU%i\n", n);
         //printf("%.9f\n", mean_qp_lu_time);
-        //printf("quadprog_qp LU, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_lu_time, qp_lu_ans?"success":"failure");
+        printf("quadprog_qp LU, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_lu_time, qp_lu_ans?"success":"failure");
 
         //printf("Ax LU:\n");
         //matf32_print(&Ax);
@@ -208,12 +245,12 @@ int main(void)
         matf32_mul(&xtQ, &x_lu, &xtQx);
         matf32_scale(&xtQx, 0.5, &xtQx);
 
-        printf("q = (1/2)x'Qx + x'c:\n");
-        matf32_print(&xtQx);
+        //printf("q = (1/2)x'Qx + x'c:\n");
+        //matf32_print(&xtQx);
 
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         // quadprog_qp SVD
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         printf("\n-------------------------\n");
         printf("SVD %ix%i\n", n, n);
         printf("-------------------------\n");
@@ -223,16 +260,19 @@ int main(void)
         for (uint8_t j = 0; j < z; j++)
         {
             time = clock();
-            quadprog_qp(&qp, &x_svd, SVD);
+            quadprog_qp_linsolve(&qp, &x_svd, SVD);
             qp_svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
         mean_qp_svd_time = mean(qp_svd_time, z);
+
+        //printf("x_svd:\n");
+        //matf32_print(&x_svd);
 
         matf32_mul(&Aeq, &x_svd, &Ax);
         bool qp_svd_ans = matf32_is_equal(&x_svd, &R_x);
         //printf("quadprog_qp SVD%i\n", n);
         //printf("%.9f\n", mean_qp_svd_time);
-        //printf("quadprog_qp SVD, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_svd_time, qp_svd_ans?"success":"failure");
+        printf("quadprog_qp SVD, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_svd_time, qp_svd_ans?"success":"failure");
         
         //printf("Ax SVD:\n");
         //matf32_print(&Ax);
@@ -244,12 +284,12 @@ int main(void)
         matf32_mul(&xtQ, &x_svd, &xtQx);
         matf32_scale(&xtQx, 0.5, &xtQx);
 
-        printf("q = (1/2)x'Qx + x'c:\n");
-        matf32_print(&xtQx);
+        //printf("q = (1/2)x'Qx + x'c:\n");
+        //matf32_print(&xtQx);
 
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         // quadprog_qp QR
-        // --------------------------------------------------
+        // ---------------------------------------------------------------------------
         printf("\n-------------------------\n");
         printf("QR %ix%i\n", n, n);
         printf("-------------------------\n");
@@ -259,16 +299,19 @@ int main(void)
         for (uint8_t j = 0; j < z; j++)
         {
             time = clock();
-            quadprog_qp(&qp, &x_qr, QR);
+            quadprog_qp_linsolve(&qp, &x_qr, QR);
             qp_qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
         mean_qp_qr_time = mean(qp_qr_time, z);
+
+        //printf("x_qr:\n");
+        //matf32_print(&x_qr);
 
         matf32_mul(&Aeq, &x_qr, &Ax);
         bool qp_qr_ans = matf32_is_equal(&x_qr, &R_x);
         //printf("quadprog_qp QR%i\n", n);
         //printf("%.9f\n", mean_qp_qr_time);
-        //printf("quadprog_qp QR, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_qr_time, qp_qr_ans?"success":"failure");
+        printf("quadprog_qp QR, mean_time(s): %.9f, 1E-05 Tolerance:%s\n\n", mean_qp_qr_time, qp_qr_ans?"success":"failure");
 
         //printf("Ax QR:\n");
         //matf32_print(&Ax);
@@ -280,8 +323,49 @@ int main(void)
         matf32_mul(&xtQ, &x_qr, &xtQx);
         matf32_scale(&xtQx, 0.5, &xtQx);
 
-        printf("q = (1/2)x'Qx + x'c:\n");
-        matf32_print(&xtQx);
+        //printf("q = (1/2)x'Qx + x'c:\n");
+        //matf32_print(&xtQx);
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // Methods for rectangular matrices (n x m) with m > n
+    // ----------------------------------------------------------------------------------------------------
+
+    printf("\n-------------------------\n");
+    printf("QUADPROG KKT METHOD NULLSPACE\n");
+    printf("-------------------------\n");
+
+    for (uint8_t i = 0; i < 9; i++)
+    {
+        uint16_t n = i + 1;
+
+        //printf("\n--------------------------------------------------\n");
+        //printf("n = %i\n", n);
+        //printf("--------------------------------------------------\n");
+
+        matf32_init(&Q_nullspace, n+1, n+1, Q_nullspace_list[i]);
+        matf32_init(&c_nullspace, n+1, 1, c_nullspace_list[i]);
+        matf32_init(&Aeq_nullspace, n, n+1, Aeq_nullspace_list[i]);
+        matf32_init(&beq_nullspace, n+1, 1, beq_nullspace_list[i]);
+        matf32_init(&x_nullspace, n+1, 1, x_nullspace_data);
+        matf32_init(&R_nullspace, n+1, 1, R_nullspace_list[i]);
+
+        quadprog_init(&qp, &Q_nullspace, &c_nullspace, &Aeq_nullspace, &beq_nullspace, NULL, NULL, NULL);
+
+        float qp_nullspace_time[z];
+        float mean_qp_nullspace_time = 0;
+        for (uint8_t j = 0; j < z; j++)
+        {
+            time = clock();
+            quadprog_qp_nullspace(&qp, &x_nullspace);
+            qp_nullspace_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
+        mean_qp_nullspace_time = mean(qp_nullspace_time, z);
+
+        bool qp_nullspace_ans = matf32_is_equal(&x_nullspace, &R_nullspace);
+        //printf("quadprog_qp_nullspace%i\n",n);
+        //printf("%.9f\n",mean_qp_nullspace_time);
+        printf("quadprog_qp_nullspace, Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_qp_nullspace_time, qp_nullspace_ans?"success":"failure");
     }
 }
 

@@ -2,7 +2,7 @@
  * @author: Andrea Pineda
  * @date: Created 20 Oct 2025, Last Modified 23 Oct 2025
  * 
- * For testing pid functions in robotat_control
+ * For testing pid functions of robotat_control in a computer
  */
 
 #include <stdio.h>
@@ -12,7 +12,7 @@
 
 #include "matf32.h"
 #include "robotat_control.h"
-#include "robotat_control_data.h"
+#include "control_pid_test_data.h"
 
 // --------------------------------------------------
 // PID
@@ -107,7 +107,7 @@ int main(void)
     printf("PID Update - Pure Discrete\n");
     printf("--------------------------------------------------\n");
 
-    ctr_pid_init(&pid, kp, ki, kd, PURE_DISCRETE, 0);
+    ctr_pid_init(&pid, 0.9, 1.95, 0.001, PURE_DISCRETE, 0);
     pid.tau = tau;
     pid.dt = dt;
 

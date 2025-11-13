@@ -21,6 +21,12 @@
 
 ctr_sys_nonlin_t nonlin_pendulum;
 
+float fss_data[MAX_MAT_SIZE];
+matf32_t fss;
+
+float hss_data[MAX_MAT_SIZE];
+matf32_t hss;
+
 float nonlin_state_data[MAX_MAT_SIZE];
 matf32_t nonlin_state;
 
@@ -68,11 +74,6 @@ int main(void)
 
     ctr_sys_nonlin_init(&nonlin_pendulum, &nonlin_state, nonlin_input_dim, nonlin_output_dim, pendulum_dynamics, pendulum_outputs, sample_time);
 
-    float fss_data[MAX_MAT_SIZE];
-    float hss_data[MAX_MAT_SIZE];
-
-    matf32_t fss, hss;
-
     matf32_init(&fss, 2, 1, fss_data);
     matf32_init(&hss, 1, 1, hss_data);
     
@@ -80,9 +81,9 @@ int main(void)
     // ctr_linloc vs loclin_fast.m
     // ---------------------------------------------------------------------------
 
-    printf("\n--------------------------------------------------\n");
-    printf("linloc \n");
-    printf("--------------------------------------------------\n");
+    //printf("\n--------------------------------------------------\n");
+    //printf("linloc \n");
+    //printf("--------------------------------------------------\n");
 
     float delta = 2;
 
@@ -129,58 +130,58 @@ int main(void)
     mean_linloc_time = mean(linloc_time, samples);
 
     // Time measurement for pendulum_dynamics
-    float pendulum_dynamics_time[samples];
-    float mean_pendulum_dynamics_time = 0;
-    for (uint8_t i = 0; i < samples; i++)
-    {
-        time = clock();
-        pendulum_dynamics(&fss, &xss, &uss);
-        pendulum_dynamics_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
-    }
-    mean_pendulum_dynamics_time = mean(pendulum_dynamics_time, samples);
+    //float pendulum_dynamics_time[samples];
+    //float mean_pendulum_dynamics_time = 0;
+    //for (uint8_t i = 0; i < samples; i++)
+    //{
+    //    time = clock();
+    //    pendulum_dynamics(&fss, &xss, &uss);
+    //    pendulum_dynamics_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
+    //}
+    //mean_pendulum_dynamics_time = mean(pendulum_dynamics_time, samples);
 
     // Time measurement for pendulum_outputs
-    float pendulum_outputs_time[samples];
-    float mean_pendulum_outputs_time = 0;
-    for (uint8_t i = 0; i < samples; i++)
-    {
-        time = clock();
-        pendulum_outputs(&hss, &xss, &uss);
-        pendulum_outputs_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
-    }
-    mean_pendulum_outputs_time = mean(pendulum_outputs_time, samples);
+    //float pendulum_outputs_time[samples];
+    //float mean_pendulum_outputs_time = 0;
+    //for (uint8_t i = 0; i < samples; i++)
+    //{
+    //    time = clock();
+    //    pendulum_outputs(&hss, &xss, &uss);
+    //    pendulum_outputs_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
+    //}
+    //mean_pendulum_outputs_time = mean(pendulum_outputs_time, samples);
         
     // Print linearized system
-    printf("\n-------------------------\n");
-    printf("Linearized Pendulum:\n");
-    printf("-------------------------\n");
-    ctr_sys_lti_print(&linearized_pendulum);
+    //printf("\n-------------------------\n");
+    //printf("Linearized Pendulum:\n");
+    //printf("-------------------------\n");
+    //ctr_sys_lti_print(&linearized_pendulum);
 
     // Print time values formatted to a .mat for plotting in matlab
-    /*printf("linloc\n");
-    for (uint8_t j = 0; j < t; j++)
+    printf("linloc\n");
+    for (uint8_t j = 0; j < samples; j++)
     {
         printf("%.9f ", linloc_time[j]);
     }
     printf("\n\n");
 
-    printf("pendulum_dynamics\n");
-    for (uint8_t j = 0; j < t; j++)
-    {
-        printf("%.9f ", pendulum_dynamics_time[j]);
-    }
-    printf("\n\n");
+    //printf("pendulum_dynamics\n");
+    //for (uint8_t j = 0; j < t; j++)
+    //{
+    //    printf("%.9f ", pendulum_dynamics_time[j]);
+    //}
+    //printf("\n\n");
 
-    printf("pendulum_outputs\n");
-    for (uint8_t j = 0; j < t; j++)
-    {
-        printf("%.9f ", pendulum_outputs_time[j]);
-    }
-    printf("\n\n");*/
+    //printf("pendulum_outputs\n");
+    //for (uint8_t j = 0; j < t; j++)
+    //{
+    //    printf("%.9f ", pendulum_outputs_time[j]);
+    //}
+    //printf("\n\n");
 
     // For comparing results with loclin_fast.m, add an array of random values for x and u and iterate over it.
 
-    printf("linloc,mean_time(s):%.9f\n\n", mean_linloc_time); // Time measurement
+    //printf("linloc,mean_time(s):%.9f\n\n", mean_linloc_time); // Time measurement
 
     // ---------------------------------------------------------------------------
     // ctr_linear_state_feedback
@@ -188,45 +189,43 @@ int main(void)
 
     // Add print and comparison to matlab's result
 
-    float x_data[MAX_MAT_SIZE];
+    float* x_list[10] = {x_data1, x_data2, x_data3, x_data4,
+        x_data5, x_data6, x_data7, x_data8, x_data9, x_data10};
+    float* K_list[10] = {K_data1, K_data2, K_data3, K_data4,
+        K_data5, K_data6, K_data7, K_data8, K_data9, K_data10};
     float u_data[MAX_MAT_SIZE];
-    float K_data[MAX_MAT_SIZE];
 
     matf32_t x, u, K;
 
-    matf32_init(&x, xss.num_rows, xss.num_cols, x_data);
     matf32_init(&u, uss.num_rows, uss.num_cols, u_data);
-    matf32_init(&K, uss.num_rows, x.num_rows, K_data);
 
-    matf32_set(&K, 1, 1, 1);
-    matf32_set(&K, 1, 2, 2);
-    matf32_set(&x, 1, 1, 7);
-    matf32_set(&x, 2, 1, 5);
-
-    float linear_state_feedback_time[samples];
-    float mean_linear_state_feedback_time = 0;
-    for (uint8_t i = 0; i < samples; i++)
+    for (uint16_t i = 0; i < 10; i++)
     {
-        time = clock();
-        ctr_linear_state_feedback(&u, &K, &x, &xss, &uss);
-        linear_state_feedback_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
-    }
-    mean_linear_state_feedback_time = mean(linear_state_feedback_time, samples);
+        uint16_t n = i + 1;
 
-    //printf("linear_state_feedback\n");
-    //for (uint8_t j = 0; j < t; j++)
-    //{
-    //    printf("%.9f ", linear_state_feedback_time[j]);
-    //}
-    //printf("\n\n");
+        matf32_init(&x, n, 1, x_list[i]);
+        matf32_init(&K, 1, n, K_list[i]);
+
+        float linear_state_feedback_time[samples];
+        float mean_linear_state_feedback_time = 0;
+        time = clock();
+        for (uint8_t i = 0; i < samples; i++)
+        {
+            ctr_linear_state_feedback(&u, &K, &x, &xss, &uss);
+        }
+        mean_linear_state_feedback_time = (float)(clock()-time)/CLOCKS_PER_SEC/samples;
+
+        printf("linear_state_feedback%i\n", n);
+        printf("%.9f\n", mean_linear_state_feedback_time);
+    }
 
     // ---------------------------------------------------------------------------
     // ctr_sys_nonlin_simulate
     // ---------------------------------------------------------------------------
 
-    printf("\n--------------------------------------------------\n");
-    printf("ctr_sys_nonlin_simulate \n");
-    printf("--------------------------------------------------\n");
+    //printf("\n--------------------------------------------------\n");
+    //printf("ctr_sys_nonlin_simulate \n");
+    //printf("--------------------------------------------------\n");
 
     float x_k_data[MAX_MAT_SIZE];
     float x_k_1_data[MAX_MAT_SIZE];
@@ -258,21 +257,21 @@ int main(void)
         nonlin_sim_fwd_eul_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     } 
 
-    printf("x_k_1 - Forward Euler:\n");
-    matf32_print(&x_k_1);
+    //printf("x_k_1 - Forward Euler:\n");
+    //matf32_print(&x_k_1);
 
-    mean_nonlin_sim_fwd_eul_time = mean(nonlin_sim_fwd_eul_time, samples);
+    //mean_nonlin_sim_fwd_eul_time = mean(nonlin_sim_fwd_eul_time, samples);
 
-    bool nonlin_sim_fwd_eul_ans = matf32_is_equal(&x_k_1, &R_x_k_1_fwd_eul);
-    printf("nonlin_simulate, mean_time(s): %.9f, ForwardEuler: %s\n\n", mean_nonlin_sim_fwd_eul_time, nonlin_sim_fwd_eul_ans?"success":"failure");
+    //bool nonlin_sim_fwd_eul_ans = matf32_is_equal(&x_k_1, &R_x_k_1_fwd_eul);
+    //printf("nonlin_simulate, mean_time(s): %.9f, ForwardEuler: %s\n\n", mean_nonlin_sim_fwd_eul_time, nonlin_sim_fwd_eul_ans?"success":"failure");
 
     // Print nonlin_simulate Forward Euler time results for plotting in matlab
-    //printf("nonlin_simulate_fwd_eul\n");
-    //for (uint8_t j = 0; j < t; j++)
-    //{
-    //    printf("%.9f ", nonlin_sim_fwd_eul_time[j]);
-    //}
-    //printf("\n\n");
+    printf("nonlin_simulate_fwd_eul\n");
+    for (uint8_t j = 0; j < samples; j++)
+    {
+        printf("%.9f ", nonlin_sim_fwd_eul_time[j]);
+    }
+    printf("\n\n");
 
     // ------------------------- Runge-Kutta 4 (RK4) -------------------------
 
@@ -286,21 +285,21 @@ int main(void)
         nonlin_sim_rk4_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
     
-    printf("x_k_1 - Runge-Kutta4:\n");
-    matf32_print(&x_k_1);
+    //printf("x_k_1 - Runge-Kutta4:\n");
+    //matf32_print(&x_k_1);
 
     mean_nonlin_sim_rk4_time = mean(nonlin_sim_rk4_time, samples);
 
-    bool nonlin_sim_rk4_ans = matf32_is_equal(&x_k_1, &R_x_k_1_rk4);
-    printf("nonlin_simulate, mean_time(s): %.9f, RK4: %s\n", mean_nonlin_sim_rk4_time, nonlin_sim_rk4_ans?"success":"failure");
+    //bool nonlin_sim_rk4_ans = matf32_is_equal(&x_k_1, &R_x_k_1_rk4);
+    //printf("nonlin_simulate, mean_time(s): %.9f, RK4: %s\n", mean_nonlin_sim_rk4_time, nonlin_sim_rk4_ans?"success":"failure");
 
     // Print nonlin_simulate Runge-Kutta4 time results for plotting in matlab
-    //printf("nonlin_simulate_rk4\n");
-    //for (uint8_t j = 0; j < t; j++)
-    //{
-    //    printf("%.9f ", nonlin_sim_rk4_time[j]);
-    //}
-    //printf("\n\n");
+    printf("nonlin_simulate_rk4\n");
+    for (uint8_t j = 0; j < samples; j++)
+    {
+        printf("%.9f ", nonlin_sim_rk4_time[j]);
+    }
+    printf("\n\n");
 }
 
 // --------------------------------------------------

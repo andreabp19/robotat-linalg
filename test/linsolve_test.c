@@ -2,7 +2,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 22 Sep 2025
+ * @date Created 23 Aug 2025, last modified: 13 Nov 2025
  * 
  * For testing linsolve in computer
  */
@@ -14,7 +14,7 @@
 
 #include "matf32.h"
 #include "linsolve.h"
-#include "linsolve_test_results.h"
+#include "linsolve_matlab_data.h"
 
 float temp_data[MAX_MAT_SIZE];
 matf32_t temp;
@@ -134,7 +134,7 @@ void main(void)
         printf("\n--------------------------------------------------\n");
         printf("n = %i\n", n);
         printf("--------------------------------------------------\n");
-        printf("cond_A = %.9f\n", cond_A);
+        //printf("cond_A = %.9f\n", cond_A);
         //printf("cond_L = %.9f\n", cond_A_L);
         //printf("cond_U = %.9f\n", cond_A_U);
         //printf("cond_C = %.9f\n", cond_C);
@@ -149,138 +149,130 @@ void main(void)
         // linsolve - Forward Substitution
         // ---------------------------------------------------------------------------
 
-        //float fwd_subs_time[x];
-        //float mean_fwd_subs_time = 0;
+        float fwd_subs_time[x];
+        float mean_fwd_subs_time = 0;
 
-        //matf32_zeros(&temp);
+        matf32_zeros(&temp);
 
-        //for (uint8_t j = 0; j < x; j++)
-        //{
-        //    time = clock();
-        //    linsolve(&A_L, &b, &temp);
-        //    fwd_subs_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        //}
+        for (uint8_t j = 0; j < x; j++)
+        {
+            time = clock();
+            linsolve(&A_L, &b, &temp);
+            fwd_subs_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
 
-        //mean_fwd_subs_time = mean(fwd_subs_time, x);
+        mean_fwd_subs_time = mean(fwd_subs_time, x);
 
-        //bool fwd_subs_ans = matf32_is_equal(&temp, &R_fwd_subs);
-        //printf("linsolve_fwd_subs%i\n", n);
-        //printf("%.9f\n", mean_fwd_subs_time);
-        //printf("forward-subs ,time(s):%.9f,%s\n", mean_fwd_subs_time, fwd_subs_ans?"success":"failure");
+        bool fwd_subs_ans = matf32_is_equal(&temp, &R_fwd_subs);
+        printf("linsolve_fwd_subs%i\n", n);
+        printf("%.9f\n", mean_fwd_subs_time);
+        printf("forward-subs ,time(s):%.9f,%s\n", mean_fwd_subs_time, fwd_subs_ans?"success":"failure");
 
-        //printf("Difference fwd_subs_result:\n");
-        //matf32_sub(&temp, &R_fwd_subs, &temp);
-        //matf32_print(&temp);
+        printf("Difference fwd_subs_result:\n");
+        matf32_sub(&temp, &R_fwd_subs, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // linsolve - Backward Substitution
         // ---------------------------------------------------------------------------
 
-        //float bwd_subs_time[x];
-        //float mean_bwd_subs_time = 0;
+        float bwd_subs_time[x];
+        float mean_bwd_subs_time = 0;
 
-        //for (uint8_t j = 0; j < x; j++)
-        //{
-        //    time = clock();
-        //    linsolve(&A_U, &b, &temp);
-        //    bwd_subs_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        //}
+        for (uint8_t j = 0; j < x; j++)
+        {
+            time = clock();
+            linsolve(&A_U, &b, &temp);
+            bwd_subs_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
 
-        //mean_bwd_subs_time = mean(bwd_subs_time, x);
+        mean_bwd_subs_time = mean(bwd_subs_time, x);
         
-        //bool bwd_subs_ans = matf32_is_equal(&temp, &R_bwd_subs);
-        //printf("linsolve_bwd_subs%i\n", n);
-        //printf("%.9f\n", mean_bwd_subs_time);
-        //printf("backward-subs,time(s):%.9f,%s\n", mean_bwd_subs_time, bwd_subs_ans?"success":"failure");
+        bool bwd_subs_ans = matf32_is_equal(&temp, &R_bwd_subs);
+        printf("linsolve_bwd_subs%i\n", n);
+        printf("%.9f\n", mean_bwd_subs_time);
+        printf("backward-subs,time(s):%.9f,%s\n", mean_bwd_subs_time, bwd_subs_ans?"success":"failure");
 
-        //printf("Difference bwd_subs_result:\n");
-        //matf32_sub(&temp, &R_bwd_subs, &temp);
-        //matf32_print(&temp);
+        printf("Difference bwd_subs_result:\n");
+        matf32_sub(&temp, &R_bwd_subs, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // linsolve - Cholesky
         // ---------------------------------------------------------------------------
         
-        //float cholesky_time[x];
-        //float mean_cholesky_time = 0;
+        float cholesky_time[x];
+        float mean_cholesky_time = 0;
 
-        //matf32_zeros(&temp);
+        matf32_zeros(&temp);
 
-        //for (uint8_t j = 0; j < x; j++)
-        //{
-        //    time = clock();
-        //    status = linsolve(&C, &b, &temp);
-        //    cholesky_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        //}
+        for (uint8_t j = 0; j < x; j++)
+        {
+            time = clock();
+            status = linsolve(&C, &b, &temp);
+            cholesky_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
             
-        //mean_cholesky_time = mean(cholesky_time, x);
+        mean_cholesky_time = mean(cholesky_time, x);
         
-        //bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
-        //printf("linsolve_cholesky%i\n", n);
-        //printf("%.9f\n", mean_cholesky_time);
-        //printf("cholesky     ,time(s):%.9f,%s\n", mean_cholesky_time, cholesky_ans?"success":"failure");
+        bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
+        printf("linsolve_cholesky%i\n", n);
+        printf("%.9f\n", mean_cholesky_time);
+        printf("cholesky     ,time(s):%.9f,%s\n", mean_cholesky_time, cholesky_ans?"success":"failure");
 
-        //printf("Difference cholesky_result:\n");
-        //matf32_sub(&temp, &R_cholesky, &temp);
-        //matf32_print(&temp);
+        printf("Difference cholesky_result:\n");
+        matf32_sub(&temp, &R_cholesky, &temp);
+        matf32_print(&temp);
 
         // ---------------------------------------------------------------------------
         // linsolve - QR
         // ---------------------------------------------------------------------------
 
-        //float qr_time[x];
-        //float mean_qr_time = 0;
+        float qr_time[x];
+        float mean_qr_time = 0;
 
-        //for (uint8_t j = 0; j < x; j++)
-        //{
-        //    time = clock();
-        //    status = linsolve(&D, &b, &temp2);
-        //    qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        //}
+        for (uint8_t j = 0; j < x; j++)
+        {
+            time = clock();
+            status = linsolve(&D, &b, &temp2);
+            qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
 
-        //mean_qr_time = mean(qr_time, x);
+        mean_qr_time = mean(qr_time, x);
 
-        //bool qr_ans = matf32_is_equal(&temp2, &R_qr);
-        //printf("linsolve_qr%i\n", n);
-        //printf("%.9f\n", mean_qr_time);
-        //printf("qr           ,time(s):%.9f,%s\n", mean_qr_time, qr_ans?"success":"failure");
-
-        //printf("Difference qr_result:\n");
-        //matf32_sub(&temp, &R_qr, &temp);
-        //matf32_print(&temp);
+        bool qr_ans = matf32_is_equal(&temp2, &R_qr);
+        printf("linsolve_qr%i\n", n);
+        printf("%.9f\n", mean_qr_time);
+        printf("qr           ,time(s):%.9f,%s\n", mean_qr_time, qr_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // linsolve - LU
         // ---------------------------------------------------------------------------
 
-        //float lu_time[x];
-        //float mean_lu_time = 0;
+        float lu_time[x];
+        float mean_lu_time = 0;
 
-        //matf32_zeros(&temp);
+        matf32_zeros(&temp);
 
-        //for (uint8_t j = 0; j < x; j++)
-        //{
-        //    time = clock();
-        //    status = linsolve(&B, &b, &temp);
-        //    lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        //}
+        for (uint8_t j = 0; j < x; j++)
+        {
+            time = clock();
+            status = linsolve(&B, &b, &temp);
+            lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
+        }
 
-        //printf("temp:\n");
-        //matf32_print(&temp);
+        printf("temp:\n");
+        matf32_print(&temp);
 
-        //printf("R_lu:\n");
-        //matf32_print(&R_lu);
+        printf("R_lu:\n");
+        matf32_print(&R_lu);
 
-        //mean_lu_time = mean(lu_time, x);
+        mean_lu_time = mean(lu_time, x);
         
-        //bool lu_ans = matf32_is_equal(&temp, &R_lu);
-        //printf("linsolve_lu%i\n", n);
-        //printf("%.9f\n", mean_lu_time);
-        //printf("lu           ,time(s):%.9f,%s\n", mean_lu_time, lu_ans?"success":"failure");
-
-        //printf("Difference lu_result:\n");
-        //matf32_sub(&temp, &R_lu, &temp);
-        //matf32_print(&temp);
+        bool lu_ans = matf32_is_equal(&temp, &R_lu);
+        printf("linsolve_lu%i\n", n);
+        printf("%.9f\n", mean_lu_time);
+        printf("lu           ,time(s):%.9f,%s\n", mean_lu_time, lu_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // linsolve - SVD Jacobi
@@ -292,8 +284,6 @@ void main(void)
         uint16_t svd_failures = 0;
 
         bool linsolve_svd = 0;
-
-        //matf32_jacobi_svd(&A, &U, &S, &V);
 
         // Iterations: 100
         for (uint8_t j = 0; j < x; j++)
@@ -310,115 +300,12 @@ void main(void)
             matf32_mul(&A_copy, &temp, &Ax);
 
             linsolve_svd = matf32_is_equal(&Ax, &b);
-
-            if (!linsolve_svd)
-            {
-                svd_failures += 1;
-                //printf("linsolve_svd,%s\n", linsolve_svd?"success":"tolerance_failure");
-                //printf("Difference Ax - b:\n");
-                //matf32_sub(&Ax, &b, &temp);
-                //matf32_print(&temp);
-            }
         }
 
         mean_svd_time = mean(svd_time, x);
+        //printf("linsolve_svd%i\n", n);
+        //printf("%.9f\n", mean_svd_time);
         printf("\nlinsolve_svd,mean_time(s):%.9f\n", mean_svd_time);
         printf("Tolerance failures: %i\n\n", svd_failures);
-        svd_failures = 0; // Reset failures counter
-
-        // Add check: largest decimal that failed the tolerance, number of decimals that failed the tolerance
     }
-
-    // Single test
-    /*uint16_t n = 5;
-
-    float A_data[MAX_MAT_SIZE];
-    matf32_t A;
-    matf32_init(&A, n, n, A_data);
-    matf32_randn(&A,0,1);
-
-    float Ax_data[MAX_MAT_SIZE];
-    matf32_t Ax;
-    matf32_init(&Ax, n, 1, Ax_data);
-
-    float A_copy_data[MAX_MAT_SIZE];
-    matf32_t A_copy;
-    matf32_init(&A_copy, A.num_rows, A.num_cols, A_copy_data);
-    matf32_submatrix_copy(&A, &A_copy, 0, 0, 0, 0, A.num_rows, A.num_cols);
-
-    float U_data[MAX_MAT_SIZE];
-    matf32_t U;
-    matf32_init(&U, n, n, U_data);
-
-    float S_data[MAX_MAT_SIZE];
-    matf32_t S;
-    matf32_init(&S, n, n, S_data);
-
-    float V_data[MAX_MAT_SIZE];
-    matf32_t V;
-    matf32_init(&V, n, n, V_data);
-
-    float U_trans_data[MAX_MAT_SIZE];
-    matf32_t U_trans;
-    matf32_init(&U_trans, A.num_rows, A.num_cols, U_trans_data);
-
-    matf32_jacobi_svd(&A, &U, &S, &V);
-
-    //linsolve_svd(&U, &S, &V, &b, &x);
-
-    matf32_trans(&U, &U_trans);
-
-    float Si_data[MAX_MAT_SIZE];
-    matf32_t Si;
-    matf32_init(&Si, S.num_rows, S.num_cols, Si_data);
-    matf32_zeros(&Si);
-
-    for (uint16_t k = 0; k < n; ++k)
-    {
-        // For nonzero singular values (sigma), do: 1/sigma
-        if (fabs(S.p_data[k*n + k]) > 1E-05)
-        {
-            // Save the new value in Si, zero values will already be zero and untouched in Si.
-            Si.p_data[k*n + k] = 1/S.p_data[k*n + k];
-        }
-    }
-
-    //printf("Si:\n");
-    //matf32_print(&Si);
-
-    float b_data[MAX_MAT_SIZE];
-    matf32_t b;
-    matf32_init(&b, n, 1, b_data);
-    matf32_randn(&b,0,1);
-
-    float x_data[MAX_MAT_SIZE];
-    matf32_t x;
-    matf32_init(&x, n, 1, x_data);
-
-    float Utb_data[MAX_MAT_SIZE];
-    matf32_t Utb;
-    matf32_init(&Utb, U_trans.num_rows, b.num_cols, Utb_data);
-    
-    matf32_mul(&U_trans, &b, &Utb);
-
-    float SiUtb_data[MAX_MAT_SIZE];
-    matf32_t SiUtb;
-    matf32_init(&SiUtb, Si.num_rows, b.num_cols, SiUtb_data);
-
-    matf32_mul(&Si, &Utb, &SiUtb);
-
-    matf32_mul(&V, &SiUtb, &x);
-    
-    printf("b:\n");
-    matf32_print(&b);
-
-    printf("x:\n");
-    matf32_print(&x);
-
-    matf32_mul(&A_copy, &x, &Ax);
-    printf("Ax:\n");
-    matf32_print(&Ax);
-
-    bool linsolve_svd_ans = matf32_is_equal(&b, &Ax);
-    printf("linsolve_svd,%s\n\n", linsolve_svd_ans?"success":"failure");*/
 }
