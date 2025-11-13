@@ -311,19 +311,20 @@ quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
     matf32_submatrix_copy(Q, Z, 0, m, 0, 0, Q->num_rows, n-m); // Z = Q(:,m+1:end)
     
     matf32_t* ZtG = &m7;
-    matf32_init(ZtG, Z->num_rows, p_qp->p_Q->num_cols, m7data);
+    matf32_init(ZtG, Z->num_cols, p_qp->p_Q->num_cols, m7data);
     matf32_zeros(ZtG); // Erase previous data in m7
     matf32_t* ZtGZ = &m1;
     matf32_init(ZtGZ, Z->num_cols, Z->num_cols, m1data);
     matf32_t* ZtGY = &m8;
-    matf32_init(ZtGY, Z->num_rows, Y->num_cols, m8data);
+    matf32_init(ZtGY, Z->num_cols, Y->num_cols, m8data);
     matf32_t* Ztc = &m9;
     matf32_init(Ztc, Z->num_cols, p_qp->p_c->num_cols, m9data);
+    matf32_t* Zt = &m10;
+    matf32_init(Zt, Z->num_cols, Z->num_rows, m10data);
     
-    matf32_trans(Z, Z); // Z = Z'
-    matf32_mul(Z, p_qp->p_c, Ztc); // Z'c
-    matf32_mul(Z, p_qp->p_Q, ZtG); // Z'G
-    matf32_trans(Z, Z); // Z = (Z')' = Z
+    matf32_trans(Z, Zt); // Z = Z'
+    matf32_mul(Zt, p_qp->p_c, Ztc); // Z'c
+    matf32_mul(Zt, p_qp->p_Q, ZtG); // Z'G
     matf32_mul(ZtG, Z, ZtGZ); // Z'GZ
     matf32_mul(ZtG, Y, ZtGY); // Z'GY
 
@@ -332,13 +333,15 @@ quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
     matf32_zeros(ZtGYpy); // Erase previous data in m7
     matf32_mul(ZtGY, py, ZtGYpy); // Z'GYpy
     
-    matf32_t* p = &m9;
-    matf32_init(p, Z->num_cols, p_qp->p_c->num_cols, m9data);
-    matf32_add(ZtGYpy, Ztc, p); // p = Z'GYpy - Z'c
+    matf32_t* p = &m8;
+    matf32_init(p, Z->num_cols, p_qp->p_c->num_cols, m8data);
+    matf32_zeros(p);
+    matf32_add(ZtGYpy, Ztc, p); // p = Z'GYpy + Z'c
     matf32_scale(p, -1.0, p); // p = -Z'GYpy - Z'c
 
     matf32_t* Zpz = &m10;
     matf32_init(Zpz, Z->num_rows, pz->num_cols, m10data);
+    matf32_zeros(Zpz);
     linsolve(ZtGZ, p, pz); // Solve (Z'Gz)pz = -Z'GYpy - Z'c for pz
     matf32_mul(Z, pz, Zpz); // Zpz
 
