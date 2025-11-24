@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "matf32.h": "c",
+        "stdio.h": "c",
+        "linsolve.h": "c",
+        "string.h": "c",
+        "quadprog_test": "c",
+        "random": "c",
+        "quadprog_data.h": "c",
+        "math.h": "c",
+        "quadprog_sqp_test.h": "c",
+        "stdlib.h": "c",
+        "robotat_control.h": "c",
+        "control_kalman_filter_test_data.h": "c",
+        "robotat_robotics.h": "c"
+    }
+}
