@@ -1,11 +1,13 @@
 /**
+ * @defgroup Robotat-Control
+ * @{
  * @file robotat_control.h
  * @author Miguel Zea (mezea@uvg.edu.gt)
  * @brief 
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 28 Oct 2025
+ * Last modified: 17 Nov 2025
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -72,7 +74,6 @@ typedef struct
     float dt;                       /** Sampling period. */
     ctr_discretizations_t pid_alg;  /** Specifies the discretization scheme to be used. */
 } ctr_pid_t;
-
 
 /**
  * @brief   State space LTI system data structure.
@@ -182,7 +183,6 @@ typedef struct
 void
 ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizations_t pid_alg, bool set_i_limits, ...);
 
-
 /**
  * @brief   Sets new gains for the PID controller.
  * 
@@ -216,7 +216,6 @@ ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
  */
 float
 ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k);
-
 
 
 // ====================================================================================================
@@ -572,3 +571,5 @@ ctr_kalman_print(ctr_kalman_t* p_kalman);
 #endif
 
 #endif /* ROBOTAT_CONTROL_H_ */
+
+/** @} */

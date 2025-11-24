@@ -1,4 +1,6 @@
 /**
+ * @defgroup linsolve
+ * @{
  * @file linsolve.h
  * 
  * Linear solver based on matf32_t datatype.
@@ -258,3 +260,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
 #endif
 
 #endif // ROBOTAT_LINSOLVE_H_
+
+/**
+ * @}
+ */

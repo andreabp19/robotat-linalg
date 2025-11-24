@@ -1,4 +1,6 @@
 /**
+ * @addtogroup Robotat-Linalg
+ * @{
  * @file robotat_linalg.c
  */
 #include "robotat_linalg.h"
@@ -13,3 +15,6 @@
 
 
 
+/**
+ * @}
+ */

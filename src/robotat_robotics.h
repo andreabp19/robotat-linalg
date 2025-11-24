@@ -1,8 +1,10 @@
 
 /**
+ * @defgroup Robotat-Robotics
+ * @{
  * @file robotat_robotics.h
  * @author Andrea Pineda
- * @date created 19 Jul. 2025, last modified 2 Sep 2025
+ * @date created 19 Jul 2025, last modified 17 Nov 2025
  *
  * Robotics algorithms, based on Robotics Toolbox by Peter Corke for Matlab
 */
@@ -19,7 +21,15 @@
 #include <float.h>
 #include <string.h>
 #include <stdarg.h>
+
+#define _USE_MATH_DEFINES       // To be able to use constants such as M_PI
 #include <math.h>               // For sin() and cos()
+
+// M_PI is included in math.h but if it gives error of being "undefined", defining it fixes it.
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include "matf32.h"
 #include "linsolve.h"
 
@@ -44,6 +54,7 @@ typedef enum
     NULL_QUATERNION_ERR
 } rob_status_t;
 
+
 /**
  * @brief   Enumerates list for matrix tags.
  */
@@ -53,7 +64,8 @@ typedef enum
     FRAME_B,
     FRAME_C,
     FRAME_O   // Global reference frame
-} rob_frame_tags_t;
+} rob_frame_id_t;
+
 
 /**
  * @brief   Enumerates list of tags for possible rotation sequences to implement.
@@ -74,6 +86,7 @@ typedef enum
     ZYX
 } rob_angle_sequences_t;
 
+
 /**
  * @brief   Homogeneneous transformation matrix construct for reference frames' pose calcultions
  */
@@ -82,16 +95,18 @@ typedef struct
     matf32_t* p_T;                /** Points to homogeneous transformation matrix */
     matf32_t* p_R;                /** Points to rotation matrix */
     matf32_t* p_v;                /** Points to coordinates vector */
-    rob_frame_tags_t ref_frame;     /** Current reference frame for the transformation */
-    rob_frame_tags_t dst_frame;     /** Destination reference frame for the transformation */
+    rob_frame_id_t ref_frame;     /** Current reference frame for the transformation */
+    rob_frame_id_t dst_frame;     /** Destination reference frame for the transformation */
     bool angle_units;             /** Angle unit tags, between RADIANS or DEGREES */
 } rob_frame_t;
+
 
 typedef struct
 {
     const matf32_t* p_v;        /** Coordinates vector for a given point with respect to the frame */
-    rob_frame_tags_t ref_frame;   /** Enumerate tags for frame reference and destination */
+    rob_frame_id_t ref_frame;   /** Enumerate tags for frame reference and destination */
 } rob_point_t;
+
 
 /**
  * @brief   Quaternion struct
@@ -103,6 +118,8 @@ typedef struct
     float* p_j;     /** Imaginary number j of the quaternion */
     float* p_k;     /** Imaginary number k of the quaternion */
 } rob_quat_t;
+
+
 
 // ====================================================================================================
 // Function prototypes
@@ -122,10 +139,12 @@ typedef struct
  * @param[in]   dst_frame         Enumerate tag for the destination frame for the transformation.
  * @param[in]   angle_units     Enumerate tag for the units of the angles.
  * 
- * @return None
+ * @return Execution status
+ *              
  */
 rob_status_t
-rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, rob_frame_tags_t ref_frame, rob_frame_tags_t dst_frame, bool angle_units);
+rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, rob_frame_id_t ref_frame, rob_frame_id_t dst_frame, bool angle_units);
+
 
 /**
  * @brief   Constructor for the reference frame data structure, defines 4x4 dimensiones, sets the rotation matrix,
@@ -138,7 +157,7 @@ rob_frame_init(rob_frame_t* p_F, matf32_t* p_T, matf32_t* p_R, matf32_t* p_v, ro
  * @return None
  */
 void
-rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_tags_t ref_frame);
+rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_frame_id_t ref_frame);
 
 
 
@@ -161,12 +180,17 @@ rob_refpoint_init(rob_point_t* const p_p, matf32_t* p_v, float* p_data, rob_fram
 rob_status_t
 rob_transl(matf32_t* p_v, rob_frame_t* p_F);
 
+
 // ----------------------------------------------------------------------------------------------------
 // 2.2. Generate and set rotation matrices
 // ----------------------------------------------------------------------------------------------------
 
 /**
- * @brief   Generates rotation in the x axis.
+ * @brief   Generates a rotation matrix in the x axis, defined as follows:
+ * 
+ * | 1     0           0      |
+ * | 0 cos(theta) -sin(theta) |
+ * | 0 sin(theta)  cos(theta) |
  * 
  * @param[in,out]   p_R         Pointer to rotation matrix.
  * @param[in]       p_theta     Points to the value of degrees by which to rotate the frame.
@@ -176,8 +200,13 @@ rob_transl(matf32_t* p_v, rob_frame_t* p_F);
 rob_status_t
 rob_rotx(matf32_t* p_R, float theta, bool angle_units);
 
+
 /**
  * @brief   Generates rotation in the y axis.
+ * 
+ * | cos(theta)  0  sin(theta)|
+ * |      0      1      0     |
+ * |-sin(theta)  0  cos(theta)|
  * 
  * @param[in,out]   p_R         Pointer to rotation matrix.
  * @param[in]       theta       Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
@@ -187,8 +216,13 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units);
 rob_status_t
 rob_roty(matf32_t* p_R, float theta, bool angle_units);
 
+
 /**
  * @brief   Generates rotation in the z axis.
+ * 
+ * | cos(theta) -sin(theta) 0 |
+ * | sin(theta)  cos(theta) 0 |
+ * |     0           0      1 |
  * 
  * @param[in,out]   p_R         Pointer to rotation matrix
  * @param[in]       theta       Angle for the rotation (either radians or degrees, which must be indicated when initiation the frame)
@@ -197,6 +231,7 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units);
  */
 rob_status_t
 rob_rotz(matf32_t* p_R, float theta, bool angle_units);
+
 
 /**
  * @brief   Applies x rotation matrix to the homogeneous transformation matrix T
@@ -209,6 +244,7 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units);
 void
 rob_trotx(rob_frame_t* p_F, float theta, bool angle_units);
 
+
 /**
  * @brief   Applies y rotation matrix to the homogeneous transformation matrix T
  * 
@@ -220,6 +256,7 @@ rob_trotx(rob_frame_t* p_F, float theta, bool angle_units);
 void
 rob_troty(rob_frame_t* p_F, float theta, bool angle_units);
 
+
 /**
  * @brief   Applies z rotation matrix to the homogeneous transformation matrix T
  * 
@@ -230,6 +267,7 @@ rob_troty(rob_frame_t* p_F, float theta, bool angle_units);
  */
 void
 rob_trotz(rob_frame_t* p_F, float theta, bool angle_units);
+
 
 // ----------------------------------------------------------------------------------------------------
 // 2.3. Applying transformations and rotation sequences
@@ -247,6 +285,7 @@ rob_trotz(rob_frame_t* p_F, float theta, bool angle_units);
 void
 rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 
+
 /**
  * @brief   Applies inverse of the homogeneous transformation of the pose.
  * 
@@ -257,6 +296,7 @@ rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
  */
 void
 rob_inv_transform(rob_frame_t* const p_F, matf32_t* const p_Tinv);
+
 
 /**
  * @brief   Apply transforms based on Euler angles sequences.
@@ -295,6 +335,7 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
 void
 rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k);
 
+
 /**
  * @brief   Quaternion struct initialization
  * 
@@ -308,6 +349,7 @@ rob_quat_init(rob_quat_t* p_q, float* q_s, float* q_i, float* q_j, float* q_k);
  */
 void
 rob_unitquat_init(rob_quat_t* p_uq, float* q_s, float* q_i, float* q_j, float* q_k);
+
 
 // ----------------------------------------------------------------------------------------------------
 // 3.2. Quaternion operations
@@ -376,6 +418,7 @@ rob_quat_mul(const rob_quat_t* p_srcq1, const rob_quat_t* p_srcq2, rob_quat_t* p
 void
 rob_quat_conj(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
 
+
 /**
  * @brief   Calculates the norm of a quaternion
  * 
@@ -434,6 +477,7 @@ rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_sr
 rob_status_t
 rob_rot2tr(matf32_t* p_R, rob_frame_t* p_F);
 
+
 /**
  * @brief   Converts an homogeneous transformation matrix to a rotation matrix
  * 
@@ -458,6 +502,7 @@ rob_tr2rot(rob_frame_t* p_F, matf32_t* p_R);
 rob_status_t
 rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v);
 
+
 // ----------------------------------------------------------------------------------------------------
 // 4.2. Roll-Pitch-Yaw Angles -> Rotation Matrices and Homogeneous Transformations
 // ----------------------------------------------------------------------------------------------------
@@ -476,6 +521,7 @@ rob_update_transform(rob_frame_t* p_F, matf32_t* p_R, matf32_t* p_v);
  */
 rob_status_t 
 rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R);
+
 
 /**
  * @brief   Applies roll-pitch-yaw sequence angles to an homogeneous transformation matrix
@@ -512,6 +558,7 @@ rob_rpy2tr(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequenc
 rob_status_t 
 rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence, bool angle_units, matf32_t* p_R);
 
+
 /**
  * @brief   Applies Euler angle sequence to an homogeneous transformation matrix
  * 
@@ -542,6 +589,7 @@ rob_eul2tr(float phi, float theta, float psi, rob_angle_sequences_t rot_sequence
  */
 rob_status_t
 rob_rot2quat(matf32_t* p_R, rob_quat_t* p_uq);
+
 
 /**
  * @brief   Converts homogeneous transformation matrix into a quaternion
@@ -628,10 +676,6 @@ rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
 void
 rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw);
 
-/**
- * @brief   Converts an homogeneous transformation matrix to roll-pitch-yaw angles
- * 
- */
 
 /**
  * @brief   Converts a rotation matrix to euler angles
@@ -646,6 +690,7 @@ rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
  */
 rob_status_t
 rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi);
+
 
 /**
  * @brief   Converts an homogeneous transformation matrix to euler angles
@@ -677,6 +722,7 @@ rob_tr2eul(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
 rob_status_t
 rob_quat2rot(rob_quat_t* p_uq, matf32_t* p_R);
 
+
 /**
  * @brief   Converts a quaternion to an homogeneous transformation matrix
  * 
@@ -707,6 +753,7 @@ rob_quat2tr(rob_quat_t* p_uq, rob_frame_t* p_F);
  */
 void
 rob_quat2rpy(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw);
+
 
 /**
  * @brief   Converts a quaternion to euler angles
@@ -741,6 +788,7 @@ rob_quat2eul(rob_quat_t* p_uq, bool angle_units, rob_angle_sequences_t rot_seque
 float
 deg2rad(float* p_theta);
 
+
 /**
  * @brief   Converts radians to degrees.
  * 
@@ -764,6 +812,7 @@ rad2deg(float* p_theta);
 void
 rob_status_print(rob_status_t rob_status);
 
+
 /**
  * @brief   Prints the data and configurations of a reference frame.
  * 
@@ -773,6 +822,7 @@ rob_status_print(rob_status_t rob_status);
  */
 void
 rob_frame_print(rob_frame_t* p_F);
+
 
 /**
  * @brief   Prints a point's data and configurations to use with it.
@@ -784,21 +834,23 @@ rob_frame_print(rob_frame_t* p_F);
 void
 rob_refpoint_print(rob_point_t* const p_p);
 
+
 /**
  * @brief   Prints text corresponding to the tags in rob_angle_unit_tags_t.
  */
 void
 rob_angle_units_print(bool angle_units);
 
+
 /**
- * @brief   Prints text corresponding to the tags in rob_frame_tags_t.
+ * @brief   Prints text corresponding to the tags in rob_frame_id_t.
  * 
  * @param[in]   frame_tags  Frame tags enum
  * 
  * @return None
  */
 void
-rob_frame_tags_print(rob_frame_tags_t tags);
+rob_frame_tags_print(rob_frame_id_t tags);
 
 
 /**
@@ -825,6 +877,7 @@ rob_quat_print(const rob_quat_t* p_srcq);
 bool
 rob_isrot(matf32_t* p_R);
 
+
 /**
  * @brief   Check if a matrix is 4x4 to be an homogeneous transformation matrix
  * 
@@ -835,6 +888,7 @@ rob_isrot(matf32_t* p_R);
 bool
 rob_istr(matf32_t* p_T);
 
+
 /**
  * @brief   Check if a vector has 3 elements to be used as coordinates vector in the homogeneous transformation matrix
  * 
@@ -844,6 +898,7 @@ rob_istr(matf32_t* p_T);
  */
 bool
 rob_isvec(matf32_t* p_v);
+
 
 /**
  * @brief   Checks frame tags to determine if the operations were done in the right order
@@ -857,7 +912,6 @@ rob_isvec(matf32_t* p_v);
 rob_status_t
 rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 
-// Add checks for quaternions and unit quaternions?
 
 /**
  * @brief   Checks if a quaternion is zero and returns an rob_status_t message
@@ -868,6 +922,7 @@ rob_check_transform_frames(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p
  */
 bool
 rob_check_null_quaternion(const rob_quat_t* p_q);
+
 
 /**
  * @brief   Checks if two quaternions are equal
@@ -886,3 +941,7 @@ rob_quat_is_equal(rob_quat_t* p_q1, rob_quat_t* p_q2);
 #endif
 
 #endif // ROBOTAT_ROBOTICS_H_
+
+/**
+ * @}
+ */

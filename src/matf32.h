@@ -1,4 +1,7 @@
 /**
+ * @defgroup matf32
+ * @brief Single-precision matrix operations
+ * @{
  * @file matf32.h
  *
  * Single header to include all matrix related functions.
@@ -1200,3 +1203,6 @@ matf32_jacobi_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* cons
 
 #endif // ROBOTAT_MATF32_H_
 
+/**
+ * @}
+ */

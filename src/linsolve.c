@@ -1,4 +1,6 @@
 /**
+ * @defgroup linsolve
+ * @{
  * @file linsolve.c
  * 
  * Created: 2022
@@ -441,3 +443,7 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
 
     return MATH_SUCCESS;
 }
+
+/**
+ * @}
+ */

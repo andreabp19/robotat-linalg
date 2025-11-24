@@ -1,10 +1,12 @@
 /**
+ * @addtogroup matf32
+ * @{
  * @file matf32.c
  * Created: 2 Aug 2025
  * Last Modified: 26 Oct 2026
  *       By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
  *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
- *       other collaborators of this project, and to add new functions..
+ *       other collaborators of this project, and to add new functions.
  * 
  * Changes compared with the 2022 version of the library:
  *      - Modified: moved matf32_cholesky, matf32_lu and matf32_qr from linsolve to matf32,
@@ -12,7 +14,7 @@
  *      - Added:    matf32_one_sided_jacobi, matf32_jacobi_svd, matf32_cond, matf32_exp,
  *                  matf32_check_symposdef and matf32_pinv
  * 
- * Last modified: 26 Oct 2025
+ * Last modified: 17 Nov 2025
  *          By: Andrea Pineda
  */
 
@@ -978,8 +980,6 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
     return MATH_SUCCESS;
 }
 
-
-// TODO: Test again the original method and the new method with SVD
 err_status_t
 matf32_pinv(const matf32_t* const p_a, matf32_t* const p_dst, pseudoinverse_methods_t method)
 {
@@ -1135,6 +1135,8 @@ matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp)
     float temp_data[MAX_MAT_SIZE];
     matf32_t temp;
     matf32_init(&temp, p_src->num_rows, p_dst->num_cols, temp_data);
+
+    err_status_t status;
 
     for (uint16_t k = 1; k < exp; ++k)
     {
@@ -1429,24 +1431,11 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
     uint16_t max_index = 0;
 
     uint16_t rows = p_a->num_rows; // All matrices are square so it works for columns as well
-    //printf("rows: %i\n", rows);
-
-    //printf("A:\n");
-    //matf32_print(p_a);
-
-    //printf("L:\n");
-    //matf32_print(p_l);
-
-    //printf("U:\n");
-    //matf32_print(p_u);
 
     // Make a copy of A in U
     matf32_submatrix_copy(p_a, p_u, 0, 0, 0, 0, p_a->num_rows, p_a->num_cols);
-    //printf("U = A:\n");
-    //matf32_print(p_u);
 
     // Partial pivoting: exchange rows in order for the pivots to have the largest number in that row.
-
     for (uint16_t i = 0; i < rows; ++i)
     {
         pivot = i; // Save pivot index 
@@ -1459,15 +1448,11 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
             if (fabs(p_u_data[k*rows + pivot]) > max_val)
             {
                 max_val = fabs(p_u_data[k*rows + pivot]);
-                //printf("max_val: %.9f\n", max_val);
                 max_index = k;
-                //printf("k:%i, pivot:%i, Comparison: value: %.9f, pivot: %.9f, result: %i\n\n", k, pivot, p_u_data[pivot + k*rows], p_u_data[pivot*rows + pivot], p_u_data[pivot + k*rows] > p_u_data[pivot*rows + pivot]);
             }
         }   
 
         p_index[i] = max_index;
-
-        //printf("Max index: %i,%i\n\n", max_index, pivot);
 
         // If max_index == i, that means the greatest value is already on the pivot, so no switches needed.
         if (max_index != i)
@@ -1476,8 +1461,6 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
 
             // Copy the pivot row to a temporal matrix
             matf32_submatrix_copy(p_u, &pivot_row, i, 0, 0, 0, pivot_row.num_rows, pivot_row.num_cols);
-            //printf("pivot_row: %i\n", pivot);
-            //matf32_print(&pivot_row);
 
             // Replace the pivot row with the max_index row
             matf32_submatrix_copy(p_u, p_u, max_index, 0, pivot, 0, 1, p_u->num_cols);
@@ -1487,9 +1470,7 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
         
             if (i > 0)
             {
-                // ----- L Permutation -----
-
-                for (uint16_t k = 0; k < i; ++k)
+                for (uint16_t k = 0; k < i; ++k) // ----- L Permutation -----
                 {
                     tmp = p_l_data[i*rows + k];
                     p_l_data[i*rows + k] = p_l_data[max_index*rows + k];
@@ -1510,9 +1491,6 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
             }
         }
     }
-
-    //printf("U after pivoting:\n");
-    //matf32_print(p_u);
 
     for (uint16_t k = 0; k < rows; ++k)
     {
@@ -1713,4 +1691,6 @@ matf32_jacobi_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* cons
     return MATH_SUCCESS;
 }
 
-//
+/**
+ * @}
+ */

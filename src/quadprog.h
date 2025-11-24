@@ -1,4 +1,6 @@
 /**
+ * @defgroup quadprog
+ * @{
  * @file quadsprog.h
  *
  * Last modified: 26 Oct 2025
@@ -157,3 +159,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x);
 #endif
 
 #endif // ROBOTAT_QUADPROG_H_
+
+/**
+ * @}
+ */

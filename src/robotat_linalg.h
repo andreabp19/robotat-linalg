@@ -1,4 +1,6 @@
 /**
+ * @defgroup Robotat-Linalg
+ * @{
  * @file robotat_linalg.h
  *
  * Adapted from CControl (https://github.com/DanielMartensson/CControl) with the following changes:
@@ -24,6 +26,8 @@
  *           By: Miguel Zea (mezea@uvg.edu.gt)
  *  Modified on: 20 may 2022
  *           By: Daniel Pineda (bar18714@uv.edu.gt)
+ *  Last Modified: 24 Nov 2025
+ *             By: Andrea Pineda (Added doxygen group)
  *
  * TODO: Update above description.
  */
@@ -47,7 +51,6 @@
 #include "matf32.h"
 #include "linsolve.h"
 #include "quadprog.h"
-#include "robotat_robotics.h"
 
 
 //// ====================================================================================================
@@ -117,3 +120,7 @@
 //linprog(float c[], float A[], float b[], float x[], uint8_t row_a, uint8_t column_a, uint8_t max_or_min, uint8_t iteration_limit);
 
 #endif /* ROBOTAT_LINALG_H_ */
+
+/**
+ * @}
+ */

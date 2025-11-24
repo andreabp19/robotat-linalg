@@ -1,5 +1,7 @@
 
 /**
+ * @addtogroup Robotat-Control
+ * @{
  * @author Miguel Zea
  * 
  * Last modified: 28 Oct 2025
@@ -187,7 +189,6 @@ ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time
 }
 
 
-// Tested = works
 err_status_t
 ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method)
 {	
@@ -354,7 +355,7 @@ ctr_sys_nonlin_init(ctr_sys_nonlin_t* const sys, matf32_t* const state, uint16_t
 	return MATH_SUCCESS;
 }
 
-// comparar con loclin_fast en matlab = works
+
 err_status_t
 ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const matf32_t* const xss, const matf32_t* const uss, float delta)
 {
@@ -479,7 +480,6 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 }
 
 
-// Tested = Works
 err_status_t
 ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32_t* const x_k_1, const matf32_t* const u_k, float delta, ctr_discretizations_t method)
 {
@@ -1304,5 +1304,6 @@ ctr_kalman_print(ctr_kalman_t* p_kalman)
 	printf("---------------------------------------------------------------------------\n\n");
 }
 
-
-//
+/**
+ * @}
+ */

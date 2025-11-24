@@ -1,4 +1,6 @@
 /**
+ * @addtogroup quadprog
+ * @{
  * @file quadprog.c
  * 
  * Last modified: 4 Nov 2025
@@ -1066,3 +1068,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
         }
     }
 }
+
+/**
+ * @}
+ */
