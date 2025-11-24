@@ -107,7 +107,7 @@ int main(void)
     printf("PID Update - Pure Discrete\n");
     printf("--------------------------------------------------\n");
 
-    ctr_pid_init(&pid, 0.9, 1.95, 0.001, PURE_DISCRETE, 0);
+    ctr_pid_init(&pid, 2.5, 0.95, 0.5, PURE_DISCRETE, 0);
     pid.tau = tau;
     pid.dt = dt;
 
