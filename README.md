@@ -42,33 +42,23 @@ In this repository you will find the most recent version of the Robotat Linalg l
     * Check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite, and upper and lower Hessian.
     * Matrix Factorizations: LU, QR, Cholesky and SVD (with One-Sided Jacobi).
 
-* linsolve.h: linear solver for Ax = b systems, implementing the following methods:
-    * Forward Substitution
-    * Backward Substitution
-    * Cholesky
-    * LU
-    * QR
-    * SVD
+* linsolve.h: linear solver for Ax = b systems, implementing the following methods: Forward Substitution, Backward Substitution, Cholesky, LU, QR, SVD.
 
 * quadprog.h: quadratic solver for equality and inequality constrained quadratic programs (QPs), implementing the following methods: 
     * For QPs with equality restrictions:
-       * LU
-       * QR
-       * SVD
-       * LDL'
-       * Nullspace
-    * For QPs with inequality restrictions:
-       * Active-Set 
+        * Direct linsolve methods for solving the associated Karush-Kuhn-Tucker (KKT) system: LU, QR, SVD
+        * KKT-specific methods for solving these systems: LDL' factorization and Nullspace method.
+    * For QPs with inequality restrictions: an active-set with binding-direction is implemented, solving the KKT systems directly with linsolve methods.
 
 * robotat_control.h: control algorithms
-    * PID discretizations (Forward and Backward Euler, Pure Discrete and Tustin, ZOH is not implemented yet)
+    * PID discretizations (Pure Discrete, Forward Euler, Backward Euler and Tustin)
     * State space representations for LTI and non-linear systems.
-       * Continuous to discrete time conversion (ctr_c2d)
-       * Nonlinear system state simulation with Forward Euler and Runge-Kutta4.
+       * Continuous to discrete time conversion (ctr_c2d), using: Forward Euler, Backward Euler and Tustin.
+       * Nonlinear systems: linealization, and also state simulation with Forward Euler and Runge-Kutta4.
     * Kalman filter prediction and correction functions.
-    * A shooting-based model predictive control, with its corresponding data structures, functions and using the active-set method of quadprog.
+    * A shooting-based model predictive control (MPC), using the active-set method included in quadprog.
 
-* robotat_robotics.h: robotics algorithms based on the Robotics Toolbox by Peter Corke for MATLAB
+* robotat_robotics.h: robotics algorithms based on the MATLAB Robotics Toolbox by Peter Corke.
     * Homogeneous transformation matrix operations (generating and setting rotation matrices, setting coordinate vectors, applying homogeneous transformations, applying euler angles)
     * Quaternion structures and operations (addition, substraction, quaternion-scalar and quaternion-quaternion multiplication, conjugate, norm and inverse).
     * Functions for conversions between angles, homogeneous transformations, rotation matrices and quaternions.
