@@ -1,64 +1,86 @@
-# What is Robotat Linalg?
+# Robotat Embedded C Libraries
 
-The Robotat Linalg project is encompassed by high-performance embedded C libraries aimed at numerical optimization, control and robotics algorithms to be used in microcontroller boards, specifically for small and dense problems. This project was developed in Universidad del Valle de Guatemala (UVG), with initial planning in late 2021, (and is in continuous improvement and expansion), tailored to the needs and platforms of this university's robotics environment and laboratory: Robotat. Thus, the name Robotat Linalg means "Robotat Linear Algebra", and any subsequent libraries to be added will keep the Robotat prefix.
+A collection of high-performance, statically-allocated, C libraries for solving small and dense problems in: matrix algebra, linear systems, convex quadratic programming, control and robotics. Tailored for resource-constrained embedded devices such as: Arduino, ESP32 and STM boards.
 
-# Key characteristics
+This project is aimed at students, educators, and any other user, that wants to develop applications in embedded numerical computation, control or robotics, but lacks the proper tools for this due to the low capacity of embedded devices compared to computers.
+
+# Key features
 
 * Self-Contained libraries: No external libraries required, only C's own libraries are used, such as math.h, stdio.h, and so on.
 * Memory-efficient: All data is statically allocated (no dynamic allocation), allowing greater control in memory-constrained devices.
 * Device flexibility: Can be implemented in different embedded devices, so there's no limitation to a single platform.
 
+# About this repository
+
+Out of legacy and continuity with the previous version, this repository is called robotat-linalg, but currently contains three different libraries:
+
+* Robotat Linalg: Numerical Computation, subdidivded in three libraries for matrix algebra (matf32), linear systems (linsolve) and convex quadratic programming (quadprog).
+* Robotat Control: Linear and nonlinear control algorithms.
+* Robotat Robotics: Robotics algorithms.
+
 # History and development
 
-This open-source project started in late 2021 by adapting some functions from CControl (https://github.com/DanielMartensson/CControl), and was subsequently developed over two undergraduate thesis in Mechatronics Engineering in Universidad del Valle de Guatemala (UVG). The first version of the Robotat Linalg numerical computation libraries was developed in 2022 (https://github.com/danielp96/robotat-linalg). While in 2025, the second (and current version) was developed, which revised and expanded upon existing routines and added the Robotat Control and Robotat Robotics libraries (for control and robotics, respectively). Additionally, Robotat Robotics is based on the MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
+This project is being developed in the robotics laboratory Robotat of Universidad del Valle de Guatemala (UVG). The initial idea was adapted from CControl of Daniel Martensson (https://github.com/DanielMartensson/CControl) in late 2021, leading to the first version of Robotat Linalg in 2022 (https://github.com/danielp96/robotat-linalg). The second, and current, version (this repository) was developed in 2025 by revising and expanding upon the 2022 version, also adding the Robotat Control and Robotat Robotics libraries, the latter of which is based on MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
 
-Out of legacy and continuation of the 2022 version, this repository and project themselves are called Robotat Linalg. Just know that when referring to the libraries themselves: Robotat Linalg means numerical computation and optimization libraries (matf32, linsolve and quadprog), while Robotat Control and Robotat Robotics are pretty much self-explanatory in their contents.
+# Supported platforms
 
-# Tested in different devices
+As of late 2025, all libraries have been tested in the following devices, with some considerations for each:
 
-As of late 2025, all libraries have been tested in the following devices: ESP32 (Xtensa 32-Bits), Arduino MEGA 2560 (AVR 8-Bits) and STM NUCLEO F446RE (Arm 32-Bits). All these have different architectures and capacities, showcasing the libraries' platform flexibility. Though, being different devices, there are some considerations for each:
-
-* ESP32: All routines work in this device with no issue.
-* Arduino MEGA 2560:
+* ESP32 (Xtensa 32-Bits): All routines work in this device with no issue.
+* Arduino MEGA 2560 (AVR 8-Bits):
     * The routines: quadprog_qp_ldlt, quadprog_qp_nullspace, and the model predictive control cannot be implemented in this device due to memory limitations.
     * The routine matf32_print doesn't work correctly in this device, as printf cannot be used in the Arduino MEGA (and so, calling printf will lead to issues). It's recommended to declare your own printf function, using Serial print functions, in order to use matf32_print (but DO NOT change matf32_print itself, this limitation is due to device characteristics, not a functionality issue in itself).
-* STM NUCLEO F446RE:
+* STM NUCLEO F446RE (Arm 32-Bits):
     * This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
 
-Additionally, a Tiva C (TM4C123GH6PM) from Texas Instruments was used during the validation of the 2022 version of Robotat Linalg, with some differences in the data printing process compared to the ESP32. In the case of the 2025 version, the Tiva C was not included in the testing and validation process, in order to prioritize devices that can be used within the PlatformIO environment, where this project is intended to be installed. But, Robotat Linalg can indeed be used in a Tiva C.
+Additionally, a Tiva C (TM4C123GH6PM) from Texas Instruments was used during the validation of the 2022 version of Robotat Linalg. But, the Tiva C was not included in the testing and validation process of the 2025 version, in order to prioritize devices that can be used within the PlatformIO environment (where this project is intended to be installed). As such, Robotat Control, Robotat Robotics, and some Robotat Linalg routines, are not tested in the Tiva C.
 
 # About this repository
 
-In this repository you will find the most recent version of the Robotat Linalg libraries (matf32, linsolve and quadprog) and the Robotat Control and Robotat Robotics libraries, as well as any other file needed for configuration. Additionally, in the "examples" folder you can find demos with basic examples for use, while the "test" folder, you can find the test files for the routines (grouped by theme and all identified with the corresponding library name).
+In this repository you will find the most recent version of the Robotat Linalg, Control and Robotics libraries, as well as any other file needed for configuration, and the documentation for the entire project. Additionally, in the "examples" folder you can find basic use demos, while the "test" folder, you can find the test files for the routines (grouped by theme and all identified with the corresponding library name).
 
-* robotat_linalg.h: to import matf32.h, linsolve.h and quadprog.h, robotat_control.h and robotat_robotics.h. If you need the full Robotat Linalg library, import this file.
+## Robotat Linalg
 
-* constants.h: constant values for configuration, for example: maximum matrix and vector sizes, maximum number of iterations for SVD, etc. Currently, and throughout development, the vector size is set to 10 elements, and matrix size to 100 elements (10 x 10 matrices at most), as the project is focused on solving small and dense problems. The maximum size could be increased if needed, but be aware that's outside the current purpose and validation of the project.
+This library is divided in three sublibraries: matf32 for linear algebra, linsolve for the linear solver and quadprog for the convex quadratic solver. To call the full library, import robotat_linalg.h. If you only need matf32 or linsolve, import the respective file matf32.h or linsolve.h. On the other hand, quadprog depends both on matf32 or linsolve, so you can import quadprog.h or just robotat_linalg.h.
 
-* matf32.h: linear algebra library
-    * Auxiliary operations with floats (mean, set, randn, zeros, ones, etc.), which are used to build the main matrix operations.
-    * Matrix definitions: based on a custom struct (matf32_t)
-    * Matrix operations (matf32_ functions): addition, subtraction, multiplication (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, pseudoinverse, power, reshaping, copying, set a value/row, get a value, etc.
-    * Check functions for special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite, and upper and lower Hessian.
-    * Matrix Factorizations: LU, QR, Cholesky and SVD (with One-Sided Jacobi).
+The constants.h contains configuration values, such as: matrix and vector size limits, number of iterations for certain operations, tolerance for precision comparison, etc. Currently, as the library is meant for small and dense problems, the size limit is set to vectors with 10 elements, and 10x10 matrices, when working with matf32_t structs. Outside of that scope, you can work with larger arrays as you normally would in C (100, 200, etc.). These dimension limits could be increased if needed, but be aware, that's outside the current validation scope of the library.
 
-* linsolve.h: linear solver for Ax = b systems, implementing the following methods: Forward Substitution, Backward Substitution, Cholesky, LU, QR, SVD.
+Here is a brief description of each library:
 
-* quadprog.h: quadratic solver for equality and inequality constrained quadratic programs (QPs), implementing the following methods: 
+* matf32: 
+    * Float operations (mean, set, randn, zeros, ones, etc.), which are used to build the main matrix operations. These are used to build the operations for the matf32_t matrix struct.
+    * matf32_t routines: addition, substraction, multiplications (matrix-matrix, matrix-vector, vector-matrix, matrix-scalar, vector-scalar), inverse, pseudoinverse, power, factorizations (LU, QR, Cholesky, and SVD with one-sided Jacobi rotations).
+    * Routines to identify special matrix types: upper and lower triangular, square, symmetric, symmetric positive definite, and upper and lower Hessian.
+    * Auxiliary functions: print matrices, get/set specific values, set identity matrices, set matrices to 1s or 0s, reshape, copy (entire matrices or submatrices), etc.
+
+* linsolve: linear solver for Ax = b systems, implementing the following methods: Forward Substitution, Backward Substitution, Cholesky, LU, QR, SVD.
+
+* quadprog: quadratic solver for equality and inequality constrained quadratic programs (QPs), implementing the following methods: 
     * For QPs with equality restrictions:
         * Direct linsolve methods for solving the associated Karush-Kuhn-Tucker (KKT) system: LU, QR, SVD
         * KKT-specific methods for solving these systems: LDL' factorization and Nullspace method.
     * For QPs with inequality restrictions: an active-set with binding-direction is implemented, solving the KKT systems directly with linsolve methods.
 
-* robotat_control.h: control algorithms
-    * PID discretizations (Pure Discrete, Forward Euler, Backward Euler and Tustin)
-    * State space representations for LTI and non-linear systems.
-       * Continuous to discrete time conversion (ctr_c2d), using: Forward Euler, Backward Euler and Tustin.
-       * Nonlinear systems: linealization, and also state simulation with Forward Euler and Runge-Kutta4.
+## Robotat Control
+
+This library contains algorithms for the following:
+
+    * PID Controllers: update output, discretization methods (Pure Discrete, Forward Euler, Backward Euler and Tustin).
+    * State space representations for LTI and non-linear systems:
+       * Continuous-to-discrete conversion methods (Forward Euler, Backward Euler and Tustin).
+       * Nonlinear systems: linealization, state simulation with Forward Euler and Runge-Kutta4.
     * Kalman filter prediction and correction functions.
     * A shooting-based model predictive control (MPC), using the active-set method included in quadprog.
 
-* robotat_robotics.h: robotics algorithms based on the MATLAB Robotics Toolbox by Peter Corke.
-    * Homogeneous transformation matrix operations (generating and setting rotation matrices, setting coordinate vectors, applying homogeneous transformations, applying euler angles)
-    * Quaternion structures and operations (addition, substraction, quaternion-scalar and quaternion-quaternion multiplication, conjugate, norm and inverse).
-    * Functions for conversions between angles, homogeneous transformations, rotation matrices and quaternions.
+To use this library, import the robotat_control.h file. Currently, most functions depend only on matf32 from Robotat Linalg, with only the MPC functions depending on quadprog.
+
+## Robotat Robotics
+
+This library is based on the MATLAB Robotics Toolbox by Peter Corke, adapting several functions for: 
+
+* Reference Frames: applying homogeneous transformation matrices (and their inverse), and setting coordinates and rotation matrices in the homogenous transformation matrices.
+* Generate rotation matrices from a single angle, Euler and Cardan angles, and quaternions.
+* Quaternion operations: addition, substraction, multiplication, conjugate, norm, and unit quaternions.
+* Conversion functions to change between homogenous transformation matrices, rotation matrices, Euler and Cardan angles, and quaternions.
+
+To use this function, import the robotat_robotics.h file. Currently, this library depends only on matf32.h from Robotat Linalg.
