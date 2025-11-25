@@ -34,7 +34,6 @@ As of late 2025, all libraries have been tested in the following devices, with s
     * This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
 
 Additionally, a Tiva C (TM4C123GH6PM) from Texas Instruments was used during the validation of the 2022 version of Robotat Linalg. But, the Tiva C was not included in the testing and validation process of the 2025 version, in order to prioritize devices that can be used within the PlatformIO environment (where this project is intended to be installed). As such, Robotat Control, Robotat Robotics, and some Robotat Linalg routines, are not tested in the Tiva C.
-the test files for the routines (grouped by theme and all identified with the corresponding library name).
 
 # About each library
 
