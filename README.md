@@ -1,18 +1,18 @@
 # What is Robotat Linalg?
 
-Robotat Linalg is the name of this project, encompassed by different embedded C libraries aimed at numerical optimization, control and robotics algorithms to be used in microcontroller boards, specifically for small and dense problems. This project was developed in Universidad del Valle de Guatemala (UVG), with initial planning in late 2021, (and is in continuous improvement and expansion), tailored to the needs and platforms of this university's robotics environment and laboratory: Robotat. Thus, the name Robotat Linalg means "Robotat Linear Algebra", and any subsequent libraries to be added will keep the Robotat prefix.
+The Robotat Linalg project is encompassed by high-performance embedded C libraries aimed at numerical optimization, control and robotics algorithms to be used in microcontroller boards, specifically for small and dense problems. This project was developed in Universidad del Valle de Guatemala (UVG), with initial planning in late 2021, (and is in continuous improvement and expansion), tailored to the needs and platforms of this university's robotics environment and laboratory: Robotat. Thus, the name Robotat Linalg means "Robotat Linear Algebra", and any subsequent libraries to be added will keep the Robotat prefix.
 
-The original library (Robotat Linalg), was first developed in 2022, structured as three software libraries: matf32 for matrix linear algebra, linsolve for solving linear systems, and quadprog for quadratic programming. The 2025 version (most recent and current), revised and expanded upon the 2022 version, validating the original routines (while modifying some and adding new ones) and implemented Robotat Linalg to add new libraries: Robotat Control and Robotat Robotics, for control and robotics algorithms, respectively.
+# History and development
 
-Out of legacy and continuation of the 2022 version, this repository and project themselves are called Robotat Linalg. Just know that, when referring to the libraries themselves: Robotat Linalg means numerical computation and optimization libraries, Robotat Control refers to the control library, and Robotat Robotics is the robotics library.
+This open-source project started in late 2021 by adapting some functions from CControl (https://github.com/DanielMartensson/CControl), and was subsequently developed over two undergraduate thesis in Mechatronics Engineering in Universidad del Valle de Guatemala (UVG). The first version of the Robotat Linalg numerical computation libraries was developed in 2022 (https://github.com/danielp96/robotat-linalg). While in 2025, the second (and current version) was developed, which revised and expanded upon existing routines and added the Robotat Control and Robotat Robotics libraries (for control and robotics, respectively). Additionally, Robotat Robotics is based on the MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
 
-# Key advantages
+Out of legacy and continuation of the 2022 version, this repository and project themselves are called Robotat Linalg. Just know that when referring to the libraries themselves: Robotat Linalg means numerical computation and optimization libraries (matf32, linsolve and quadprog), while Robotat Control and Robotat Robotics are pretty much self-explanatory in their contents.
 
-* No external libraries used. Only C's own libraries, such as math.h, stdio.h, and so on.
-* No dynamic memory allocation. All data (scalars, vectors, matrices, etc.) are statically allocated.
-* No limitation to a single device. All libraries can be implemented in different microcontrollers.
+# Key characteristics
 
-Which means: no outer dependencies, greater memory control and platform flexibility!
+* Library independency: Only C's own libraries are used, such as math.h, stdio.h, and so on. No external libraries required.
+* Memory-efficient: All data is statically allocated (no dynamic allocation), allowing greater control in memory-constrained devices.
+* Device flexibility: Can be implemented in different embedded devices, so there's no limitation to a single platform.
 
 # Tested in different devices
 
@@ -27,7 +27,7 @@ As of late 2025, all libraries have been tested in the following devices: ESP32 
 
 Additionally, a Tiva C (TM4C123GH6PM) from Texas Instruments was used during the validation of the 2022 version of Robotat Linalg, with some differences in the data printing process compared to the ESP32. In the case of the 2025 version, the Tiva C was not included in the testing and validation process, in order to prioritize devices that can be used within the PlatformIO environment, where this project is intended to be installed. But, Robotat Linalg can indeed be used in a Tiva C.
 
-# Files in this repository
+# About this repository
 
 In this repository you will find the most recent version of the Robotat Linalg libraries (matf32, linsolve and quadprog) and the Robotat Control and Robotat Robotics libraries, as well as any other file needed for configuration. Additionally, in the "examples" folder you can find demos with basic examples for use, while the "test" folder, you can find the test files for the routines (grouped by theme and all identified with the corresponding library name).
 
@@ -62,7 +62,3 @@ In this repository you will find the most recent version of the Robotat Linalg l
     * Homogeneous transformation matrix operations (generating and setting rotation matrices, setting coordinate vectors, applying homogeneous transformations, applying euler angles)
     * Quaternion structures and operations (addition, substraction, quaternion-scalar and quaternion-quaternion multiplication, conjugate, norm and inverse).
     * Functions for conversions between angles, homogeneous transformations, rotation matrices and quaternions.
-
-# History and Development
-
-Robotat Linalg was developed at Universidad del Valle de Guatemala (UVG) as part of two undergraduate thesis in Mechatronics Engineering: the first version in 2022 (https://github.com/danielp96/robotat-linalg) and the second (and current) version in 2025 (this repository). Regarding other projects that influenced this work, the first ideas of Robotat Linalg were adapted from CControl (https://github.com/DanielMartensson/CControl) in late 2021, while the structure and routines in Robotat Robotics were influenced by the MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
