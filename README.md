@@ -2,17 +2,17 @@
 
 The Robotat Linalg project is encompassed by high-performance embedded C libraries aimed at numerical optimization, control and robotics algorithms to be used in microcontroller boards, specifically for small and dense problems. This project was developed in Universidad del Valle de Guatemala (UVG), with initial planning in late 2021, (and is in continuous improvement and expansion), tailored to the needs and platforms of this university's robotics environment and laboratory: Robotat. Thus, the name Robotat Linalg means "Robotat Linear Algebra", and any subsequent libraries to be added will keep the Robotat prefix.
 
+# Key characteristics
+
+* Self-Contained libraries: No external libraries required, only C's own libraries are used, such as math.h, stdio.h, and so on.
+* Memory-efficient: All data is statically allocated (no dynamic allocation), allowing greater control in memory-constrained devices.
+* Device flexibility: Can be implemented in different embedded devices, so there's no limitation to a single platform.
+
 # History and development
 
 This open-source project started in late 2021 by adapting some functions from CControl (https://github.com/DanielMartensson/CControl), and was subsequently developed over two undergraduate thesis in Mechatronics Engineering in Universidad del Valle de Guatemala (UVG). The first version of the Robotat Linalg numerical computation libraries was developed in 2022 (https://github.com/danielp96/robotat-linalg). While in 2025, the second (and current version) was developed, which revised and expanded upon existing routines and added the Robotat Control and Robotat Robotics libraries (for control and robotics, respectively). Additionally, Robotat Robotics is based on the MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
 
 Out of legacy and continuation of the 2022 version, this repository and project themselves are called Robotat Linalg. Just know that when referring to the libraries themselves: Robotat Linalg means numerical computation and optimization libraries (matf32, linsolve and quadprog), while Robotat Control and Robotat Robotics are pretty much self-explanatory in their contents.
-
-# Key characteristics
-
-* Library independency: Only C's own libraries are used, such as math.h, stdio.h, and so on. No external libraries required.
-* Memory-efficient: All data is statically allocated (no dynamic allocation), allowing greater control in memory-constrained devices.
-* Device flexibility: Can be implemented in different embedded devices, so there's no limitation to a single platform.
 
 # Tested in different devices
 
