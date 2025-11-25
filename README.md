@@ -14,7 +14,7 @@ This project is aimed at students, educators, and any other user, that wants to 
 
 Out of legacy and continuity with the previous version, this repository is called robotat-linalg, but currently contains three different libraries:
 
-* Robotat Linalg: Numerical Computation, subdidivded in three libraries for matrix algebra (matf32), linear systems (linsolve) and convex quadratic programming (quadprog).
+* Robotat Linalg: Numerical Computation, subdidivided in three libraries for matrix algebra (matf32), linear systems (linsolve) and convex quadratic programming (quadprog).
 * Robotat Control: Linear and nonlinear control algorithms.
 * Robotat Robotics: Robotics algorithms.
 
@@ -34,10 +34,9 @@ As of late 2025, all libraries have been tested in the following devices, with s
     * This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
 
 Additionally, a Tiva C (TM4C123GH6PM) from Texas Instruments was used during the validation of the 2022 version of Robotat Linalg. But, the Tiva C was not included in the testing and validation process of the 2025 version, in order to prioritize devices that can be used within the PlatformIO environment (where this project is intended to be installed). As such, Robotat Control, Robotat Robotics, and some Robotat Linalg routines, are not tested in the Tiva C.
+the test files for the routines (grouped by theme and all identified with the corresponding library name).
 
-# About this repository
-
-In this repository you will find the most recent version of the Robotat Linalg, Control and Robotics libraries, as well as any other file needed for configuration, and the documentation for the entire project. Additionally, in the "examples" folder you can find basic use demos, while the "test" folder, you can find the test files for the routines (grouped by theme and all identified with the corresponding library name).
+# About each library
 
 ## Robotat Linalg
 
@@ -65,12 +64,12 @@ Here is a brief description of each library:
 
 This library contains algorithms for the following:
 
-    * PID Controllers: update output, discretization methods (Pure Discrete, Forward Euler, Backward Euler and Tustin).
-    * State space representations for LTI and non-linear systems:
-       * Continuous-to-discrete conversion methods (Forward Euler, Backward Euler and Tustin).
-       * Nonlinear systems: linealization, state simulation with Forward Euler and Runge-Kutta4.
-    * Kalman filter prediction and correction functions.
-    * A shooting-based model predictive control (MPC), using the active-set method included in quadprog.
+* PID Controllers: update output, discretization methods (Pure Discrete, Forward Euler, Backward Euler and Tustin).
+* State space representations for LTI and non-linear systems:
+    * Continuous-to-discrete conversion methods (Forward Euler, Backward Euler and Tustin).
+    * Nonlinear systems: linealization, state simulation with Forward Euler and Runge-Kutta4.
+* Kalman filter prediction and correction functions.
+* A shooting-based model predictive control (MPC), using the active-set method included in quadprog.
 
 To use this library, import the robotat_control.h file. Currently, most functions depend only on matf32 from Robotat Linalg, with only the MPC functions depending on quadprog.
 
