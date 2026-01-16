@@ -160,7 +160,7 @@ int main(void)
         bool active_set_ans = matf32_is_equal(&x, &R_x);
         printf("quadprog_sqp,general%i\n",n);
         printf("%.9f\n",mean_quadprog_sqp_time);
-        //printf("General quadprog_sqp, Mean Time (s): %.9f, 1E-05 Tolerance: %s\n",
-        //    mean_quadprog_sqp_time, active_set_ans?"success":"failure");
+        printf("General quadprog_sqp, Mean Time (s): %.9f, 1E-05 Tolerance: %s\n",
+            mean_quadprog_sqp_time, active_set_ans?"success":"failure");
     }
 }

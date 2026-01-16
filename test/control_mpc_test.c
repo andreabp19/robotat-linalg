@@ -214,6 +214,9 @@ int main(void)
     //printf("qp_c:\n");
     //matf32_print(&qp_c);
 
+    float mpc_time[2*N];
+    float mpc_mean_time = 0;
+
     printf("\n----------------------------------------------------------------------\n");
     printf("MPC Main Loop\n");
     printf("----------------------------------------------------------------------\n");
@@ -224,10 +227,12 @@ int main(void)
         //printf("Iteration: %i\n", k+1);
         //printf("-------------------------\n");
 
+        time = clock();
         ctr_mpc_set_qpQ(&mpc, &qp_Q);
         ctr_mpc_set_qpc(&mpc, &qp_c);
         ctr_mpc_set_constraints(&mpc, 10, -10);
         ctr_mpc_update(&mpc, &qp_Q, &qp_c, &x_k, &u_k);
+        mpc_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
         
         //printf("x_k:\n");
         //matf32_print(&x_k);
@@ -250,6 +255,8 @@ int main(void)
         matf32_add(&utQu, &ctu, &utQu); // (1/2)*u'Qu + c'u
         cost[k] = utQu.p_data[0];
     }
+    mpc_mean_time = mean(mpc_time, 2*N);
+    printf("MPC mean time (s): %.9f\n", mpc_mean_time);
 
     printf("\n-------------------------\n");
     printf("Final Results:\n");

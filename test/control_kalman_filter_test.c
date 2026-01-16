@@ -120,6 +120,9 @@ int main(void)
     u_history[0] = u_k.p_data[0];
     y_history[0] = y_k.p_data[0];
 
+    float kalman_time[K];
+    float kalman_mean_time = 0;
+
     for (uint16_t k = 1; k < K; ++k)
     {
         //matf32_set(&u_k, 1, 1, -1); // u = -1
@@ -141,8 +144,10 @@ int main(void)
         matf32_mul(&C, &x_k, &y_k); // y = C*x
         matf32_add(&y_k, &v, &y_k); // y = C*x + v
 
+        time = clock();
         ctr_kalman_predict(&kf, &u_k); // Prediction: xhat = xhat_prior, P = P_prior
         ctr_kalman_correct(&kf, &y_k); // Correction: xhat = xhat_post, P = P_post
+        kalman_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
 
         // Save new values
         xhat_history[k] = xhat.p_data[0];
@@ -150,6 +155,8 @@ int main(void)
         u_history[k] = u_k.p_data[0];
         y_history[k] = y_k.p_data[0];
     }
+    kalman_mean_time = mean(kalman_time, K);
+    printf("Kalman Filter mean time (s): %.9f\n", kalman_mean_time);
 
     // Print xhat
     printf("\n\nkalman_xhat\n");

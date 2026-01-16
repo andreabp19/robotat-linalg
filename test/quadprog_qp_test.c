@@ -160,12 +160,19 @@ int main(void)
         printf("\n--------------------------------------------------\n");
         printf("n = %i\n", n);
         printf("--------------------------------------------------\n");
+
+        float condA = 0;
+        float condQ = 0;
+        matf32_cond(&Aeq, &condA);
+        matf32_cond(&Q, &condQ);
+        printf("Condition Number A: %.9f\n", condA);
+        printf("Condition Number Q: %.9f\n", condQ);
     
-        //printf("----- QP Solution x -----\n\n");
+        printf("----- QP Solution x -----\n\n");
         //printf("----- Ax = b Reconstruction -----\n\n");
 
-        //printf("MATLAB:\n");
-        //matf32_print(&R_x);
+        printf("MATLAB:\n");
+        matf32_print(&R_x);
         //printf("beq:\n");
         //matf32_print(&beq);
 
@@ -178,7 +185,7 @@ int main(void)
 
         float qp_ldlt_time[z];
         float mean_qp_ldlt_time = 0;
-        for (uint8_t j = 0; j < z; j++)
+        for (uint8_t j = 0; j < 1; j++)
         {
             time = clock();
             quadprog_qp_ldlt(&qp, &x_ldlt);
@@ -186,8 +193,8 @@ int main(void)
         }
         mean_qp_ldlt_time = mean(qp_ldlt_time, z);
 
-        //printf("x_ldlt:\n");
-        //matf32_print(&x_ldlt);
+        printf("x_ldlt:\n");
+        matf32_print(&x_ldlt);
         
         matf32_mul(&Aeq, &x_ldlt, &Ax);
         bool qp_ldlt_ans = matf32_is_equal(&x_ldlt, &R_x);
@@ -212,13 +219,13 @@ int main(void)
         // ---------------------------------------------------------------------------
         // quadprog_qp LU
         // ---------------------------------------------------------------------------
-        //printf("\n-------------------------\n");
-        //printf("LU %ix%i\n", n, n);
-        //printf("-------------------------\n");
+        printf("\n-------------------------\n");
+        printf("LU %ix%i\n", n, n);
+        printf("-------------------------\n");
 
         float qp_lu_time[z];
         float mean_qp_lu_time = 0;
-        for (uint8_t j = 0; j < z; j++)
+        for (uint8_t j = 0; j < 1; j++)
         {
             time = clock();
             quadprog_qp_linsolve(&qp, &x_lu, LU);
@@ -226,8 +233,8 @@ int main(void)
         }
         mean_qp_lu_time = mean(qp_lu_time, z);
 
-        //printf("x_lu:\n");
-        //matf32_print(&x_lu);
+        printf("x_lu:\n");
+        matf32_print(&x_lu);
 
         matf32_mul(&Aeq, &x_lu, &Ax);
         bool qp_lu_ans = matf32_is_equal(&x_lu, &R_x);
@@ -257,7 +264,7 @@ int main(void)
 
         float qp_svd_time[z];
         float mean_qp_svd_time = 0;
-        for (uint8_t j = 0; j < z; j++)
+        for (uint8_t j = 0; j < 1; j++)
         {
             time = clock();
             quadprog_qp_linsolve(&qp, &x_svd, SVD);
@@ -265,8 +272,8 @@ int main(void)
         }
         mean_qp_svd_time = mean(qp_svd_time, z);
 
-        //printf("x_svd:\n");
-        //matf32_print(&x_svd);
+        printf("x_svd:\n");
+        matf32_print(&x_svd);
 
         matf32_mul(&Aeq, &x_svd, &Ax);
         bool qp_svd_ans = matf32_is_equal(&x_svd, &R_x);
@@ -296,7 +303,7 @@ int main(void)
 
         float qp_qr_time[z];
         float mean_qp_qr_time = 0;
-        for (uint8_t j = 0; j < z; j++)
+        for (uint8_t j = 0; j < 1; j++)
         {
             time = clock();
             quadprog_qp_linsolve(&qp, &x_qr, QR);
@@ -304,8 +311,8 @@ int main(void)
         }
         mean_qp_qr_time = mean(qp_qr_time, z);
 
-        //printf("x_qr:\n");
-        //matf32_print(&x_qr);
+        printf("x_qr:\n");
+        matf32_print(&x_qr);
 
         matf32_mul(&Aeq, &x_qr, &Ax);
         bool qp_qr_ans = matf32_is_equal(&x_qr, &R_x);

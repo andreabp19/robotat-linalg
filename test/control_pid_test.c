@@ -113,6 +113,7 @@ int main(void)
 
     //ctr_pid_print(&pid);
 
+    float pid_pure_discrete_time[SAMPLES];
     float pid_pure_discrete_mean_time = 0;
     
     //time = clock();
@@ -125,7 +126,9 @@ int main(void)
     for (uint8_t k = 0; k < SAMPLES-1; k++)
     {
         // Discretize signal
+        time = clock();
         u_k.p_data[0] = ctr_pid_update(&pid, r_k_data1[k], y_k_pure_discrete[k]);
+        pid_pure_discrete_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
 
         // Update system
         matf32_mul(&A, &x_k, &Ax_k); // A*x_k
@@ -139,31 +142,32 @@ int main(void)
         x_k_pure_discrete[k+1] = x_k.p_data[0];
         y_k_pure_discrete[k+1] = y_k.p_data[0];
     }
-    //pid_pure_discrete_mean_time = (float)(clock()-time)/SAMPLES/CLOCKS_PER_SEC;
+    pid_pure_discrete_mean_time = mean(pid_pure_discrete_time, SAMPLES);
+    printf("PID Pure Discrete mean time (s): %.9f\n", pid_pure_discrete_mean_time);
 
     // Print u_k
-    printf("\n\npure_discrete_u_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", u_k_pure_discrete[k]);
-    }
-    printf("\n\n");
+    //printf("\n\npure_discrete_u_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", u_k_pure_discrete[k]);
+    //}
+    //printf("\n\n");
 
     // Print x_k
-    printf("\n\npure_discrete_x_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", x_k_pure_discrete[k]);
-    }
-    printf("\n\n");
+    //printf("\n\npure_discrete_x_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", x_k_pure_discrete[k]);
+    //}
+    //printf("\n\n");
 
     // Print y_k
-    printf("\n\npure_discrete_y_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", y_k_pure_discrete[k]);
-    }
-    printf("\n\n");
+    //printf("\n\npure_discrete_y_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", y_k_pure_discrete[k]);
+    //}
+    //printf("\n\n");
 
     // ---------------------------------------------------------------------------
     // ctr_pid_update - Forward Euler
@@ -177,11 +181,8 @@ int main(void)
     pid.tau = tau;
     pid.dt = dt;
 
-    //ctr_pid_print(&pid);
-
+    float pid_fwd_eul_time[SAMPLES];
     float pid_fwd_eul_mean_time = 0;
-    
-    //time = clock();
 
     // Set initial values
     u_k_fwd_eul[0] = 0;
@@ -191,7 +192,9 @@ int main(void)
     for (uint8_t k = 0; k < SAMPLES-1; k++)
     {
         // Discretize signal
+        time = clock();
         u_k.p_data[0] = ctr_pid_update(&pid, r_k_data1[k], y_k_fwd_eul[k]);
+        pid_fwd_eul_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
         
         // Update system
         matf32_mul(&A, &x_k, &Ax_k); // A*x_k
@@ -205,31 +208,32 @@ int main(void)
         x_k_fwd_eul[k+1] = x_k.p_data[0];
         y_k_fwd_eul[k+1] = y_k.p_data[0];
     }
-    //pid_fwd_eul_mean_time = (float)(clock()-time)/SAMPLES/CLOCKS_PER_SEC;
+    pid_fwd_eul_mean_time = mean(pid_fwd_eul_time, SAMPLES);
+    printf("PID Forward Euler mean time (s): %.9f\n", pid_fwd_eul_mean_time);
 
     // Print u_k
-    printf("\n\nfwd_eul_u_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", u_k_fwd_eul[k]);
-    }
-    printf("\n\n");
+    //printf("\n\nfwd_eul_u_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", u_k_fwd_eul[k]);
+    //}
+    //printf("\n\n");
 
     // Print x_k
-    printf("\n\nfwd_eul_x_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", x_k_fwd_eul[k]);
-    }
-    printf("\n\n");
+    //printf("\n\nfwd_eul_x_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", x_k_fwd_eul[k]);
+    //}
+    //printf("\n\n");
 
     // Print y_k
-    printf("\n\nfwd_eul_y_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", y_k_fwd_eul[k]);
-    }
-    printf("\n\n");
+    //printf("\n\nfwd_eul_y_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", y_k_fwd_eul[k]);
+    //}
+    //printf("\n\n");
 
     // ---------------------------------------------------------------------------
     // ctr_pid_update - Backward Euler
@@ -243,12 +247,9 @@ int main(void)
     pid.tau = tau;
     pid.dt = dt;
 
-    //ctr_pid_print(&pid);
-
+    float pid_bwd_eul_time[SAMPLES];
     float pid_bwd_eul_mean_time = 0;
     
-    //time = clock();
-
     // Set initial values
     u_k_bwd_eul[0] = 0;
     x_k_bwd_eul[0] = 0;
@@ -257,7 +258,9 @@ int main(void)
     for (uint8_t k = 0; k < SAMPLES-1; k++)
     {
         // Discretize signal
+        time = clock();
         u_k.p_data[0] = ctr_pid_update(&pid, r_k_data1[k], y_k_bwd_eul[k]);
+        pid_bwd_eul_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
         
         // Update system
         matf32_mul(&A, &x_k, &Ax_k); // A*x_k
@@ -271,31 +274,32 @@ int main(void)
         x_k_bwd_eul[k+1] = x_k.p_data[0];
         y_k_bwd_eul[k+1] = y_k.p_data[0];
     }
-    //pid_bwd_eul_mean_time = (float)(clock()-time)/SAMPLES/CLOCKS_PER_SEC;
+    pid_bwd_eul_mean_time = mean(pid_bwd_eul_time, SAMPLES);
+    printf("PID Backward Euler mean time (s): %.9f\n", pid_bwd_eul_mean_time);
 
     // Print u_k
-    printf("\n\nbwd_eul_u_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", u_k_bwd_eul[k]);
-    }
-    printf("\n\n");
+    //printf("\n\nbwd_eul_u_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", u_k_bwd_eul[k]);
+    //}
+    //printf("\n\n");
 
     // Print x_k
-    printf("\n\nbwd_eul_x_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", x_k_bwd_eul[k]);
-    }
-    printf("\n\n");
+    //printf("\n\nbwd_eul_x_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", x_k_bwd_eul[k]);
+    //}
+    //printf("\n\n");
 
     // Print y_k
-    printf("\n\nbwd_eul_y_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", y_k_bwd_eul[k]);
-    }
-    printf("\n\n");
+    //printf("\n\nbwd_eul_y_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", y_k_bwd_eul[k]);
+    //}
+    //printf("\n\n");
 
     // ---------------------------------------------------------------------------
     // ctr_pid_update - Tustin
@@ -309,11 +313,8 @@ int main(void)
     pid.tau = tau;
     pid.dt = dt;
 
-    //ctr_pid_print(&pid);
-
+    float pid_tustin_time[SAMPLES];
     float pid_tustin_mean_time = 0;
-    
-    //time = clock();
 
     // Set initial values
     u_k_tustin[0] = 0;
@@ -323,7 +324,9 @@ int main(void)
     for (uint8_t k = 0; k < SAMPLES-1; k++)
     {
         // Discretize signal
+        time = clock();
         u_k.p_data[0] = ctr_pid_update(&pid, r_k_data1[k], y_k_tustin[k]);
+        pid_tustin_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
         
         // Update system
         matf32_mul(&A, &x_k, &Ax_k); // A*x_k
@@ -337,29 +340,30 @@ int main(void)
         x_k_tustin[k+1] = x_k.p_data[0];
         y_k_tustin[k+1] = y_k.p_data[0];
     }
-    //pid_tustin_mean_time = (float)(clock()-time)/SAMPLES/CLOCKS_PER_SEC;
+    pid_tustin_mean_time = mean(pid_tustin_time, SAMPLES);
+    printf("PID Tustin mean time (s): %.9f\n", pid_tustin_mean_time);
 
     // Print u_k
-    printf("\n\ntustin_u_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", u_k_tustin[k]);
-    }
-    printf("\n\n");
+    //printf("\n\ntustin_u_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", u_k_tustin[k]);
+    //}
+    //printf("\n\n");
 
     // Print x_k
-    printf("\n\ntustin_x_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", x_k_tustin[k]);
-    }
-    printf("\n\n");
+    //printf("\n\ntustin_x_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", x_k_tustin[k]);
+    //}
+    //printf("\n\n");
 
     // Print y_k
-    printf("\n\ntustin_y_k\n");
-    for (uint8_t k = 0; k < SAMPLES; k++)
-    {
-        printf("%.9f ", y_k_tustin[k]);
-    }
-    printf("\n\n");
+    //printf("\n\ntustin_y_k\n");
+    //for (uint8_t k = 0; k < SAMPLES; k++)
+    //{
+    //    printf("%.9f ", y_k_tustin[k]);
+    //}
+    //printf("\n\n");
 }
