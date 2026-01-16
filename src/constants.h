@@ -1,11 +1,8 @@
 /**
- * @file constants.h
- *
- * Library configuration macros.
+ * Library configuration constants.
  * 
- * Last modified: 21 Sep 2025
+ * Last modified: 26 nov. 2025
  *      By: Andrea Pineda
- *
  */
 
 #ifndef ROBOTAT_CONSTANTS_H_
