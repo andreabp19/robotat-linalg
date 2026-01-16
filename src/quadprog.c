@@ -1,9 +1,5 @@
 /**
- * @addtogroup quadprog
- * @{
- * @file quadprog.c
- * 
- * Last modified: 4 Nov 2025
+ * Last modified: 26 Nov 2025
  */
 
 #include <stdint.h>
@@ -83,7 +79,7 @@ quadprog_status_print(quadprog_status_t status)
     }
 }
 
-// TODO: Add linsolve method in the arguments to select solver method for equality-restricted QPs
+
 quadprog_status_t
 quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadprog_method_t method)
 {
@@ -132,7 +128,7 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadpr
                     break;
 
                 case QP_QR:
-                    return quadprog_qp_linsolve(p_qp, p_x, QR);
+                    return quadprog_qp_linsolve(p_qp, p_x, QR_SQUARE);
                     break;
             }
         }
@@ -150,26 +146,6 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadpr
 quadprog_status_t
 quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
 {
-    /** 
-     * Creates a KKT system and applies a linsolve method to it in order to solve the QP
-     * 
-     * Linear system: My=n
-     * 
-     * create M = [Q Aeq'; Aeq 0]
-     * copy Q, Aeq in M
-     * transpose Aeq in temp Aeq
-     * copy Aeq' en M
-     * 
-     * create y = [x; lambda]
-     * create n = [-c, -beq]
-     *      copy c y beq in n
-     *      n = -n
-     * 
-     * solve My=n
-     * copy x from y
-     *  
-    */
-
     err_status_t status;
 
     const matf32_t* p_Q = p_qp->p_Q;
@@ -203,12 +179,12 @@ quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t me
     matf32_trans(p_Aeq, &temp_Aeq); // Aeq'
     matf32_submatrix_copy(&temp_Aeq, &M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
 
-    // Create matrix n = [c, beq], as the algorithm says: n = [-c -beq] and then invert the sign of n
+    // Create matrix n = [c, beq]
     matf32_submatrix_copy(p_c, &n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
     matf32_submatrix_copy(p_beq, &n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
     // Solve linear system My = n using linsolve's methods
-    status = linsolve_method(&M, &n, &y, method, SQUARE);
+    status = linsolve_method(&M, &n, &y, method);
 
     // Save the part of y that corresponds to the solution x of the QP
     matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
@@ -217,62 +193,9 @@ quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t me
 }
 
 
-// TODO: Test again after changing the matrices to reusable pointers
 quadprog_status_t 
 quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
 {
-    /**
-     *  Procedure:
-     *  
-     *  Solves the KKT system of an equality-constrained QP using the null-space method. Based on
-     *  Nocedal, Numerical Optimization, 16.2 Direct Solution of the KKT System.
-     *  
-     *  From the KKT system:
-     * 
-     *      |Q   Aeq'||  -p  | = |g| 
-     *      |Aeq  0  ||lambda|   |h|   
-     *  
-     *  where Aeq (m x n) with m <= n with full rank (m), while for h and g:
-     * 
-     *      h = Ajp_k - b (n x 1),
-     *      g = c + Gx (G_cols x 1) 
-     * 
-     *  Defining:
-     * 
-     *      p = Y*py + Z*pz
-     * 
-     *  where Y (n x m) and Z (n x (n-m)), such that a matrix [Y|Z] is nonsingular. In other words,
-     *  calculate the QR factorization of the transposed matrix Aeq and subdivide the Q factor: 
-     * 
-     *      Aeq' = QR,
-     * 
-     *      Q = [Q1|Q2],
-     * 
-     *      Y = Q1 (n x m)
-     *      Z = Q2 (n x (n-m))
-     *  
-     *  To get py, solve:
-     * 
-     *      (AY)*py = -h
-     *  
-     *  (If m = n, the problem gets reduced to solving the above as Z = 0, which means the Q and c of the QP are not
-     *  actually taken into account and the result may be valid but may not be the minimum for both the cost and constraints).
-     *  
-     *  To get pz, solve:
-     * 
-     *      (Z'*Q*Z)*pz = -Z'*Q*Y*py - Z'*g
-     *  
-     *  Then, having all needed matrices, compute:
-     * 
-     *      p = Y*py + Z*pz
-     *  
-     *  And if the Lagrange Multipliers are needed, solve the following system for lambda:
-     * 
-     *      (AY)'*lambda = Y'*(g + G*p)
-     */
-
-    // TODO: Add dimension checks to avoid computing extra steps if m = n
-
     uint16_t m = p_qp->p_Aeq->num_rows;
     uint16_t n = p_qp->p_Aeq->num_cols;
 
@@ -467,8 +390,6 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     }
     else
     {
-        // TODO: Check this TODO because I don't remember if I fixed it or not D:
-        // TODO: Debug this case because LDL' reconstruction doesn't match PMP'
         s = 2; // 2-by-2 pivot matrix E
 
         // Switch rows P(exi,:) and P(1,:)
@@ -613,54 +534,6 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 quadprog_status_t
 quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
 {
-    /**
-     *  Based in the Algorithm 5.4 of Martins, Engineering Design Optimization, modified to manage cases with both equality and inequality constraints.
-     *  The original algorithm in the book solves the KKT system: 
-     * 
-     *      | Q   Aeq' A_w' | |   p_k     |     | Q*x_k + c |
-     *      | Aeq  0    0   | | lambda_eq | = - |     0     | 
-     *      | A_w  0    0   | | lambda_wk |     |     0     |
-     *  
-     *  which is explained to apply assuming the equality contraints were already fulfilled.
-     *
-     *  In this function, it's applied without that assumption, so that all constraints are considered in the algorithm. So it's broken down in four cases:
-     *
-     *      - Case 1: Equality and Active Inequality Constraints:    | Q   Aeq' A_w' | |   p_k     |     |   Q*x_k + c   |
-     *                                                               | Aeq  0    0   | | lambda_eq | = - | Aeq*x_k - beq | 
-     *                                                               | A_w  0    0   | | lambda_wk |     | A_w*x_k - b_w |
-     *
-     *      - Case 2: Equality Constraints (no Active Inequalities):     | Q    Aeq' | |    p_k    | = - |   Q*x_k + c   |  
-     *                                                                   | Aeq   0   | | lambda_eq |     | Aeq*x_k - beq |
-     *
-     *      - Case 3: Active Inequality Constraints:     | Q    A_w' | |    p_k    | = - |   Q*x_k + c   |
-     *                                                   | A_w   0   | | lambda_wk |     | A_w*x_k - b_w |
-     *
-     *      - Case 4: No constraints: Solve the unconstrained system Q*p_k = -(Q*x_k + c). There are no Lagrange Multipliers in this case.
-     *
-     *  From the systems above, the variables names are as follows:
-     * 
-     *      Q         : Quadratic term matrix of the QP
-     *      c         : Linear term matrix of the QP
-     *      Aeq       : Equality constraints matrix of the QP
-     *      beq       : Equality constraints vector of the QP
-     *      A_w       : Active inequality constraints matrix (Working Set Matrix)
-     *      b_w       : Active inequality constraints vector (Working Set Vector) 
-     * 
-     *      p_k       : Actual solution to the KKT system of a given iteration.
-     *      lambda_eq : Lagrange Multipliers corresponding to equality constraints.
-     *      lambda_wk : Lagrange Multipliers corresponding to inequality constraints. 
-     * 
-     *  This way, if there are no equality constraints or all constraints are inactive, the KKT system is built only with what is actually active/exists,
-     *  which prevents building matrices with too many zeros, and so, reduces the risk of ill-conditioned KKT matrices.
-     *  
-     *  Lagrange multipliers are only considered for active inequality constraints (lambda_wk: lambda working set) to identify the most negative one (sigma),
-     *  and the row corresponding to that multiplier in the Working Set is removed to deactivate that constraint before the next iteration.
-     *  
-     *  In case there's no negative multiplier, sigma is set to a large enough positive value to fulfill the conditions of the remaining steps (sigma = 1/0 = Inf).
-     *  
-     *  The inactive inequality constraints are used to calculate a coefficient alpha, which is used to compute the next step: x_k = x_k + alpha*p_k;
-    */
-
     err_status_t err_status;
     quadprog_status_t quadprog_status;
 
@@ -691,7 +564,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
     uint16_t working_set_rows = 0; // Counter for the amount of active rows
 
 #ifdef MATH_MATRIX_CHECK
-    // TODO: check size, positive definite
+    // TODO: check size, positive semidefinite
 #endif
 
     // If available, set initial point
@@ -755,8 +628,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
         {
             if (working_set_rows > 0) // Equality Constraints + Active Inequality Constraints
             {
-                //printf("Iteration %i, Case 1: Active Constraints + Active Inequality Constraints QP\n\n", i+1);
-
                 // Create A_w and b_w
                 matf32_init(A_w, working_set_rows, Ain->num_cols, m1data);
                 matf32_zeros(A_w);
@@ -840,8 +711,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
             }
             else // Equality Constraints + Inactive inequality constraints
             {
-                //printf("Iteration %i, Case 2: Active Constraints QP + No Inequality Constraints\n\n", i+1);
-
                 // M = [Q Aeq'; Aeq 0]
                 matf32_init(&M, Q->num_rows+Aeq->num_rows, Q->num_cols+Aeq->num_rows, M_data);
                 matf32_zeros(&M);
@@ -886,8 +755,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
         {
             if (working_set_rows > 0) // No equality constraints + Inequality constraints active
             {
-                //printf("Iteration %i, Case 3: Inequality Constraints QP + No Equality Constraints\n\n", i+1);
-
                 // Create A_w and b_w
                 matf32_init(A_w, working_set_rows, Ain->num_cols, m1data);
                 matf32_zeros(A_w);
@@ -899,7 +766,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 for (uint16_t i = 0; i < Ain->num_rows; ++i)
                 {
                     // Assign active rows to the Working set matrices A_w and b_w
-                    // For now, this will be zero as no flags are being activates, so I'll assume this works.
                     if (index_flags[i])
                     {
                         matf32_init(temp_row, 1, Ain->num_cols, m3data); // Define matrix for A_w row
@@ -945,11 +811,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                //printf("M:\n");
-                //matf32_print(&M);
-                //printf("l:\n");
-                //matf32_print(l);
-
                 err_status = linsolve(&M, l, &p);
                 matf32_init(&lambda, Ax_b->num_rows, 1, lambda_data);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
@@ -957,16 +818,10 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
             }
             else // No equality constraints + No inequality constraints (unconstrained problem)
             {
-                //printf("Iteration %i, Case 4: Unconstrained QP\n\n", i+1);
-
                 matf32_init(l, Q->num_rows, 1, m4data);
                 matf32_mul(Q, &x_k, l); // n = Q*x
                 matf32_scale(l, -1.0, l); // n = -Q*x
                 matf32_sub(l, c, l); // n = -Q*x - c
-                //printf("Q:\n");
-                //matf32_print(Q);
-                //printf("l:\n");
-                //matf32_print(l);
                 
                 err_status = linsolve(Q, l, &p_k); // Solving Qp = -c because in this case there are no constraints
                 matf32_init(&lambda, 1, 1, lambda_data);
@@ -1068,7 +923,3 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
         }
     }
 }
-
-/**
- * @}
- */

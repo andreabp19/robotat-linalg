@@ -1,13 +1,14 @@
 /**
  * @defgroup Robotat-Control
  * @{
- * @file robotat_control.h
  * @author Miguel Zea (mezea@uvg.edu.gt)
- * @brief 
+ * @brief Library for control algorithms based on Robotat Linalg. Includes routines
+ * for PID controllers, LTI systems, non linear systems, Kalman Filters and
+ * an LTI, shooting-based MPC.
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 17 Nov 2025
+ * Last modified: 14 Jan. 2026
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -56,26 +57,28 @@ typedef enum
 
 
 /**
+ * @ingroup Robotat-Control
  * @brief   PID controller data structure.
  */
 typedef struct
 {
-    float kp;                       /** Proportional gain. */
-    float ki;                       /** Integral gain. */
-    float kd;                       /** Derivative gain. */
-    float e_k;                      /** Error */
-    float e_k_1;                    /** Last error. */
-    float e_k_2;                    /** Error previous to last error */
-    float u_k_1;                    /** Last controller output. */
-    float u_k_2;                    /** Control output previous to last controller output */
-    float i_min;                    /** Lower integrator saturation threshold. */
-    float i_max;                    /** Upper integrator saturation threshold. */
-    float tau;                      /** Time constant of the derivative HPF. */
-    float dt;                       /** Sampling period. */
-    ctr_discretizations_t pid_alg;  /** Specifies the discretization scheme to be used. */
+    float kp;                       /**< Proportional gain. */
+    float ki;                       /**< Integral gain. */
+    float kd;                       /**< Derivative gain. */
+    float e_k;                      /**< Error */
+    float e_k_1;                    /**< Last error. */
+    float e_k_2;                    /**< Error previous to last error */
+    float u_k_1;                    /**< Last controller output. */
+    float u_k_2;                    /**< Control output previous to last controller output */
+    float i_min;                    /**< Lower integrator saturation threshold. */
+    float i_max;                    /**< Upper integrator saturation threshold. */
+    float tau;                      /**< Time constant of the derivative HPF. */
+    float dt;                       /**< Sampling period. */
+    ctr_discretizations_t pid_alg;  /**< Specifies the discretization scheme to be used. */
 } ctr_pid_t;
 
 /**
+ * @ingroup Robotat-Control
  * @brief   State space LTI system data structure.
  */
 typedef struct
@@ -94,6 +97,7 @@ typedef struct
 
 
 /**
+ * @ingroup Robotat-Control
  * @brief   State space nonlinear system data structure.
  */
 typedef struct
@@ -102,14 +106,15 @@ typedef struct
     uint16_t state_dim;                                                             /**< Number of state variables. This is redundant but we'll keep it for completeness. */
     uint16_t input_dim;                                                             /**< Number of inputs/actuators/controls. */
     uint16_t output_dim;                                                            /**< Number of outputs/measurements. */
-    err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*);    /** System dynamics. */
-    err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*);     /** System outputs. */
+    err_status_t (*dynamics)(matf32_t* const, const matf32_t*, const matf32_t*);    /**< System dynamics. */
+    err_status_t (*outputs)(matf32_t* const, const matf32_t*, const matf32_t*);     /**< System outputs. */
     float dt;                                                                       /**< Sampling period (for discrete time systems). */
     bool is_continuous;                                                             /**< System time domain specification. */
 } ctr_sys_nonlin_t;
 
 
 /**
+ * @ingroup Robotat-Control
  * @brief   Linear time-varying Kalman filter data structure.
  */
 typedef struct
@@ -123,26 +128,27 @@ typedef struct
 } ctr_kalman_t;
 
 /**
+ * @ingroup Robotat-Control
  * @brief   Struct for the matrices to be used in the MPC (Unconstrained, Shooting-Based, LTI)
- * This type of MPC can be either unconstrained or inequality constrained.
+ * Can be implemented with or without constraints.
  */
 typedef struct
 {
-    bool state_constraints; /** Boolean: 0=input-only constraints, 1=include state limits as input constraints */
-    float N;                /** Horizon length */
-    float ub;               /** Upper bounds limit */
-    float lb;               /** Lower bounds limit */
-    ctr_sys_lti_t* sys;     /** LTI system struct */
-    quadprog_t* qp;         /** Quadratic Program (QP) struct */
-    matf32_t** mpc_C;       /** Points to convolution matrix C data arrays */
-    matf32_t** mpc_M;       /** Points to data arrays for the powers of A matrix M */
-    matf32_t* mpc_Q;        /** Points to penalization matrix Q */
-    matf32_t* mpc_R;        /** Points to penalization matrix R */
-    matf32_t* mpc_S;        /** Points to penalization matrix S */
-    matf32_t* u_k;          /** Predicted input trajectory */
-    matf32_t* x_k;          /** Predicted state trajectory */
-    matf32_t* Ain;          /** Inequality restrictions matrix */
-    matf32_t* bin;          /** Inequality restrictions vector */
+    bool state_constraints; /**< Boolean: 0=input-only constraints, 1=include state limits as input constraints */
+    float N;                /**< Horizon length */
+    float ub;               /**< Upper bounds limit */
+    float lb;               /**< Lower bounds limit */
+    ctr_sys_lti_t* sys;     /**< LTI system struct */
+    quadprog_t* qp;         /**< Quadratic Program (QP) struct */
+    matf32_t** mpc_C;       /**< Points to convolution matrix C data arrays */
+    matf32_t** mpc_M;       /**< Points to data arrays for the powers of A matrix M */
+    matf32_t* mpc_Q;        /**< Points to penalization matrix Q */
+    matf32_t* mpc_R;        /**< Points to penalization matrix R */
+    matf32_t* mpc_S;        /**< Points to penalization matrix S */
+    matf32_t* u_k;          /**< Predicted input trajectory */
+    matf32_t* x_k;          /**< Predicted state trajectory */
+    matf32_t* Ain;          /**< Inequality restrictions matrix */
+    matf32_t* bin;          /**< Inequality restrictions vector */
 } ctr_mpc_lti_shooting_t;
 
 
@@ -333,6 +339,11 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 /**
  * @brief   Updates the step for a nonlinear system with either forward euler or runge-kutta-4 methods.
  * 
+ * Equations with Forward Euler: \f[ x_{k+1} = x_k + f(x_k) \Delta t \f]
+ * 
+ * Runge-Kutta4: \f[ x_{k+1} = x_k + \frac{\Delta t}{6}(k_1 + 2k_2 + 2k_3 + k_4) \f]
+ * 
+ * 
  * @param[in]   sys     Points to the nonlinear system to work with
  * @param[in]   x_k     Points to the current state
  * @param[in]   x_k_1   Points to the next state to save it
@@ -398,6 +409,11 @@ ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
 
 /**
  * @brief   Initializes an unconstrained, shooting-based, LTI, MPC struct.
+ * All needed data must be declared and initialized beforehand, including matrices,
+ * arrays of matrices, along with the quadratic problem and MPC structs.
+ * 
+ * For an unconstrained MPC, set Ain and bin equal to NULL. Otherwise, declare, initialize
+ * and set the corresponding matrices.
  * 
  * @param[in,out]   mpc                 Points to the corresponding MPC struct.
  * @param[in]       x0                  Points to the initial operation point matrix
@@ -419,8 +435,18 @@ ctr_mpc_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys
 
 
 /**
- * @brief   Generates matrix M = [A, A^2, ..., A^N] of the MPC as an array of matrices, such that each power of A
- * is a different matrix. That is: M = [&M1, &M2, ... &MN], where each submatrix M is the corresponding power of A.
+ * @brief   Generates the prediction matrix \f$ \textbf{M}_x \f$ for the MPC, generated as an array of matrices, such that:
+ * 
+ * \f[ \textbf{M}_x = [\textbf{A}, \textbf{A}^2, ... , \textbf{A}^N] \f]
+ * 
+ * according to the definition of the matrix in Kouvaritakis, Model Predictive Control.
+ * 
+ * In terms of code, that means that \f$ \textbf{M}_x \f$ is an array of pointers, and each index in it
+ * contains a different matrix, that is: M = [&M1, &M2, ... , &MN], where each matrix M corresponds
+ * to a power of A. Both the array of pointers and the individual matrices must be declared (and the matrices
+ * initialized with matf32_init) before calling this routine. The content of each matrix is computed and set
+ * with this routine upon execution, except for \f$ \textbf{A} \f$ which should be already defined with the values of the
+ * LTI system to be optimized.
  * 
  * @param[in,out]   mpc         Points to the MPC struct.
  * @param[in,out]   mpc_M_data  Points to the data arrays for the submatrices of M
@@ -433,8 +459,25 @@ ctr_mpc_set_M(ctr_mpc_lti_shooting_t* mpc, float** mpc_M_data);
 
 
 /**
- * @brief   Generates the convolution matrix C for the MPC as an array of matrices. This, based
- * by assigning pointers to the matrices needed for C, which are: B, AB, (A^2)*B, ..., (A^N)*B.
+ * @brief   Generates the convolution matrix \f$ \textbf{M}_c \f$ for the MPc, generated as an array of matrices,
+ * such that inside the MPC routines it's operated as a matrix of matrices. In simple terms, that is:
+ * 
+ * \f[ \textbf{M}_c =
+ * \begin{bmatrix} 
+ *  \textbf{B}                      &   \textbf{0}        & \cdots & \textbf{0} \\
+ *  \boldsymbol{A} \textbf{B}       &   \textbf{B}        & \cdots & \textbf{0} \\
+ *  \vdots                          &   \vdots            & \ddots & \vdots     \\
+ *  \boldsymbol{A} ^{N-1}\textbf{B} & A ^{N-2} \textbf{B} & \cdots & \textbf{B}
+ * \end{bmatrix} \f]
+ * 
+ * Similar to ctr_mpc_set_M, the array of pointers must be declared before calling this routine
+ * (ctr_mpc_set_C) and the necessary matrices must be declared and initialized before as well.
+ * That is, define and initialize matf32_t matrices for all matrices in the first column of
+ * \f$ \textbf{M}_c \f$, as well as an additional null matrix to match the dimensiones in the
+ * operations that will be done with other routines. Save those matrices in their own array
+ * (mpc_C_stack) in the same order as in the first column of the convolution matrix (with the
+ * null matrix at the end of the array). This routine computes all matrices individually,
+ * except \f$ \textbf{B} \f$ which should be defined with the LTI system to be optimized.
  * 
  * @param[in,out]   mpc                 Points to the MPC struct       
  * @param[in,out]   mpc_C_stack         Points to the stack of matrices needed to build C
@@ -448,7 +491,17 @@ ctr_mpc_set_C(ctr_mpc_lti_shooting_t* mpc, matf32_t** mpc_C_stack, float** mpc_C
 
 
 /**
- * @brief   Generates the quadratic term matrix Q for the quadratic program of the MPC.
+ * @brief   Generates the quadratic term matrix \f$ \textbf{Q} \f$ for the quadratic program associated to the
+ * MPC, following the equation:
+ * 
+ * \f[ \textbf{Q} = 2 \cdot (\textbf{M}^\top_c \tilde{\textbf{Q}} \textbf{M}_c + \tilde{\textbf{R}}) \f]
+ * 
+ * where \f$ \tilde{\textbf{Q}} \f$ and \f$ \tilde{\textbf{R}} \f$ correspond the penalization matrices
+ * as implemented in the Linear-Quadratic Regulator (LQR), while \f$ \textbf{M}_c \f$ is one of the prediction
+ * matrices of the MPC (see ctr_mpc_set_M). 
+ * 
+ * The above equation was adapted from the definition of the MPC as explained in Kouvaritakis,
+ * Model Predictive Control. 
  * 
  * @param[in]       mpc     Points to the MPC struct.
  * @param[in,out]   qp_Q    Points to the Q matrix for the quadratic program.
@@ -460,7 +513,19 @@ err_status_t
 ctr_mpc_set_qpQ(ctr_mpc_lti_shooting_t* mpc, matf32_t* qp_Q);
 
 /**
- * @brief   Generates the linear term matrix c for the quadratic program of the MPC.
+ * @brief   Generates the linear term matrix \f$ c \f$ for the quadratic program of the associated to the
+ * MPC, following the equation:
+ * 
+ * \f[ \textbf{c} = 2 \textbf{F} \mathrm{\textbf{x}}_k \f]
+ * 
+ * \f[ \textbf{F} = \textbf{M}^\top_c \tilde{\textbf{Q}} \textbf{M}_x \f]
+ * 
+ * where \f$ \textbf{x}_k \f$ is the state vector of the LTI system, \f$ \textbf{M}^\top_c \f$ and
+ * \f$ \textbf{M}_x \f$ are the prediction matrices of the MPC, and \f$ \tilde{\textbf{Q}} \f$ is the
+ * penalization matrix as used in the Linear-Quadratic Regulator (LQR).
+ * 
+ * The equations above were adapted from the definition of the MPC in Kouvaritakis,
+ * Model Predictive Control.  
  * 
  * @param[in]       mpc     Points to the MPC struct.
  * @param[in,out]   qp_c    Points to the c matrix for the quadratic program.
@@ -472,7 +537,18 @@ err_status_t
 ctr_mpc_set_qpc(ctr_mpc_lti_shooting_t* mpc, matf32_t* qp_c);
 
 /**
- * @brief   Updates the input trajectory of the MPC by one step.
+ * @brief   Calculates next state trajectory of the MPC, executing the following steps:
+ * 
+ * 1. Solving the quadratic program (QP) associated to the MPC. If the QP is unconstrained,
+ * a simple solution with linsolve is calculated. Otherwise, if there are constraints (whether
+ * of equality or inequality), then the active-set method of quadprog is used (see quadprog_sqp).
+ * 
+ * 2. Updating the LTI system, by using the result of the solution of the QP. In this case, the
+ * QP is used to recalculate the input vector, generating N values according as a projection to
+ * the entire horizon length of the MPC, so only the first value of the new input vector is used
+ * to compute the next state of the LTI system, and this is done through the definition of the system:
+ * 
+ * \f[ \textbf{x}_{k+1} = \textbf{Ax}_k + \textbf{Bu} \f]
  * 
  * @param[in,out]   mpc     Points to the corresponding MPC struct.
  * @param[in]       x_k     Points to the current state trajectory
@@ -487,7 +563,40 @@ ctr_mpc_update(ctr_mpc_lti_shooting_t* mpc, matf32_t* const qp_Q, matf32_t* cons
 
 /**
  * @brief   Generates the inequality matrix and vector according to whether only the input or both the input
- * and state are constrained.
+ * and state are constrained, according to the following definitions:
+ * 
+ * 1. If only the input vector is to be constrained:
+ * 
+ * \f[
+ * \begin{bmatrix}
+ * lb \\
+ * \vdots \\
+ * lb
+ * \end{bmatrix}
+ * \le
+ * \textbf{u}_k
+ * \le
+ * \begin{bmatrix}
+ * ub \\
+ * \vdots \\
+ * ub
+ * \end{bmatrix},
+ * \f]
+ * 
+ * 2. If the state is to be constrained as well: in this case, this is done through the restrictions of the
+ * input vector, given that this is for a shooting-based MPC. That is, the state constraints are written and
+ * computed as follows:
+ * 
+ * \f[
+ * \textbf{x}_{lb} - \textbf{Bu}_1
+ * \le
+ * \textbf{Au}_k
+ * \le
+ * \textbf{x}_{ub} - \textbf{B}\textbf{u}_1
+ * \f]
+ * 
+ * In both cases, \f$ lb \f$ and \f$ ub \f$ refer to the lower and upper constraints (numerical values), while
+ * all the matrices in the above equations correspond to those of the LTI system.
  * 
  * @param[in,out]   mpc                 Points to the corresponding MPC struct
  * @param[in]       ub                  Upper bound
@@ -559,12 +668,6 @@ ctr_kalman_print(ctr_kalman_t* p_kalman);
 // 3. Extended Kalman Filter
 // 4. Linear time-varying LQR
 // 5. Linear MPC
-
-
-//void
-//kalman_predict(ctr_kalman_t* const kf, float* const inputs);
-//err_status_t
-//kalman_correct(ctr_kalman_t* const kf, float* const measurements);
 
 #ifdef __cplusplus
 }

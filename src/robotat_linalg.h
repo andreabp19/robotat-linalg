@@ -1,8 +1,9 @@
 /**
  * @defgroup Robotat-Linalg
  * @{
- * @file robotat_linalg.h
  *
+ * Robotat Linalg main file to import matf32, linsolve and quadprog libraries.
+ * 
  * Adapted from CControl (https://github.com/DanielMartensson/CControl) with the following changes:
  *
  * 1. Removed all but linear algebra and (some) optimization routines.
@@ -18,106 +19,53 @@
  *    when doing linear algebra operations. It's even recommended to use single row or column matrices
  *    instead of arrays to gain these dimension checks even though it has a speed penalty (check next point).
  * 5. Added a size mismatch check similar to ARM's CMSIS DSP matrix libraries (this can be disabled to
- *    reduce overhead by undefining the MATH_MATRIX_CHECK macro).
- 
- *   Created on: 5 oct. 2019
- *      @author: Daniel Martensson
+ *    reduce overhead by undefining the MATH_MATRIX_CHECK macro)
+ * 6. Organized the matf32 routines in the following files: matf32_check, matf32_def,
+ *    matf32_math and math_util, while linsolve and quadprog have a single file. Included routines for
+ *    matrix operations and factorizations, matrix check functions, linear solver methods and methods for
+ *    convex quadratic programs with equality and inequality restricctions.
+ * 7. Combined matf32_check, matf32_def, matf32_math and math_util into a single matf32
+ *    pair of files, to facilitate use and organization. Also, moved matrix factorizations from linsolve 
+ *    to matf32, for subject coherence and to be able to use them in other applications without creating
+ *    dependence from matf32 to linsolve.
+ * 8. Validated the previously developed routines in matf32, linsolve and quadprog. Made significant changes
+ *    in the algorithms of the following: matf32_lu and linsolve lu (added partial pivoting for stability),
+ *    matf32_cholesky (fixed issues), ones (fixed issues), quadprog_sqp (fixed issues and adapted to solve
+ *    problems with both equality and inequality restriccions). Also renamed quadprog_qp as quadprog_qp_linsolve
+ *    and modified it to allow to choose which linsolve method to be used.
+ * 9. Added the following routines to their respective libraries: matf32_pinv, matf32_cond, matf32_check_symposdef,
+ *    matf32_one_sided_jacobi, matf32_jacobi_svd, linsolve_qr, linsolve_cholesky, linsolve_svd, quadprog_qp_ldlt,
+ *    quadprog_qp_nullspace.
+ * 10.Added the robotat_control and robotat_robotics libraries.
+ * 
+ * 
+ *  @date Created on: 5 oct. 2019
+ *            By: Daniel Martensson (original author) \n
  *  Modified on: 1 aug. 2021
- *           By: Miguel Zea (mezea@uvg.edu.gt)
- *  Modified on: 20 may 2022
- *           By: Daniel Pineda (bar18714@uv.edu.gt)
- *  Last Modified: 24 Nov 2025
- *             By: Andrea Pineda (Added doxygen group)
- *
- * TODO: Update above description.
+ *            By: Miguel Zea (mezea@uvg.edu.gt) \n
+ *  Modified on: 20 may. 2022
+ *            By: Daniel Pineda (bar18714@uvg.edu.gt) \n
+ *  Modified on: 26 nov. 2025
+ *            By: Andrea Pineda (bar20575@uvg.edu.gt) \n
  */
 
 #ifndef ROBOTAT_LINALG_H_
 #define ROBOTAT_LINALG_H_
 
- /**
-  * Dependencies.
-  */
-
+// C Libraries
 #include <string.h>	                    // For memcpy, memset etc.
 #include <stdio.h>                      // For printf.
 #include <stdlib.h>                     // Standard library.
 #include <stdint.h>	                    // For uint8_t, uint16_t and uint16_t.
-#include <math.h>	                    // For sqrtf.
+#include <math.h>	                      // For sqrtf.
 #include <float.h>	                    // Required for FLT_EPSILON.
 #include <stdbool.h>                    // For bool datatype.
 #include <time.h>                       // For srand, clock.
 
-#include "matf32.h"
-#include "linsolve.h"
-#include "quadprog.h"
-
-
-//// ====================================================================================================
-//// Miscellaneous
-//// ====================================================================================================
-//void
-//cut(float A[], uint16_t row, uint16_t column, float B[], uint16_t start_row, uint16_t stop_row, uint16_t start_column, uint16_t stop_column);
-//
-//void
-//insert(float A[], float B[], uint16_t row_a, uint16_t column_a, uint16_t column_b, uint16_t startRow_b, uint16_t startColumn_b);
-///**
-//  * Linear algebra.
-//  */
-//void
-//svd_jacobi_one_sided(float A[], uint16_t row, uint8_t max_iterations, float U[], float S[], float V[]);
-//
-//void
-//dlyap(float A[], float P[], float Q[], uint16_t row);
-//
-//uint8_t
-//svd_golub_reinsch(float A[], uint16_t row, uint16_t column, float U[], float S[], float V[]);
-//
-
-//float
-//det(float A[], uint16_t row);
-//
-//uint8_t
-//linsolve_lup(float A[], float x[], float b[], uint16_t row);
-//
-//void
-//pinv(float A[], uint16_t row, uint16_t column);
-//
-//void
-//hankel(float V[], float H[], uint16_t row_v, uint16_t column_v, uint16_t row_h, uint16_t column_h, uint16_t shift);
-//
-//void
-//balance(float A[], uint16_t row);
-//
-//void
-//eig(float A[], float wr[], float wi[], uint16_t row);
-//
-//void
-//eig_sym(float A[], uint16_t row, float d[]);
-//
-//void
-//sum(float A[], uint16_t row, uint16_t column, uint8_t l);
-//
-//float
-//norm(float A[], uint16_t row, uint16_t column, uint8_t l);
-//
-//void
-//expm(float A[], uint16_t row);
-//
-//void
-//nonlinsolve(void (*nonlinear_equation_system)(float[], float[], float[]), float b[], float x[], uint8_t elements, float alpha, float max_value, float min_value, bool random_guess_active);
-//
-//void
-//linsolve_gauss(float* A, float* x, float* b, uint16_t row, uint16_t column, float alpha);
-//
-//
-//
-///**
-//  * Optimization.
-//  */
-//  /** @TODO: implement convex quadprog and general gradient descent w/o constraints. */
-//void
-//linprog(float c[], float A[], float b[], float x[], uint8_t row_a, uint8_t column_a, uint8_t max_or_min, uint8_t iteration_limit);
+// Robotat Linalg Libraries
+#include "matf32.h"                     // Matrix Linear Algebra Library
+#include "linsolve.h"                   // Linear Solver Library
+#include "quadprog.h"                   // Convex Quadratic Programming Library
 
 #endif /* ROBOTAT_LINALG_H_ */
 

@@ -1,11 +1,7 @@
 /**
- * @defgroup linsolve
- * @{
- * @file linsolve.c
- * 
  * Created: 2022
  *      By: Daniel Pineda
- * Last modified 26 Oct 2025
+ * Last modified 14 jan. 2025
  *      By: Andrea Pineda
  */
 
@@ -47,8 +43,12 @@ linsolve_print_method(linsolve_method_t lsm)
             printf("CHOLESKY\n");
             break;
 
-        case QR:
-            printf("QR\n");
+        case QR_RECT:
+            printf("QR_RECT\n");
+            break;
+
+        case QR_SQUARE:
+            printf("QR_SQUARE\n");
             break;
 
         case LU:
@@ -68,7 +68,7 @@ linsolve_get_method(const matf32_t* const p_a)
     // Solve with QR if matrix is not square
     if (!matf32_check_square_matrix(p_a))
     {
-        return QR;
+        return QR_RECT;
     }
 
     // Solve with Forward Substitution if matrix is lower triangular
@@ -175,12 +175,12 @@ linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p
 {
     linsolve_method_t method = linsolve_get_method(p_a);
 
-    return linsolve_method(p_a, p_b, p_x, method, RECT);
+    return linsolve_method(p_a, p_b, p_x, method);
 }
 
 
 err_status_t
-linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method, linsolve_matrix_shape_t shape)
+linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t*  const p_x, linsolve_method_t method)
 {
     err_status_t status;
 
@@ -212,7 +212,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
             return status;
             break;
 
-        case QR:
+        case QR_RECT:
             
             matf32_init(&m1, p_a->num_rows, p_a->num_rows, m1data);
             matf32_zeros(&m1);
@@ -227,7 +227,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
                 return status;
             }
 
-            status = linsolve_qr(&m1, &m2, p_b, p_x, shape);
+            status = linsolve_qr(&m1, &m2, p_b, p_x, QR_RECT);
             
             return status;
             break;
@@ -276,7 +276,7 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
 
 
 err_status_t
-linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x, linsolve_matrix_shape_t shape)
+linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x, linsolve_method_t qr_shape)
 {
     err_status_t status;
 
@@ -300,16 +300,16 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
     matf32_mul(&trans_q, p_b, &y);
 
     // Solve depending on the shape of the matrix
-    switch (shape)
+    switch (qr_shape)
     {
         // R is already square and upper triangle, so no issue with backward subs
-        case SQUARE: 
+        case QR_SQUARE: 
             status = linsolve_backward_substitution(p_r, &y, p_x);
             break;
 
         // R from full QR (as matf32_qr) is n x (n-1), with an extra row of zeros.
         // Take away the extra row of zeros to turn it into upper triangular and solve with backward substitution.
-        case RECT:
+        case QR_RECT:
             matf32_submatrix_copy(p_r, &sub_R, 0, 0, 0, 0, sub_R.num_rows, sub_R.num_cols);
             status = linsolve_backward_substitution(&sub_R, &y, p_x);
             break;
@@ -397,15 +397,6 @@ linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* con
 err_status_t
 linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_t* const p_v, const matf32_t* const p_b, matf32_t* const p_x)
 {
-    /**
-     * Procedure: Based on Watkins, Fundamentals of Matrix Computations, 4.3 The SVD and the Least Squares Problem,
-     * but modified to use the pseudoinverse instead of the inverse and without intermediate subvectors.
-     * 
-     * With svd(A) = USV'
-     * 
-     * x = V*pinv(S)*U'*b
-     */
-
     uint16_t n = p_s->num_cols;
 
     matf32_t* Si = &m5;
@@ -443,7 +434,3 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
 
     return MATH_SUCCESS;
 }
-
-/**
- * @}
- */

@@ -4,7 +4,7 @@
  * @{
  * @author Miguel Zea
  * 
- * Last modified: 28 Oct 2025
+ * Last modified: 13 Jan. 2026
  * 		By: Andrea Pineda
  * 
  */
@@ -32,7 +32,6 @@ static matf32_t m6;
 // 1. PID Control
 // ====================================================================================================
 
-// Tested => Works
 void
 ctr_pid_init(ctr_pid_t* const pid, float kp, float ki, float kd, ctr_discretizations_t pid_alg, bool set_i_limits, ...)
 {
@@ -131,11 +130,6 @@ ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k)
 			+ (4*tau)*u_k_1
 			- (2*tau - T)*u_k_2;
 		u_k = u_k / a0;
-		break;
-
-		// TODO: Implement ZOH discretization for the PID controller. 
-	case ZOH:
-
 		break;
 
 	default:
@@ -506,11 +500,6 @@ ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32
 	{
 		case FWD_EULER:
 
-			/**
-			 * Forward Euler
-			 * x_k_1 = x_k + f(x_k)*delta
-			 */
-
 			sys->dynamics(fss, x_k, u_k);	// f(x_k, u_k)
 			matf32_scale(fss, delta, fss); 	// f(x_k, u_k)*delta
 			matf32_add(x_k, fss, x_k_1); 	// x_k_1 = x_k + f(x_k, u_k)*delta
@@ -518,17 +507,6 @@ ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32
 			break;
 
 		case RK4:
-
-			/**
-			 * Runge-Kutta-4
-			 * x_k_1 = x_k + (delta/6)(k1 + 2k2 + 2k3 + k4)
-			 * 		 = x_k + (delta/6)(k1 + 2(k2 + k3) + k4)
-			 * 
-			 * k1 = f(x_k)
-			 * k2 = f(x_k + (delta/2)*k1)
-			 * k3 = f(x_k + (delta/2)*k2)
-			 * k4 = f(x_k + delta*k3)
-			 */
 
 			// k1
 			sys->dynamics(k1, x_k, u_k); 		// k1 = f(x_k, u_k)
@@ -707,112 +685,6 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 
 	return MATH_SUCCESS;
 }
-
-
-// Other version of kalman functions (don't touch)
-
-//void
-//kalman_predict(kalman_info_t* const kf, float* const inputs)
-//{
-//	matf32_t* tmpmat1 = &m1;
-//	matf32_t* tmpmat2 = &m2;
-//	matf32_t* tmpmat3 = &m3;
-//	float dim_xhat = kf->sys->state_dim;
-//	float dim_u = kf->sys->input_dim;
-//	float dim_y = kf->sys->output_dim;
-//	float dim_w = kf->Qw->num_rows;
-//	float dim_v = kf->Qv->num_rows;
-//
-//	// Temp 'vectors' to store partial results
-//	matf32_init(tmpmat1, dim_xhat, 1, m1data); // tmpmat1: dim(xhat) x 1
-//	matf32_init(tmpmat2, dim_u, 1, inputs); // tmpmat2: dim(u) x 1
-//	matf32_init(tmpmat3, dim_xhat, 1, m3data); // tmpmat1: dim(xhat) x 1
-//
-//	// Predict the prior using the linear dynamics
-//	matf32_mul(kf->sys->A, kf->xhat, tmpmat1); // tmpmat1 = A[k]*xhat[k-1|k-1]
-//	matf32_mul(kf->sys->B, tmpmat2, tmpmat3); // tmpmat3 = B[k]*u[k], tmpmat2 = u[k]
-//	matf32_add(tmpmat1, tmpmat3, kf->xhat); // xhat[k|k-1] = A[k]*xhat[k-1|k-1] + B[k]*u[k] 
-//
-//	// Update the covariance matrix using the dynamics and process noise covariance
-//	matf32_reshape(tmpmat1, dim_xhat, dim_w); // tmpmat1: dim(xhat) x dim(w)
-//	matf32_reshape(tmpmat2, dim_w, dim_xhat); // tmpmat2: dim(w) x dim(xhat)
-//	tmpmat2->p_data = &m2data;
-//	matf32_reshape(tmpmat3, dim_xhat, dim_xhat); // tmpmat3: dim(xhat) x dim(xhat)
-//	
-//	matf32_mul(kf->F, kf->Qw, tmpmat1); // tmpmat1 = F[k]*Qw[k-1]
-//	matf32_trans(kf->F, tmpmat2); // tmpmat2 = F[k]' 
-//	matf32_mul(tmpmat1, tmpmat2, tmpmat3); // tempmat3 = (F[k]*Qw[k-1]) * F[k]' 
-//
-//	matf32_reshape(tmpmat1, dim_xhat, dim_xhat); // tmpmat1: dim(xhat) x dim(xhat)
-//	matf32_reshape(tmpmat2, dim_xhat, dim_xhat); // tmpmat2: dim(xhat) x dim(xhat)
-//	
-//	matf32_mul(kf->sys->A, kf->P, tmpmat1); // tmpmat1 = A[k]*P[k-1|k-1]
-//	matf32_trans(kf->sys->A, tmpmat2); // tmpmat2 = A[k]'
-//	matf32_mul(tmpmat1, tmpmat2, kf->P); // kf->P = (A[k]*P[k-1|k-1]) * A[k]'
-//
-//	// P[k|k-1] = A[k]*P[k-1|k-1] + F[k]*Qw[k-1]*F[k]' = kf->P + tmpmat3  
-//	matf32_add(kf->P, tmpmat3, kf->P);
-//}
-
-
-//err_status_t
-//kalman_correct(kalman_info_t* const kf, float* const measurements)
-//{
-//	err_status_t status;
-//	matf32_t* tmpmat1 = &m1;
-//	matf32_t* tmpmat2 = &m2;
-//	matf32_t* tmpmat3 = &m3;
-//	float dim_xhat = kf->sys->state_dim;
-//	float dim_u = kf->sys->input_dim;
-//	float dim_y = kf->sys->output_dim;
-//	float dim_w = kf->Qw->num_rows;
-//	float dim_v = kf->Qv->num_rows;
-//
-//	// Temp matrices to store partial results
-//	matf32_init(tmpmat1, dim_xhat, dim_y, m1data); // tmpmat1: dim(xhat) x dim(y)
-//	matf32_init(tmpmat2, dim_xhat, dim_y, m2data); // tmpmat2: dim(xhat) x dim(y)
-//	matf32_init(tmpmat3, dim_y, dim_y, m3data); // tmpmat3: dim(y) x dim(y)
-//
-//	// Innovation covariance
-//	matf32_trans(kf->sys->C, tmpmat1); // tmpmat1 = C[k]'
-//	matf32_mul(kf->P, tmpmat1, tmpmat2); // tmpmat2 = P[k|k-1]*C[k]'
-//	matf32_mul(kf->sys->C, tmpmat2, tmpmat3); // tmpmat3 = C[k]*P[k|k-1]*C[k]'
-//	matf32_add(tmpmat3, kf->Qv, tmpmat3); // S[k] = tmpmat3 += Qv[k]
-//
-//	// Kalman gain
-//	status = matf32_inv(tmpmat3, tmpmat3); // S[k]^-1 = tmpmat3^-1 = (C[k]*P[k|k-1]*C[k]' + Qv[k])^-1 
-//	// If matrix inversion fails, return from kalman update 
-//	if (status != MATH_SUCCESS)
-//		return status;
-//
-//	matf32_reshape(tmpmat1, dim_xhat, dim_u); // tmpmat1: dim(xhat) x dim(u)
-//	matf32_mul(tmpmat2, tmpmat3, tmpmat1); // tmpmat1 = L[k] = P[k|k-1]*C[k]'*S[k]^-1 = tmpmat2 * tmpmat3 
-//
-//	// Update the estimates using the measurements
-//	matf32_reshape(tmpmat2, dim_xhat, dim_xhat); // tmpmat2: dim(xhat) x dim(xhat)
-//	matf32_reshape(tmpmat3, dim_xhat, dim_xhat); // tmpmat3: dim(xhat) x dim(xhat)
-//
-//	matf32_eye(tmpmat2); // tmpmat2 = I
-//	matf32_mul(tmpmat1, kf->sys->C, tmpmat3); // tmpmat3 = L[k]*C[k]
-//	matf32_sub(tmpmat2, tmpmat3, tmpmat2); // tmpmat2 = I - L[k]*C[k] = tmpmat2 - tmpmat3
-//
-//	// Error covariance matrix
-//	matf32_mul(tmpmat2, kf->P, tmpmat3); // tmpmat3 = (I - L[k]*C[k])*P[k|k-1] = tmpmat2 * kf->P
-//	matf32_copy(tmpmat3, kf->P); // P[k-1|k-1] = tmpmat3 
-//
-//	matf32_reshape(tmpmat3, dim_xhat, 1); // tmpmat1: dim(xhat) x 1
-//
-//	// State estimate
-//	matf32_mul(tmpmat2, kf->xhat, tmpmat3); // tmpmat3 = (I - L[k]*C[k])*x[k|k-1] = tmpmat2 * kf->xhat
-//	matf32_copy(tmpmat3, kf->xhat); // x[k|k] = tmpmat3 + ...
-//
-//	matf32_reshape(tmpmat2, dim_y, 1); // tmpmat1: dim(y) x 1
-//	tmpmat2->p_data = measurements; // tmpmat2 = measurements vector as matrix
-//	matf32_mul(tmpmat1, tmpmat2, tmpmat3); // tmpmat3 = L[k]*y[k] = tmpmat1 * tmpmat2
-//	matf32_add(kf->xhat, tmpmat3, kf->xhat); // x[k|k] = (I - L[k]*C[k])*x[k|k-1] + L[k]*y[k] = kf->xhat + tmpmat3
-//
-//	return MATH_SUCCESS;
-//}
 
 
 // ====================================================================================================
@@ -1185,8 +1057,6 @@ ctr_mpc_set_constraints(ctr_mpc_lti_shooting_t* mpc, float ub, float lb)
 
 	return MATH_SUCCESS;
 }
-
-
 
 
 

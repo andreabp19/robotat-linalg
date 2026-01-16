@@ -1,20 +1,5 @@
 /**
- * @addtogroup matf32
- * @{
- * @file matf32.c
- * Created: 2 Aug 2025
- * Last Modified: 26 Oct 2026
- *       By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
- *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
- *       other collaborators of this project, and to add new functions.
- * 
- * Changes compared with the 2022 version of the library:
- *      - Modified: moved matf32_cholesky, matf32_lu and matf32_qr from linsolve to matf32,
- *                  and made changes to algorithms in matf32_cholesky, matf32_lu and ones
- *      - Added:    matf32_one_sided_jacobi, matf32_jacobi_svd, matf32_cond, matf32_exp,
- *                  matf32_check_symposdef and matf32_pinv
- * 
- * Last modified: 17 Nov 2025
+ * Last modified: 16 Jan. 2025
  *          By: Andrea Pineda
  */
 
@@ -905,7 +890,7 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
     return MATH_SUCCESS;
 }
 
-// TODO: Check if it works correctly
+
 void 
 solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
 {
@@ -929,7 +914,6 @@ solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row)
 }
 
 
-// TODO: Evaluate how it works again and more in-depth
 err_status_t
 matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
 {
@@ -1402,7 +1386,6 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 
 
 // doolittle algoritm with partial pivoting (Trefethen, Algorithm 21.1)
-// TODO: Manually clean L and U to ensure the zeroed-triangle is zero to avoid issues.
 err_status_t
 matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_t* p_index)
 {
@@ -1690,7 +1673,3 @@ matf32_jacobi_svd(const matf32_t* const p_a, matf32_t* const p_u, matf32_t* cons
 
     return MATH_SUCCESS;
 }
-
-/**
- * @}
- */

@@ -1,14 +1,15 @@
 /**
  * @defgroup linsolve
  * @{
- * @file linsolve.h
  * 
- * Linear solver based on matf32_t datatype.
+ * @brief Linear solver based on matf32_t data type of the Matf32 Library.
+ * The following methods are available for the solver: LU, QR, Cholesky,
+ * Forward Substitution, Backward Subtitution and SVD.
  * 
- * Created: 2022
- *      By: Daniel Pineda
- * Last modified: 26 Oct 2025
- *      By: Andrea Pineda
+ * @date Created on: 2022
+ *      By: Daniel Pineda \n
+ * Last modified: 14 jan. 2026
+ *      By: Andrea Pineda \n
  */
 
 #ifndef ROBOTAT_LINSOLVE_H_
@@ -30,23 +31,14 @@ extern "C" {
  */
 typedef enum
 {
-    FORWARD_SUBS,   /** Solve system with Forward Substitution */
-    BACKWARD_SUBS,  /** Solve system with Backward Substitution */
-    CHOLESKY,       /** Solve system with Cholesky Factorization */
-    QR,             /** Solve system with QR Factorization */
-    LU,             /** Solve system with LU Factorization */
-    SVD             /** Solve system with the Singular Value Decomposition (SVD) */
+    FORWARD_SUBS,   /**< Solve system with Forward Substitution */
+    BACKWARD_SUBS,  /**< Solve system with Backward Substitution */
+    CHOLESKY,       /**< Solve system with Cholesky Factorization */
+    QR_SQUARE,      /**< Solve system with QR Factorization for square matrices */
+    QR_RECT,        /**< Solve system with QR Factorization for rectangular matrices (vertical or horitzontal) */
+    LU,             /**< Solve system with LU Factorization */
+    SVD             /**< Solve system with the Singular Value Decomposition (SVD) */
 } linsolve_method_t;
-
-
-/**
- * @brief Enumerated list for the specific shapes that can be operated in certain methods such as QR.
- */
-typedef enum
-{
-    SQUARE, /** Square matrix */
-    RECT    /** Rectangular matrix */
-} linsolve_matrix_shape_t;
 
 
 /**
@@ -66,13 +58,14 @@ linsolve_print_method(linsolve_method_t lsm);
  *
  * @param[in]       p_a    Points to system matrix.
  *
- * @return  linsolve_method_t
- *              FORWARD_SUBS  : Forward substitution.
- *              BACKWARD_SUBS : Backward substitution.
- *              CHOLESKY      : Cholesky factorization.
- *              QR            : QR factorization.
- *              LU            : LU factorization.
- *              SVD           : Singular Values Decomposition (SVD).
+ * @return  Returns a value of type linsolve_method_t:
+ *              FORWARD_SUBS  : Forward substitution,
+ *              BACKWARD_SUBS : Backward substitution,
+ *              CHOLESKY      : Cholesky factorization,
+ *              QR_SQUARE     : QR factorization for square matrices,
+ *              QR_RECT       : QR factorization for rectangular matrices,
+ *              LU            : LU factorization,
+ *              SVD           : Singular Values Decomposition.
  */
 linsolve_method_t
 linsolve_get_method(const matf32_t* const p_a);
@@ -92,8 +85,8 @@ linsolve_get_method(const matf32_t* const p_a);
  * @param[in]       p_b    Points to b vector.
  * @param[in,out]   p_x    Points to output x vector.
  *
- * @return  Execution status
- *              MATH_SUCCESS        :   Operation successful.
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCCESS        :   Operation successful,
  *              MATH_ARGUMENT_ERROR :   Lower triangular matrix check failed.
  */
 err_status_t
@@ -108,8 +101,8 @@ linsolve_forward_substitution(const matf32_t* const p_l, const matf32_t* const p
  * @param[in]       p_b    Points to b vector.
  * @param[in,out]   p_x    Points to output x vector.
  *
- * @return  Execution status
- *              MATH_SUCCESS        :   Operation successful.
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCCESS        :   Operation successful,
  *              MATH_ARGUMENT_ERROR :   Upper triangular matrix check failed.
  */
 err_status_t
@@ -130,8 +123,8 @@ linsolve_backward_substitution(const matf32_t* const p_u, const matf32_t* const 
  * @param[in]       p_b     Points to b vector.
  * @param[in,out]   p_x     Points to output vector x.
  * 
- * @return  Execution status
- *              MATH_SUCCESS        :   Operation successful
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCCESS        :   Operation successful,
  *              MATH_ARGUMENT_ERROR :   Input matrix checks in forward or backward substitution failed.
  */
 err_status_t
@@ -154,12 +147,12 @@ linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* con
  * @param[in]       p_b     Points to b vector.
  * @param[in,out]   p_x     Points to output vector x.
  * 
- * @return  Execution status
- *              MATH_SUCCESS        :   Operation successful
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCCESS        :   Operation successful,
  *              MATH_ARGUMENT_ERROR :   Input matrix check in backward substitution failed.
  */
 err_status_t
-linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x, linsolve_matrix_shape_t shape);
+linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b, matf32_t* const p_x, linsolve_method_t qr_shape);
 
 
 /**
@@ -175,8 +168,8 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
  * @param[in,out]   p_x     Points to output vector x.
  * @param[in]       p_index List of permutations executed during the LU decomposition of A.
  * 
- * @return  Execution status
- *              MATH_SUCESS         :   Operation successful
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCESS         :   Operation successful,
  *              MATH_ARGUMENT_ERROR :   Input matrix checks in forward or backward substitution failed.
  */
 err_status_t
@@ -197,7 +190,7 @@ linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_
  * @param[in]       p_b     Points to b vector
  * @param[in,out]   p_x     Points to output vector x
  * 
- * @return  Execution status     
+ * @return  Returns execution status err_status_t:
  *              MATH_SUCCESS :          Operation successful
  */
 err_status_t
@@ -223,10 +216,10 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
  * @param[in]       p_b    Points to b vector.
  * @param[in,out]   p_x    Points to output x vector.
  *
- * @return  Execution status
- *              MATH_SUCCESS                :    Operation successful.
- *              MATH_SIZE_MISMATCH          :    Matrix size check failed.
- *              MATH_DECOMPOSITION_FAILURE  :    Failed decomposition method.
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCCESS                :    Operation successful,
+ *              MATH_SIZE_MISMATCH          :    Matrix size check failed,
+ *              MATH_DECOMPOSITION_FAILURE  :    Failed decomposition method,
  *              MATH_ARGUMENT_ERROR         :    Incorrect arguments passed.
  */
 err_status_t
@@ -246,14 +239,14 @@ linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p
  * @param[in,out]   p_x     Points to output x vector.
  * @param[in]       method  Method to use.
  *
- * @return  Execution status
- *              MATH_SUCCESS :                  Operation successful.
- *              MATH_SIZE_MISMATCH :            Matrix size check failed.
- *              MATH_DECOMPOSITION_FAILURE :    Failed decomposition method.
- *              MATH_ARGUMENT_ERROR :           Incorrect arguments passed.
+ * @return  Returns execution status err_status_t:
+ *              MATH_SUCCESS                  : Operation successful,
+ *              MATH_SIZE_MISMATCH            : Matrix size check failed,
+ *              MATH_DECOMPOSITION_FAILURE    : Failed decomposition method,
+ *              MATH_ARGUMENT_ERROR           : Incorrect arguments passed.
  */
 err_status_t
-linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method, linsolve_matrix_shape_t shape);  
+linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* p_x, linsolve_method_t method);  
 
 #ifdef __cplusplus
 }

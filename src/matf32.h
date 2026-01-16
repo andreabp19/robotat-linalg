@@ -1,23 +1,20 @@
 /**
  * @defgroup matf32
- * @brief Single-precision matrix operations
+ * @brief Matrix Linear Algebra Operations
  * @{
- * @file matf32.h
  *
- * Single header to include all matrix related functions.
- * 
- * @date 2 Aug 2025
+ * @date File created on: 2 Aug. 2025
  *       By: Andrea Pineda to unify into a single file the previous linear algebra libraries:
  *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
- *       other collaborators of this project, and to add new functions.
+ *       Daniel Pineda and Miguel Zea, and to add new functions.
  * 
- * Changes compared with the 2022 version of the library:
+ * Changes in routines compared with the previous version (pre-unification of files):
  *      - Modified: moved matf32_cholesky, matf32_lu and matf32_qr from linsolve to matf32,
  *                  and made changes to algorithms in matf32_cholesky, matf32_lu and ones
  *      - Added:    matf32_one_sided_jacobi, matf32_jacobi_svd, matf32_cond, matf32_exp,
  *                  matf32_check_symposdef and matf32_pinv
  * 
- * Last modified: 26 Oct 2025
+ * Last modified: 16 Jan. 2025
  *          By: Andrea Pineda
  */
 
@@ -40,7 +37,7 @@ extern "C" {
 #endif
 
 // ====================================================================================================
-// 1. Base utility functions
+// 1. Base utility functions (previously in math_util.h/.c)
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
@@ -198,8 +195,8 @@ print(float* p_src, uint16_t row, uint16_t column);
  * @param[in]   upper_limit     Upper saturation threshold.
  * 
  * @return  Float with the saturated output
- *              upper_limit :   if input > upper_limit.
- *              lower_limit :   if input < lower_limit.
+ *              upper_limit :   if input > upper_limit,
+ *              lower_limit :   if input < lower_limit,
  *              input       :   if none of the former cases apply.
  */
 float
@@ -212,8 +209,8 @@ saturation(float input, float lower_limit, float upper_limit);
  * @param[in]   number      Input value.
  * 
  * @return  Sign of input, indicated by:
- *               1 :    if the number is greater than 0 (positive sign).
- *              -1 :    if the number is below 0 (negative sign).
+ *               1 :    if the number is greater than 0 (positive sign),
+ *              -1 :    if the number is below 0 (negative sign),
  *               0 :    if the number is equal to 0 (no sign as it's 0).
  */
 float
@@ -254,7 +251,7 @@ std_dev(float* p_src, uint16_t length);
  * @param[in]   length  Arrays length.
  *
  * @return  Comparison result
- *              True  : If arrays are equal within the tolerance.
+ *              True  : If arrays are equal within the tolerance,
  *              False : If arrays are not equal (the tolerance is surpassed at least once).
  */
 bool
@@ -268,7 +265,7 @@ is_equal(float* p_a, float* p_b, uint16_t length);
  * @param[in]   b   Second vaue.
  *
  * @return  Comparison result
- *              True  : If both values are equal within the precision/tolerance.
+ *              True  : If both values are equal within the precision/tolerance,
  *              False : If both values are not equal (the difference surpasses the precision/tolerance).
  */
 static inline bool
@@ -284,8 +281,8 @@ is_equal_margin(float a, float b)
  * @param[in]   num     Value to check.
  * 
  * @return Returns a value depending on the input value
- *               FLT_MAX : if num > FLT_MAX
- *              -FLT_MAX : if num < -FLT_MAX
+ *               FLT_MAX : if num > FLT_MAX,
+ *              -FLT_MAX : if num < -FLT_MAX,
  *                   num : if none of the previous cases apply.
  */
 static inline float
@@ -310,7 +307,7 @@ zero_patch(float* p_a, uint16_t length);
 
 
 // ====================================================================================================
-// 2. matf32: Matrix definitions
+// 2. matf32: Matrix definitions (previously in matf32_def.h/.c)
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
@@ -324,9 +321,9 @@ zero_patch(float* p_a, uint16_t length);
  */
 typedef struct
 { 
-    uint16_t num_rows;  /** Number of rows of the matrix. */
-    uint16_t num_cols;  /** Number of columns of the matrix. */
-    float* p_data;      /** Points to the data of the matrix. */
+    uint16_t num_rows;  /**< Number of rows of the matrix. */
+    uint16_t num_cols;  /**< Number of columns of the matrix. */
+    float* p_data;      /**< Points to the data of the matrix. */
 } matf32_t;
 
 
@@ -337,14 +334,14 @@ typedef struct
  */
 typedef enum
 {
-    MATH_SUCCESS,               /** Successfull mathematical operation. */
-    MATH_ARGUMENT_ERROR,        /** Error in an input matf32_t instance. */
-    MATH_LENGTH_ERROR,          /** Incorrect size for one of the dimensions of a matf32_t instance. */
-    MATH_SIZE_MISMATCH,         /** matf32_t matrix dimensions don't match and thus cannot be operated as needed. */
-    MATH_NANINF,                /** Result has NaN or Inf values. */
-    MATH_SINGULAR,              /** Matrix is singular or close to singular and may impact negatively the precision of the results. */
-    MATH_TEST_FAILURE,          /** Matrix operation failure. */
-    MATH_DECOMPOSITION_FAILURE  /** Matrix factorization or decomposition failed. */
+    MATH_SUCCESS,               /**< Successfull mathematical operation. */
+    MATH_ARGUMENT_ERROR,        /**< Error in an input matf32_t instance. */
+    MATH_LENGTH_ERROR,          /**< Incorrect size for one of the dimensions of a matf32_t instance. */
+    MATH_SIZE_MISMATCH,         /**< matf32_t matrix dimensions don't match and thus cannot be operated as needed. */
+    MATH_NANINF,                /**< Result has NaN or Inf values. */
+    MATH_SINGULAR,              /**< Matrix is singular or close to singular and may impact negatively the precision of the results. */
+    MATH_TEST_FAILURE,          /**< Matrix operation failure. */
+    MATH_DECOMPOSITION_FAILURE  /**< Matrix factorization or decomposition failed. */
 } err_status_t;
 
 /**
@@ -352,8 +349,8 @@ typedef enum
  */
 typedef enum
 {
-    BASIC_PINV, /** Pseudoinverse calculated as pinv(A) = (A'A)^-1 * A' */
-    SVD_PINV    /** Pseudoinverse calculated with the SVD matrices: A = USV', so that pinv(A) = VSU' */
+    BASIC_PINV, /**< Pseudoinverse calculated as pinv(A) = (A'A)^-1 * A' */
+    SVD_PINV    /**< Pseudoinverse calculated with the SVD matrices: A = USV', so that pinv(A) = VSU' */
 } pseudoinverse_methods_t;
 
 // ----------------------------------------------------------------------------------------------------
@@ -421,7 +418,7 @@ matf32_cond(const matf32_t* const p_src, float* p_cond);
  * @param[in,out]  dst     Points to variable to store element.
  * 
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
@@ -448,7 +445,7 @@ matf32_get(const matf32_t* p_src, uint16_t row, uint16_t col, float* dst)
  * @param[in]      value     Value of element to set.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
@@ -500,7 +497,7 @@ matf32_size_check(const matf32_t* p_src, uint16_t rows, uint16_t cols)
  * @param[in,out]  p_dst   Points to matrix to copy to.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
@@ -548,7 +545,7 @@ matf32_reshape(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
  * @param[in]      new_cols    New number of columns.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 static inline err_status_t
@@ -586,7 +583,7 @@ matf32_reshape_safe(matf32_t* const p_src, uint16_t new_rows, uint16_t new_cols)
  * @param[in]       cols        Number of columns to copy in total (starting to count from the origin column and until reaching this cols value).
  * 
  * @return Execution status.
- *              MATH_SIZE_MISMATCH :    If the number of rows or columns to be copied surpasses the available rows or columns in any of the matrices.
+ *              MATH_SIZE_MISMATCH :    If the number of rows or columns to be copied surpasses the available rows or columns in any of the matrices,
  *              MATH_SUCCESS       :    If the operation is completed without issue.
  */
 err_status_t
@@ -687,7 +684,7 @@ matf32_randn(matf32_t* const p_dst, float mu, float sigma);
 
 
 // ====================================================================================================
-// 3. Check functions for matf32 structs
+// 3. Check functions for matf32 structs (previously in matf32_check.h/.c)
 // ====================================================================================================
 
 /**
@@ -696,7 +693,7 @@ matf32_randn(matf32_t* const p_dst, float mu, float sigma);
  * @param[in]   p_mat Points to the matrix to test.
  *
  * @return  Execution status
- *              true  :     Matrix is square.
+ *              true  :     Matrix is square,
  *              false :     Matrix is not square.
  */
 static inline bool 
@@ -711,7 +708,7 @@ matf32_check_square_matrix(const matf32_t* const p_mat)
  * @param[in]   p_mat Points to the matrix to test.
  *
  * @return  Execution status
- *              true  :     Matrix is upper triangular.
+ *              true  :     Matrix is upper triangular,
  *              false :     Matrix is not upper triangular.
  */
 bool
@@ -723,7 +720,7 @@ matf32_check_triangular_upper(const matf32_t* const p_mat);
  * @param[in]   p_mat Points to the matrix to test.
  *
  * @return  Execution status
- *              true  :     Matrix is lower triangular.
+ *              true  :     Matrix is lower triangular,
  *              false :     Matrix is not lower triangular.
  */
 bool
@@ -737,7 +734,7 @@ matf32_check_triangular_lower(const matf32_t* const p_mat);
  * @param[in]   p_mat_b Points to second matrix to compare.
  *
  * @return  Execution status
- *              true  :     Matrices are equal.
+ *              true  :     Matrices are equal,
  *              false :     Matrices are not equal.
  */
 bool
@@ -751,7 +748,7 @@ matf32_is_equal(const matf32_t* const p_mat_a, const matf32_t* const p_mat_b);
  * @param[in]   scalar Value to compare against.
  *
  * @return  Execution status
- *              true  :     Matrix values are equal to scalar.
+ *              true  :     Matrix values are equal to scalar,
  *              false :     Matrix values are not equal to scalar.
  */
 bool
@@ -765,7 +762,7 @@ matf32_is_equal_scalar(const matf32_t* const p_mat, float scalar);
  * @param[in]   scalar Value to compare against.
  *
  * @return  Execution status
- *              true  :     Matrix values are equal or less than scalar.
+ *              true  :     Matrix values are equal or less than scalar,
  *              false :     Matrix values are not equal or less than scalar.
  */
 bool
@@ -777,7 +774,7 @@ matf32_is_equal_less_scalar(const matf32_t* const p_mat, float scalar);
  * @param[in]   p_mat Points to matrix to check.
  *
  * @return  Execution status
- *              true  :     Matrix is symmetrical.
+ *              true  :     Matrix is symmetrical,
  *              false :     Matrix is not symmetrical.
  */
 bool
@@ -789,7 +786,7 @@ matf32_check_symmetric(const matf32_t* const p_mat);
  * @param[in]   p_mat Points to matrix to check.
  *
  * @return  Execution status
- *              true  :     Matrices is upper hessenberg.
+ *              true  :     Matrices is upper hessenberg,
  *              false :     Matrices is not upper hessenberg.
  */
 bool
@@ -801,7 +798,7 @@ matf32_check_hessenberg_upper(const matf32_t* const p_mat);
  * @param[in]   p_mat Points to matrix to check.
  *
  * @return  Execution status
- *              true  :     Matrices is lower hessenberg.
+ *              true  :     Matrices is lower hessenberg,
  *              false :     Matrices is not lower hessenberg.
  */
 bool
@@ -813,14 +810,14 @@ matf32_check_hessenberg_lower(const matf32_t* const p_mat);
  * @param[in]   p_mat   Points to matrix to check.
  * 
  * @return Execution status
- *              true  :     Matrix is symmetric positive definite
- *              false :     Matrix is not symmetric positive definite (cannot perform cholesky)
+ *              true  :     Matrix is symmetric positive definite,
+ *              false :     Matrix is not symmetric positive definite (cannot perform cholesky).
  */
 bool
 matf32_check_symposdef(const matf32_t* const p_mat);
 
 // ====================================================================================================
-// 4. Matrix operations based on matf32 structs
+// 4. Matrix operations based on matf32 structs (previously in matf32_math.h/.c, with new routines)
 // ====================================================================================================
 
 // ----------------------------------------------------------------------------------------------------
@@ -851,7 +848,7 @@ matf32_norm(const matf32_t* p_src)
  * @param[in, out]  p_dst   Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
@@ -868,7 +865,7 @@ matf32_add(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
  * @param[in, out]  p_dst   Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
@@ -884,7 +881,7 @@ matf32_sub(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
  * @param[in, out]  p_dst   Points to output matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS       :    Operation successful.
+ *              MATH_SUCCESS       :    Operation successful,
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
@@ -902,7 +899,7 @@ matf32_scale(const matf32_t* p_src, float scalar, matf32_t* p_dst);
  * @param[in, out]  p_dst   Points to output matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS       :    Operation successful.
+ *              MATH_SUCCESS       :    Operation successful,
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
@@ -921,8 +918,8 @@ matf32_trans(const matf32_t* p_src, matf32_t* p_dst);
  * @param[in, out]  p_dst   Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :   Operation successful.
- *              MATH_SIZE_MISMATCH  :   Input matrices cannot be multiplied due to rows and cols number mismatch.
+ *              MATH_SUCCESS        :   Operation successful,
+ *              MATH_SIZE_MISMATCH  :   Input matrices cannot be multiplied due to rows and cols number mismatch,
  *              MATH_ARGUMENT_ERROR :   One of the input matrices is set as the output, which is not allowed.
  */
 err_status_t
@@ -938,8 +935,8 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst);
  * @param[in, out]  pivot   Points to the pivot vector.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS :          Operation successful,
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed,
  *              MATH_SINGULAR :         Matrix is singular.
  */
 err_status_t
@@ -957,8 +954,8 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot);
  * @param[in, out]  p_dst   Points to output matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS :          Operation successful.
- *              MATH_SIZE_MISMATCH :    Matrix size check failed.
+ *              MATH_SUCCESS :          Operation successful,
+ *              MATH_SIZE_MISMATCH :    Matrix size check failed,
  *              MATH_SINGULAR :         Matrix is singular.
  */
 err_status_t
@@ -987,7 +984,7 @@ matf32_pinv(const matf32_t* const p_a, matf32_t* const p_dst, pseudoinverse_meth
  * @param[in]       p_dst   Points to scalar result.
  *
  * @return  Execution status.
- *              MATH_SUCCESS        :   Completed operation without issue.
+ *              MATH_SUCCESS        :   Completed operation without issue,
  *              MATH_SIZE_MISMATCH  :   Input vectors have different amount of elements.
  */
 err_status_t
@@ -1042,7 +1039,7 @@ matf32_vecmul_col_row(const float* const col_vec, const float* const row_vec, ma
  * @param[in]       exp     Indicates the exponent to be used
  *        
  * @return Execution status.
- *              MATH_SUCCESS        :   Completed operation without issue.
+ *              MATH_SUCCESS        :   Completed operation without issue,
  *              MATH_ARGUMENT_ERROR :   Input matrix is not square.
  */
 err_status_t
@@ -1060,7 +1057,7 @@ matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp);
  * @param[in, out]  p_dst       Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
@@ -1075,7 +1072,7 @@ matf32_arr_add(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  * @param[in, out]  p_dst       Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
@@ -1091,7 +1088,7 @@ matf32_arr_sub(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  * @param[in, out]  p_dst       Points to output matrix structure.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
+ *              MATH_SUCCESS        :    Operation successful,
  *              MATH_SIZE_MISMATCH  :    Matrix size check failed.
  */
 err_status_t
@@ -1136,7 +1133,7 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
  * @param[in,out]  p_index  Saved indexes for permutation
  *
  * @return  Execution status
- *              MATH_SUCCESS       :    Operation successful.
+ *              MATH_SUCCESS       :    Operation successful,
  *              MATH_SIZE_MISMATCH :    Matrix size check failed.
  */
 err_status_t
@@ -1155,8 +1152,8 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
  * @param[in,out]       p_c    Points to lower triangular factorized matrix.
  *
  * @return  Execution status
- *              MATH_SUCCESS        :    Operation successful.
- *              MATH_SIZE_MISMATCH  :    The size of matrix p_a or p_c are not equal.
+ *              MATH_SUCCESS        :    Operation successful,
+ *              MATH_SIZE_MISMATCH  :    The size of matrix p_a or p_c are not equal,
  *              MATH_ARGUMENT_ERROR :    The input matrix is either not square or not symmetric.
  */
 err_status_t
