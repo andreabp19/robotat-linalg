@@ -1,9 +1,14 @@
 {
     "name":"robotat-linalg",
-    "version":"0.1",
+    "version":"0.2",
     "license":"MIT",
     "authors":
     [
+        {
+            "name":"Andrea Pineda",
+            "email":"bar20575@uvg.edu.gt",
+            "maintainer":true
+        }
         {
             "name":"Daniel Pineda",
             "email":"bar18714@uvg.edu.gt",
