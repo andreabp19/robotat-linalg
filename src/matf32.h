@@ -8,13 +8,7 @@
  *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
  *       Daniel Pineda and Miguel Zea, and to add new functions.
  * 
- * Changes in routines compared with the previous version (pre-unification of files):
- *      - Modified: moved matf32_cholesky, matf32_lu and matf32_qr from linsolve to matf32,
- *                  and made changes to algorithms in matf32_cholesky, matf32_lu and ones
- *      - Added:    matf32_one_sided_jacobi, matf32_jacobi_svd, matf32_cond, matf32_exp,
- *                  matf32_check_symposdef and matf32_pinv
- * 
- * Last modified: 16 Jan. 2025
+ * Last modified: 26 Jan. 2025
  *          By: Andrea Pineda
  */
 
@@ -384,7 +378,7 @@ matf32_print(const matf32_t* p_src);
 
 /**
  * @brief   Prints error status err_status_t to console.
- * For example: prints MATH_SUCESS for MATH_SUCCESS, MATH_SINGULAR for MATH_SINGULAR, etc.
+ * For example: prints MATH_SUCCESS for MATH_SUCCESS, MATH_SINGULAR for MATH_SINGULAR, etc.
  *
  * @param[in]   err   Error stats value to print.
  *
@@ -1103,6 +1097,25 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
  * @brief   Computes the Householder QR factorization of a matrix A, saving the Q and R factors in 
  * different matrices.
  * 
+ * Below is an example of how this factorization looks like:
+ * \f[
+ * \begin{aligned}
+ * \textbf{A}= \textbf{QR} = \begin{bmatrix}
+ * a_{11} & a_{12} & a_{13}\\
+ * a_{21} & a_{22} & a_{23}\\
+ * a_{31} & a_{32} & a_{33}
+ * \end{bmatrix} = \begin{bmatrix}
+ * q_{11} & q_{12} & q_{13}\\
+ * q_{21} & q_{22} & q_{23}\\
+ * q_{31} & q_{32} & q_{33}
+ * \end{bmatrix} \begin{bmatrix}
+ * r_{11} & r_{21} & r_{31}\\
+ * 0      & r_{22} & r_{32}\\
+ * 0      & 0      & r_{33}
+ * \end{bmatrix}
+ * \end{aligned}
+ * \f]
+ * 
  * @param[in]       p_a     Points to the matrix to be factorized/decomposed into a QR factorization.
  * @param[in,out]   p_q     Points to a matrix where the Q factor will be saved.
  * @param[in,out]   p_r     Points to a matrix where the R factor will be saved.
@@ -1117,7 +1130,26 @@ matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r);
 /**
  * @brief   Computes the LU decomposition of a square matrix A, pointed by p_a,
  * such that PA = LU, and saves the L and U factors in different matrices, and the list
- * of permutations applied are saved in an array.
+ * of permutations corresponding to the matrix P are saved in an array to save memory.
+ * 
+ * Below is an example of how this factorization looks like:
+ * \f[
+ * \begin{aligned}
+ * \textbf{A}= \textbf{LU} = \begin{bmatrix}
+ * a_{11} & a_{12} & a_{13}\\
+ * a_{21} & a_{22} & a_{23}\\
+ * a_{31} & a_{32} & a_{33}
+ * \end{bmatrix} = \begin{bmatrix}
+ * 1      & 0      & 0\\
+ * m_{21} & 1      & 0\\
+ * m_{31} & m_{32} & 1
+ * \end{bmatrix} \begin{bmatrix}
+ * u_{11} & u_{12} & u_{13}\\
+ * 0      & u_{22} & u_{23}\\
+ * 0      & 0      & u_{33}
+ * \end{bmatrix}
+ * \end{aligned}
+ * \f]
  * 
  * @warning In this algorithm, A will not be equal to LU (that is, A != LU), instead: PA = LU. This 
  * is because of the pivoting or permutations implemented. If you want A = LU, the same permutations
@@ -1142,6 +1174,25 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
 
 /**
  * @brief   Calculates the Cholesky decomposition of a matrix A = LL', where L is a lowe triangular matrix.
+ * 
+ * Below is an example of how this factorization looks like:
+ * \f[
+ * \begin{aligned}
+ * \textbf{A}= \textbf{LL}^\top = \begin{bmatrix}
+ * a_{11} & a_{12} & a_{13}\\
+ * a_{21} & a_{22} & a_{23}\\
+ * a_{31} & a_{32} & a_{33}
+ * \end{bmatrix} = \begin{bmatrix}
+ * m_{11} & 0      & 0\\
+ * m_{21} & m_{22} & 0\\
+ * m_{31} & m_{32} & m_{33}
+ * \end{bmatrix} \begin{bmatrix}
+ * m_{11} & m_{21} & m_{31}\\
+ * 0      & m_{22} & m_{32}\\
+ * 0      & 0      & m_{33} 
+ * \end{bmatrix}
+ * \end{aligned}
+ * \f]
  * 
  * @warning This routine saves the Cholesky Factor matrix L in upper triangular form, that is L', due to the
  * specific algorithm implemented. Depending on the application, it may be required as lower triangular, for which
@@ -1180,6 +1231,25 @@ matf32_one_sided_jacobi(const matf32_t* const p_a, matf32_t* const p_v, uint16_t
 
 /**
  * @brief   Calculates the SVD of a matrix using using the one-sided Jacobi algorithm
+ * 
+ * Below is an example of how this factorization looks like:
+ * \f[
+ * \begin{aligned}
+ * \textbf{A} = \textbf{U}\boldsymbol{\Sigma}\textbf{V}^\top = \begin{bmatrix}
+ * u_{11} & u_{12} & u_{13}\\
+ * u_{21} & u_{22} & u_{23}\\
+ * u_{31} & u_{32} & u_{33}
+ * \end{bmatrix} \begin{bmatrix}
+ * \sigma_{11} & 0           & 0 \\
+ * 0           & \sigma_{22} & 0 \\
+ * 0           & 0           & \sigma_{33} 
+ * \end{bmatrix} \begin{bmatrix}
+ * v_{11} & v_{12} & v_{13}\\
+ * v_{21} & v_{22} & v_{23}\\
+ * v_{31} & v_{32} & v_{33}
+ * \end{bmatrix}
+ * \end{aligned}
+ * \f]
  * 
  * @warning This routine OVERWRITES matrix A and replaces it with AV. If the original A is needed
  * later, it's recommended to pass as argument to this function a copy of A.

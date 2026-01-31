@@ -31,13 +31,13 @@ extern "C" {
  */
 typedef enum
 {
-    FORWARD_SUBS,   /**< Solve system with Forward Substitution */
-    BACKWARD_SUBS,  /**< Solve system with Backward Substitution */
-    CHOLESKY,       /**< Solve system with Cholesky Factorization */
-    QR_SQUARE,      /**< Solve system with QR Factorization for square matrices */
-    QR_RECT,        /**< Solve system with QR Factorization for rectangular matrices (vertical or horitzontal) */
-    LU,             /**< Solve system with LU Factorization */
-    SVD             /**< Solve system with the Singular Value Decomposition (SVD) */
+    FORWARD_SUBS,    /**< Solve system with Forward Substitution */
+    BACKWARD_SUBS,   /**< Solve system with Backward Substitution */
+    CHOLESKY,        /**< Solve system with Cholesky Factorization */
+    QR_SQUARE,       /**< Solve system with QR Factorization for square matrices */
+    QR_RECT,         /**< Solve system with QR Factorization for rectangular matrices (vertical or horitzontal) */
+    LU,              /**< Solve system with LU Factorization */
+    SVD              /**< Solve system with the Singular Value Decomposition (SVD) */
 } linsolve_method_t;
 
 
@@ -53,8 +53,8 @@ linsolve_print_method(linsolve_method_t lsm);
 
 
 /**
- * @brief   Solves a system a Lx=b system through forward substitution. L must be a lower triangular matrix,
- * the length of b and x must be the same as L amount of rows.
+ * @brief   Defines which method is the best to use depending on the shape ant type of matrix
+ * in the system.
  *
  * @param[in]       p_a    Points to system matrix.
  *
@@ -78,8 +78,9 @@ linsolve_get_method(const matf32_t* const p_a);
 
 
 /**
- * @brief   Solves a system a Lx=b system through forward substitution. L must be a lower triangular matrix,
- * the length of b and x must be the same as L amount of rows.
+ * @brief   Solves a linear system through forward substitution.
+ * 
+ * @warning Only applicable to systems where the matrix is lower triangular.
  *
  * @param[in]       p_l    Points to lower triangular matrix.
  * @param[in]       p_b    Points to b vector.
@@ -94,8 +95,9 @@ linsolve_forward_substitution(const matf32_t* const p_l, const matf32_t* const p
 
 
 /**
- * @brief   Solves a system a Ux=b system through backward substitution. U must be a lower triangular matrix,
- * the length of b and x must be the same as U amount of rows.
+ * @brief   Solves a system a linear system through backward substitution.
+ * 
+ * @warning Only applicable to systems where the matrix is upper triangular.
  *
  * @param[in]       p_u    Points to lower triangular matrix.
  * @param[in]       p_b    Points to b vector.
@@ -110,14 +112,15 @@ linsolve_backward_substitution(const matf32_t* const p_u, const matf32_t* const 
 
 
 /**
- * @brief   Solves a system Cx = b through Cholesky factorization. C must be an upper triangle matrix,
- * the length of b and must be the same as the amount of rows in C.
+ * @brief   Solves a linear system through Cholesky factorization. The factorization must be performed
+ * before executing this routine.
+ * 
+ * 1. Solve \f$ \textbf{L}\textbf{y} = \textbf{b} \f$
+ * 2. Solve \f$ \textbf{L$^\top$}\textbf{x} = \textbf{y} \f$
  * 
  * @warning This method assumes that the Cholesky factor matrix is introduced as an upper triangular matrix,
- * exactly as the matf32_cholesky algorithm outputs it (L' instead of L) and so, it's transposed
- * in order to use Forward Substitution first. If the factor is introduced as lower triangular form or the
- * function matf32_cholesky is modified to output in lower triangular form, then linsolve_cholesky must be
- * updated accordingly in order to work correctly. 
+ * exactly as the matf32_cholesky algorithm generates it. The solution to the system will be incorrect
+ * if the Cholesky Factor is introduced as a lower triangular matrix into the function.
  * 
  * @param[in]       p_c     Points to upper triangular matrix.
  * @param[in]       p_b     Points to b vector.
@@ -132,15 +135,13 @@ linsolve_cholesky(matf32_t* const p_c,  const matf32_t* const p_b, matf32_t* con
 
 
 /**
- * @brief   Solves a system Ax = b through QR factorization. For A = QR, first computes y = Qb,
- * then solves Rx = y. Can be applied to either square or rectangular matrices, according to the
- * matrix used to generate the QR decomposition with matf32_qr. The difference being that, R must
- * be a square matrix, and when A is rectangular, R ends up with an extra row of zeros which is
- * omitted to operate the square part of R and solve the system.
+ * @brief   Solves a linear system through QR factorization. The factorization must be computed
+ * before using this routine. Can be applied to systems with either square or rectangular matrices,
+ * by introducing the QR_SQUARE or QR_RECT, respectively, in the linsolve_method_t argument. The system is
+ * solved as follows:
  * 
- * @warning This routine accepts as input the Q and R factors: it does NOT compute the QR decomposition,
- * that's done with matf32_qr inside the linear solver and must be done beforehand with matf32_qr if this
- * function is going to be implemented directly. 
+ * 1. Compute the vector  \f$ \textbf{y} = \textbf{Q}^\top \textbf{b} \f$
+ * 2. Solve the system \f$ \textbf{Rx} = \textbf{y} \f$
  * 
  * @param[in]       p_q     Points to matrix q from QR decomposition of A.
  * @param[in]       p_r     Points to matrix R from QR decomposition of A.
@@ -156,11 +157,12 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
 
 
 /**
- * @brief   Solves a system Ax = b through LU factorization.
- * 
- * @warning This routine accepts as input the L and U factors: it does NOT compute the LU factorization,
- * that's done with matf32_lu inside the linear solver and must be done beforehand with matf32_lu if this
- * function is going to be implemented directly. 
+ * @brief   Solves a linear system through LU factorization. The factorization must be computed
+ * before executing this routine, as the factorization's matrices are introduced as arguments. The
+ * system is solved as follows:
+ *
+ * 1. Solve the system \f$ \textbf{Ly} = \textbf{b} \f$
+ * 2. Then solve the system \f$ \textbf{Ux} = \textbf{y} \f$
  * 
  * @param[in]       p_l     Points to matrix L from LU decomposition of A.
  * @param[in]       p_u     Points to matrix U from LU decomposition of A.
@@ -176,14 +178,10 @@ err_status_t
 linsolve_lu(const matf32_t* const p_l, const matf32_t* const p_u,  const matf32_t* const p_b, matf32_t* const p_x, uint16_t* p_index);
 
 /**
- * @brief   Solves a system Ax = b through SVD Factorization A = USV. Based on Watking, Fundamentals
- * of Matrix Computations (4.3 The SVD and the Least Squares Problem), but using the pseudoinverse and
- * without using intermediate vectors/subvectors as in the book.
- * 
- * @warning This routine accepts as input the SVD matrices U, S and V. It does NOT compute the SVD,
- * that's done with matf32_jacobi_svd inside the linear solver and must be done beforehand with
- * matf32_jacobi_svd if this function is going to be implemented directly. 
- * 
+ * @brief   Solves a linear system through SVD Factorization. The SVD must be computed
+ * before executing this routine as it receives the matrices of the decomposition as arguments.
+ * The solution to the system is computed as \f$ \textbf{x} = \textbf{V}\textbf{S}^{-1}\textbf{U}^\top\textbf{b} \f$
+ *
  * @param[in]       p_u     Points to matrix U from SVD of A
  * @param[in]       p_s     Points to matrix S from SVD of A
  * @param[in]       p_v     Points to matrix V from SVD of A
@@ -198,19 +196,10 @@ linsolve_svd(const matf32_t* const p_u, const matf32_t* const p_s, const matf32_
 
 
 /**
- * @brief   Solve the linear system Ax=b, automatically selecting the method to use based on input matrix type.
- *          Rectangular matrix                  -> QR
- *          Lower triangular matrix             -> Forward Substitution
- *          Upper triangular matrix             -> Backward Susbtitution
- *          Symmetric positive definite matrix  -> Cholesky
- *          Ill-conditioned matrices            -> SVD
- *          General solver (none of the above)  -> LU
+ * @brief   Solve a linear system of the form \f$ \textbf{Ax} = \textbf{b} \f$, automatically selecting the method to use based on the shape and type of input matrix.
  * 
- * @warning This solver does NOT use QR for square matrices, only for rectangular ones, matching MATLAB's solver structure.
- * To solve systems with square matrices using QR, the method should be implemented directly (matf32_qr and then linsolve_qr,
- * selecting RECT for the matrix shape). Also, the ill-conditioned theshold can be modified in constants.h and it's more a
- * guideline as some matrices may be more sensitive to the condition number and lose precision in the operation despite not
- * being an extremely large number.
+ * @warning This solver does uses QR only for systems with rectangular matrices. To solve square matrix systems with QR, use
+ * linsolve_method instead. Additionally, the ill-conditioned theshold can be modified in constants.h, according to your needs.
  * 
  * @param[in]       p_a    Points to system matrix.
  * @param[in]       p_b    Points to b vector.
@@ -227,12 +216,7 @@ linsolve(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* const p
 
 
 /**
- * @brief   Solve the linear system Ax=b, with a specific method. It's recomended to use
- * this function if the problem, or the user, requires a specific method to solve linear systems.
- * For that, select the name of the method based on the struct linsolve_method_t: LU, QR, etc.
- * 
- * @warning the linsolve_matrix_shape_t argument will only be considered if QR is selected, as it
- * adjusts the procedure in linsolve_qr according to the dimensions of the system's matrix.
+ * @brief   Solve a linear system of the form \f$ \textbf{Ax} = \textbf{b} \f$ with a specific method selected in the arguments.
  *
  * @param[in]       p_a     Points to system matrix.
  * @param[in]       p_b     Points to b vector.

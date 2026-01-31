@@ -1,6 +1,6 @@
 
 /**
- * @defgroup Robotat-Robotics
+ * @defgroup RobotatRobotics
  * @{
  * @author Andrea Pineda
  * @brief Robotics algorithms, based on MATLAB Robotics 

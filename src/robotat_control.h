@@ -1,5 +1,5 @@
 /**
- * @defgroup Robotat-Control
+ * @defgroup RobotatControl
  * @{
  * @author Miguel Zea (mezea@uvg.edu.gt)
  * @brief Library for control algorithms based on Robotat Linalg. Includes routines
@@ -8,7 +8,7 @@
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 14 Jan. 2026
+ * Last modified: 26 Jan. 2026
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -57,8 +57,13 @@ typedef enum
 
 
 /**
- * @ingroup Robotat-Control
- * @brief   PID controller data structure.
+ * @brief   PID controller data structure, to represent a discretized PID, based on the
+ * following definition of a PID and selecting one of the available discretization methods:
+ * 
+ * \f[
+ * C(s) = k_P + \frac{k_I}{s} + k_D s
+ * \f]
+ * 
  */
 typedef struct
 {
@@ -78,8 +83,14 @@ typedef struct
 } ctr_pid_t;
 
 /**
- * @ingroup Robotat-Control
- * @brief   State space LTI system data structure.
+ * @brief   State space LTI system data structure, based on the following definition:
+ * 
+ * \f[
+ * \begin{aligned}
+ * \textbf{x}(t) &= \textbf{Ax}(t) + \textbf{Bu}(t) \\
+ * \textbf{y}(t) &= \textbf{Cx}(t) + \textbf{Du}(t) \\ 
+ * \end{aligned}
+ * \f]
  */
 typedef struct
 {
@@ -97,7 +108,6 @@ typedef struct
 
 
 /**
- * @ingroup Robotat-Control
  * @brief   State space nonlinear system data structure.
  */
 typedef struct
@@ -114,8 +124,15 @@ typedef struct
 
 
 /**
- * @ingroup Robotat-Control
- * @brief   Linear time-varying Kalman filter data structure.
+ * @brief   Linear time-varying Kalman filter data structure, based on the following
+ * definition:
+ * 
+ * \f[
+ * \begin{aligned}
+ * \textbf{x}_{k+1} &= \textbf{F} \textbf{x}_k + \textbf{G} \textbf{u}_k + \textbf{v}_k, \\
+ * \textbf{z}_{k+1} &= \textbf{H} \textbf{x}_k + \textbf{w}_k
+ * \end{aligned}
+ * \f]
  */
 typedef struct
 {
@@ -128,7 +145,6 @@ typedef struct
 } ctr_kalman_t;
 
 /**
- * @ingroup Robotat-Control
  * @brief   Struct for the matrices to be used in the MPC (Unconstrained, Shooting-Based, LTI)
  * Can be implemented with or without constraints.
  */
@@ -209,7 +225,55 @@ ctr_pid_set_gains(ctr_pid_t* const pid, float kp, float ki, float kd)
 
 
 /**
- * @brief   Updates a previously initialized PID controller.
+ * @brief   Updates a previously initialized PID controller based on the discretization method
+ * selected for the controller. The equations corresponding to each method are described below:
+ * 
+ * Pure Discrete:
+ * \f[
+ * \begin{aligned}
+ * \end{aligned}
+ * u_k = k_Pe_k + k_I(e_{k-1} + e_k) + k_D(e_k - e_{k-1})
+ * \f]
+ * 
+ * Forward Euler:
+ * \f[
+ * \begin{aligned}
+ * a_0 &= \tau \\
+ * u_k &= k_P \tau + k_I \tau + k_D)e_k \\
+ * &+ (k_P(T - 2\tau) + k_I(T- \tau) - 2k_D)e_{k-1} \\
+ * &+ (k_P(\tau - T) + k_D)e_{k-2} \\
+ * &- (T - 2\tau)e_{k-2} \\
+ * &- (T - 2\tau) u_{k-1} \\
+ * &- (\tau - T)u_{k-2} \\
+ * u_k &= u_k / a_0
+ * \end{aligned}
+ * \f]
+ * 
+ * Backward Euler:
+ * \f[
+ * \begin{aligned}
+ * a_0 &= T + \tau \\
+ * u_k &= (k_P(T + \tau) + k_I(T + \tau) + k_D)e_k \\
+ * &+ (-k_P(2\tau + T) - k_I\tau - 2k_D)e_{k-1}) \\
+ * &+ (k_P\tau + k_D)e_{k-2} \\
+ * &+ (2\tau + T)u_{k-1} \\
+ * &- \tau u_{k-2} \\
+ * u_k &= u_k / a_0
+ * \end{aligned}
+ * \f]
+ * 
+ * Tustin:
+ * \f[
+ * \begin{aligned}
+ * a_0 &= 2\tau + T \\
+ * u_k &= (k_P(2\tau + T) + \frac{1}{2} k_I(2\tau + T) + 2k_D)e_k \\
+ * &+ (-4k_P\tau + \frac{1}{2} k_I(-2\tau + T) - 4k_D)e_{k-1} \\
+ * &+ (k_P(2\tau + T) + 2k_D)u_{k-2} \\
+ * &+ (4\tau)u_{k-1} \\
+ * &- (2\tau - T)u_{k-2} \\
+ * u_k &= u_k / a_0
+ * \end{aligned}
+ * \f]
  * 
  * WARNING: this routine does NOT check whether or not the controller was previously initialized. It also
  * does NOT take measurement compensation into consideration.
@@ -250,10 +314,17 @@ ctr_ss_lti(matf32_t* A, matf32_t* B, matf32_t* C, matf32_t* D, float sample_time
 
 
 /**
- * @brief   Discretizes a continuous time LTI system model.
+ * @brief   Discretizes a continuous time state space LTI system model, to get the following form:
+ * 
+ * \f[
+ * \begin{aligned}
+ * \textbf{x}_{k+1} &= \textbf{Ax} + \textbf{Bu} \\
+ * \textbf{y} &= \textbf{Cx} + \textbf{Du} \\
+ * \end{aligned} 
+ * \f]
  *
  * WARNING: this routine overwrites the original continuous time system. This also does NOT
- * work for discrete time systems.
+ * work for discrete time systems (as it's meant for continuous time systems).
  *
  * @param[in, out]  sys             Continuous time LTI system data structure.
  * @param[in]       sample_time     Sampling period.
@@ -267,7 +338,7 @@ err_status_t
 ctr_c2d(ctr_sys_lti_t* const sys, float sample_time, ctr_discretizations_t method);
 
 /**
- * @brief   Initialices an instance of the ctr_sys_lti_t struct for lti linear systems
+ * @brief   Initialices an instance of the ctr_sys_lti_t struct for lti linear systems.
  * 
  * @param[in,out]   sys             lti system struct instance
  * @param[in]       state           Points to matrix for the system state
@@ -283,7 +354,7 @@ err_status_t
 ctr_sys_lti_init(ctr_sys_lti_t* const sys, matf32_t* const state, matf32_t* const A, matf32_t* const B, matf32_t* const C, matf32_t* const D, float sample_time);
 
 /**
- * @brief   Initializes an instance of the ctr_sys_nonlin_t struct for nonlinear systems
+ * @brief   Initializes an instance of the ctr_sys_nonlin_t struct for nonlinear systems.
  * 
  * @param[in,out]   sys             Nonlinear system struct instance
  * @param[in]       state           Points to matrix for the system state
@@ -339,7 +410,7 @@ ctr_linear_state_feedback(matf32_t* const u, const matf32_t* K, const matf32_t* 
 /**
  * @brief   Updates the step for a nonlinear system with either forward euler or runge-kutta-4 methods.
  * 
- * Equations with Forward Euler: \f[ x_{k+1} = x_k + f(x_k) \Delta t \f]
+ * Forward Euler: \f[ x_{k+1} = x_k + f(x_k) \Delta t \f]
  * 
  * Runge-Kutta4: \f[ x_{k+1} = x_k + \frac{\Delta t}{6}(k_1 + 2k_2 + 2k_3 + k_4) \f]
  * 
@@ -380,15 +451,62 @@ ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32
 err_status_t
 ctr_kalman_init(ctr_kalman_t* const kf, ctr_sys_lti_t* const sys, matf32_t* F, matf32_t* Qw, matf32_t* Qv, matf32_t* const xhat, matf32_t* const P);
 
-
+/**
+ * @brief Computes the prediction step for the Kalman Filter, based on the following
+ * equations:
+ * 
+ * \f[
+ * \begin{aligned}
+ * \hat{\textbf{x}}_{k+1|k} &= \textbf{F} \hat{\textbf{x}}_k + \textbf{Gu}_k, \\
+ * \hat{\textbf{P}}_{k+1|k} &= \textbf{F} \hat{\textbf{P}}_{k|k} \textbf{F}^\top + \hat{\textbf{V}}
+ * \end{aligned}
+ * \f]
+ * 
+ * @param[in,out]   kf      Kalman filter data structure.
+ * @param[in]       inputs  Estimate from the input of the system.
+ * 
+ * @return Execution status
+ *          MATH_SUCCESS : Operation successful.
+ *          MATH_SIZE_MISMATCH : Matrix size check failed.
+ */
 err_status_t
 ctr_kalman_predict(ctr_kalman_t* const kf, const matf32_t* inputs);
 
-
+/**
+ * @brief Computes the correction step for the Kalman Filter, based on the following
+ * equations:
+ * 
+ * \f[
+ * \begin{aligned}
+ * \boldsymbol{\nu}_{k+1} &= \textbf{z}_{k+1} - \textbf{H} \hat{\textbf{x}}_{k+1|k}, \\
+ * \hat{\textbf{x}}_{k+1|k+1} &= \hat{\textbf{x}}_{k+1|k} + \textbf{K}_{k+1} \boldsymbol{\nu}_{k+1}, \\
+ * \hat{\textbf{P}}_{k+1|k+1} &= \hat{\textbf{P}}_{k+1|k} - \textbf{K}_{k+1} \textbf{H} \hat{\textbf{P}}_{k+1|k}
+ * \end{aligned}
+ * \f]
+ * 
+ * @param[in,out]   kf              Kalman filter data structure.
+ * @param[in]       measurements    Estimate from the output of the system.
+ * 
+ * @return Execution status
+ *          MATH_SUCCESS : Operation successful.
+ *          MATH_SIZE_MISMATCH : Matrix size check failed.
+ */
 err_status_t
 ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements);
 
 
+/**
+ * @brief Executes both the prediction and correction step by calling the routines
+ * ctr_kalman_predict and ctr_kalman_correct.
+ * 
+ * @param[in,out]   kf              Kalman filter data structure.
+ * @param[in]       inputs          Estimate from the input of the system.
+ * @param[in]       measurements    Estimate from the output of the system.
+ * 
+ * @return Execution status
+ *          MATH_SUCCESS : Operation successful.
+ *          MATH_SIZE_MISMATCH : Matrix size check failed.
+ */
 static inline err_status_t
 ctr_kalman_update(ctr_kalman_t* const kf, const matf32_t* inputs, const matf32_t* measurements)
 {
@@ -396,7 +514,14 @@ ctr_kalman_update(ctr_kalman_t* const kf, const matf32_t* inputs, const matf32_t
     return ctr_kalman_correct(kf, measurements);
 }
 
-
+/**
+ * @brief Returns the estimate of the kalman system, by reading into the struct's data.
+ * 
+ * @param[in]       kf          Kalman filter data structure.
+ * @param[in,out]   estimate    Estimate from the Kalman filter.
+ * 
+ * @return None.
+ */
 static inline void
 ctr_kalman_get_estimate(ctr_kalman_t* const kf, float* const estimate)
 {

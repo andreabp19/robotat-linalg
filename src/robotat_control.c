@@ -1,7 +1,5 @@
 
 /**
- * @addtogroup Robotat-Control
- * @{
  * @author Miguel Zea
  * 
  * Last modified: 13 Jan. 2026
@@ -1173,7 +1171,3 @@ ctr_kalman_print(ctr_kalman_t* p_kalman)
 
 	printf("---------------------------------------------------------------------------\n\n");
 }
-
-/**
- * @}
- */
