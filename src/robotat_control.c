@@ -2,7 +2,7 @@
 /**
  * @author Miguel Zea
  * 
- * Last modified: 13 Jan. 2026
+ * Last modified: 31 Jan. 2026
  * 		By: Andrea Pineda
  * 
  */
@@ -1170,4 +1170,26 @@ ctr_kalman_print(ctr_kalman_t* p_kalman)
 	matf32_print(p_kalman->P);
 
 	printf("---------------------------------------------------------------------------\n\n");
+}
+
+void ctr_gen_impulse(float* signal, uint16_t samples, uint16_t impulse_index)
+{
+    for (uint16_t k = 0; k < samples; k++)
+    {
+        if ((k+1) == impulse_index)
+            signal[k] = 1;
+        else
+            signal[k] = 0;
+    }
+}
+
+void ctr_gen_step(float* signal, uint16_t samples, uint16_t step_start_index)
+{
+    for (uint16_t k = 0; k < samples; k++)
+    {
+        if ((k+1) >= step_start_index)
+            signal[k] = 1;
+        else
+            signal[k] = 0;
+    }
 }

@@ -8,7 +8,7 @@
  * @version 0.1
  * @date 2021-08-12
  * 
- * Last modified: 26 Jan. 2026
+ * Last modified: 31 Jan. 2026
  *      By: Andrea Pineda
  *
  * @copyright Copyright (c) 2021
@@ -781,6 +781,28 @@ ctr_sys_lti_print(ctr_sys_lti_t* p_sys_lti);
  */
 void
 ctr_kalman_print(ctr_kalman_t* p_kalman);
+
+/**
+ * @brief Generates an impulse signal based on a previously defined array.
+ * 
+ * @param[in,out]   signal          Array for the signal
+ * @param[in]       samples         Length of the signal
+ * @param[in]       impulse_index   Index at which to generate the impulse
+ * 
+ * @return None
+ */
+void ctr_gen_impulse(float* signal, uint16_t samples, uint16_t impulse_index);
+
+/**
+ * @brief Generates a step signal based on a previously defined array.
+ * 
+ * @param[in,out]   signal              Array for the signal
+ * @param[in]       samples             Length of the signal
+ * @param[in]       step_start_index    Index starting from which to generate the step
+ * 
+ * @return None
+ */
+void ctr_gen_step(float* signal, uint16_t samples, uint16_t step_start_index);
 
 // ====================================================================================================
 // TODO Notes
