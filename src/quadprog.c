@@ -1,20 +1,19 @@
 /**
- * Last modified: 26 Nov 2025
+ * Last modified: 31 Jan. 2026
  */
 
 #include <stdint.h>
 
 #include "quadprog.h"
 
-// TODO: Change M, y and n to kkt_M, kkt_y and kkt_n to avoid errors when naming variables M, y and n in the main program.
-float M_data[MAX_MAT_SIZE];
-matf32_t M;
+float kkt_M_data[MAX_MAT_SIZE];
+matf32_t kkt_M;
 
-float y_data[MAX_MAT_SIZE];
-matf32_t y;
+float kkt_y_data[MAX_MAT_SIZE];
+matf32_t kkt_y;
 
-float n_data[MAX_MAT_SIZE];
-matf32_t n;
+float kkt_n_data[MAX_MAT_SIZE];
+matf32_t kkt_n;
 
 float temp_Aeq_data[MAX_MAT_SIZE];
 matf32_t temp_Aeq;
@@ -162,32 +161,32 @@ quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t me
     uint16_t cols = p_qp->p_Q->num_cols + p_qp->p_Aeq->num_rows; // Aeq is used transposed here
 
     // init matrices
-    matf32_init(&M, rows, cols, M_data);
-    matf32_zeros(&M);
+    matf32_init(&kkt_M, rows, cols, kkt_M_data);
+    matf32_zeros(&kkt_M);
 
-    matf32_init(&y, rows, 1, y_data); // y_data includes lambda
-    matf32_zeros(&y);
+    matf32_init(&kkt_y, rows, 1, kkt_y_data); // y_data includes lambda
+    matf32_zeros(&kkt_y);
 
-    matf32_init(&n, rows, 1, n_data);
-    matf32_zeros(&n);
+    matf32_init(&kkt_n, rows, 1, kkt_n_data);
+    matf32_zeros(&kkt_n);
 
     matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
 
     // Create KKT matrix M = [Q Aeq'; Aeq 0]
-    matf32_submatrix_copy(p_Q, &M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
-    matf32_submatrix_copy(p_Aeq, &M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
+    matf32_submatrix_copy(p_Q, &kkt_M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
+    matf32_submatrix_copy(p_Aeq, &kkt_M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
     matf32_trans(p_Aeq, &temp_Aeq); // Aeq'
-    matf32_submatrix_copy(&temp_Aeq, &M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
+    matf32_submatrix_copy(&temp_Aeq, &kkt_M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
 
     // Create matrix n = [c, beq]
-    matf32_submatrix_copy(p_c, &n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
-    matf32_submatrix_copy(p_beq, &n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
+    matf32_submatrix_copy(p_c, &kkt_n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
+    matf32_submatrix_copy(p_beq, &kkt_n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
     // Solve linear system My = n using linsolve's methods
-    status = linsolve_method(&M, &n, &y, method);
+    status = linsolve_method(&kkt_M, &kkt_n, &kkt_y, method);
 
     // Save the part of y that corresponds to the solution x of the QP
-    matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
+    matf32_submatrix_copy(&kkt_y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
     return QP_SUCESS;
 }
@@ -300,25 +299,25 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 
     // --------------- Initialize matrices ---------------
     
-    matf32_init(&M, rows, cols, M_data);
-    matf32_zeros(&M);
-    matf32_init(&y, rows, 1, y_data); // y_data includes lambda
-    matf32_zeros(&y);
-    matf32_init(&n, rows, 1, n_data);
-    matf32_zeros(&n);
+    matf32_init(&kkt_M, rows, cols, kkt_M_data);
+    matf32_zeros(&kkt_M);
+    matf32_init(&kkt_y, rows, 1, kkt_y_data); // y_data includes lambda
+    matf32_zeros(&kkt_y);
+    matf32_init(&kkt_n, rows, 1, kkt_n_data);
+    matf32_zeros(&kkt_n);
     matf32_init(&temp_Aeq, p_Aeq->num_cols, p_Aeq->num_rows, temp_Aeq_data);
     
     // --------------- Create KKT matrix M = [Q Aeq'; Aeq 0] ---------------
     
-    matf32_submatrix_copy(p_Q, &M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
-    matf32_submatrix_copy(p_Aeq, &M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
+    matf32_submatrix_copy(p_Q, &kkt_M, 0, 0, 0, 0, p_Q->num_rows, p_Q->num_cols); // Save Q in M(1:Q_rows, 1:Q_cols)
+    matf32_submatrix_copy(p_Aeq, &kkt_M, 0, 0, p_Q->num_rows, 0, p_Aeq->num_rows, p_Aeq->num_cols); // Save Aeq in M(Q_rows:Aeq_rows, 1:Aeq_cols)
     matf32_trans(p_Aeq, &temp_Aeq); // Aeq'
-    matf32_submatrix_copy(&temp_Aeq, &M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
+    matf32_submatrix_copy(&temp_Aeq, &kkt_M, 0, 0, 0, p_Q->num_cols, p_Aeq->num_cols, p_Aeq->num_rows); // Save Aeq' in M(1:Aeq'_rows, Q_cols:Aeq'_cols)
 
     // --------------- Create KKT matrix n = [c, beq] ---------------
     
-    matf32_submatrix_copy(p_c, &n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
-    matf32_submatrix_copy(p_beq, &n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
+    matf32_submatrix_copy(p_c, &kkt_n, 0, 0, 0, 0, p_c->num_rows, 1); // Save c in n(1:c_rows, 1)
+    matf32_submatrix_copy(p_beq, &kkt_n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
     // ---------------------------------------------------------------------------
     // 2. Generate LDL' Factorization
@@ -337,39 +336,39 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     // --------------- Matrices for the permutations ---------------
     
     matf32_t* P = &m1; // Full permutation matrix P
-    matf32_init(P, M.num_rows, M.num_cols, m1data); // Initialize P
+    matf32_init(P, kkt_M.num_rows, kkt_M.num_cols, m1data); // Initialize P
     matf32_eye(P); // P = I (Identity matrix)
 
     // Pi_row, Pj_row and P_row to save rows of P to be permutted
     matf32_t* Pi_row = &m2; // For saving row i 
-    matf32_init(Pi_row, 1, M.num_cols, m2data); // Initialize Pi_row
+    matf32_init(Pi_row, 1, kkt_M.num_cols, m2data); // Initialize Pi_row
 
     matf32_t* Pj_row = &m3; // For saving row j
-    matf32_init(Pj_row, 1, M.num_cols, m3data); // Initialize Pj_row
+    matf32_init(Pj_row, 1, kkt_M.num_cols, m3data); // Initialize Pj_row
 
     matf32_t* P_row = &m4; // For saving a copy of a row
-    matf32_init(P_row, 1, M.num_cols, m4data); // Initialize P_row 
+    matf32_init(P_row, 1, kkt_M.num_cols, m4data); // Initialize P_row 
 
     // --------------- Identify indices for the permutations ---------------
     
-    for (uint16_t i = 0; i < M.num_rows; ++i)
+    for (uint16_t i = 0; i < kkt_M.num_rows; ++i)
     {
-        for (uint16_t j = 0; j < M.num_rows; ++j)
+        for (uint16_t j = 0; j < kkt_M.num_rows; ++j)
         {
-            if (fabs(M.p_data[i*M.num_rows + j]) > mu0)
+            if (fabs(kkt_M.p_data[i*kkt_M.num_rows + j]) > mu0)
             {
-                mu0 = fabs(M.p_data[i*M.num_rows + j]);
+                mu0 = fabs(kkt_M.p_data[i*kkt_M.num_rows + j]);
                 exi = i;
                 exj = j;
             }
         }
     }
 
-    for (uint16_t i = 0; i < M.num_rows; ++i)
+    for (uint16_t i = 0; i < kkt_M.num_rows; ++i)
     {
-        if (fabs(M.p_data[i*M.num_rows + i]) > mu1)
+        if (fabs(kkt_M.p_data[i*kkt_M.num_rows + i]) > mu1)
         {
-            mu1 = fabs(M.p_data[i*M.num_rows + i]);
+            mu1 = fabs(kkt_M.p_data[i*kkt_M.num_rows + i]);
             exii = i;
         }
     }
@@ -381,30 +380,30 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
         s = 1; // 1-by-1 pivot matrix E
 
         // Save current rows P(exii,:) and P(1,:)
-        matf32_submatrix_copy(P, Pi_row, exii, 0, 0, 0, 1, M.num_cols); // Pi_row = P(exii,:)
-        matf32_submatrix_copy(P, P_row, 0, 0, 0, 0, 1, M.num_cols); // P_row = P(1,:)
+        matf32_submatrix_copy(P, Pi_row, exii, 0, 0, 0, 1, kkt_M.num_cols); // Pi_row = P(exii,:)
+        matf32_submatrix_copy(P, P_row, 0, 0, 0, 0, 1, kkt_M.num_cols); // P_row = P(1,:)
 
         // Switch rows P(exii,:) and P(1,:) with each other
-        matf32_submatrix_copy(Pi_row, P, 0, 0, 0, 0, 1, M.num_cols); // P(1,:) = P(exii,:)
-        matf32_submatrix_copy(P_row, P, 0, 0, exii, 0, 1, M.num_cols); // P(exii,:) = P(1,:)
+        matf32_submatrix_copy(Pi_row, P, 0, 0, 0, 0, 1, kkt_M.num_cols); // P(1,:) = P(exii,:)
+        matf32_submatrix_copy(P_row, P, 0, 0, exii, 0, 1, kkt_M.num_cols); // P(exii,:) = P(1,:)
     }
     else
     {
         s = 2; // 2-by-2 pivot matrix E
 
         // Switch rows P(exi,:) and P(1,:)
-        matf32_submatrix_copy(P, Pi_row, exi, 0, 0, 0, 1, M.num_cols); // Pi_row = P(exi,:)
-        matf32_submatrix_copy(P, P_row, 0, 0, 0, 0, 1, M.num_cols); // P_row = P(1,:)
+        matf32_submatrix_copy(P, Pi_row, exi, 0, 0, 0, 1, kkt_M.num_cols); // Pi_row = P(exi,:)
+        matf32_submatrix_copy(P, P_row, 0, 0, 0, 0, 1, kkt_M.num_cols); // P_row = P(1,:)
 
-        matf32_submatrix_copy(Pi_row, P, 0, 0, 0, 0, 1, M.num_cols); // P(1,:) = P(exi,:)
-        matf32_submatrix_copy(P_row, P, 0, 0, exi, 0, 1, M.num_cols); // P(exi,:) = P(1:0)
+        matf32_submatrix_copy(Pi_row, P, 0, 0, 0, 0, 1, kkt_M.num_cols); // P(1,:) = P(exi,:)
+        matf32_submatrix_copy(P_row, P, 0, 0, exi, 0, 1, kkt_M.num_cols); // P(exi,:) = P(1:0)
 
         // Switch rows P(exj,:) and P(2,:)
-        matf32_submatrix_copy(P, Pj_row, exj, 0, 0, 0, 1, M.num_cols); // Pj_row = P(exj,:)
-        matf32_submatrix_copy(P, P_row, 1, 0, 0, 0, 1, M.num_cols); // P_row = P(2,:)
+        matf32_submatrix_copy(P, Pj_row, exj, 0, 0, 0, 1, kkt_M.num_cols); // Pj_row = P(exj,:)
+        matf32_submatrix_copy(P, P_row, 1, 0, 0, 0, 1, kkt_M.num_cols); // P_row = P(2,:)
 
-        matf32_submatrix_copy(Pj_row, P, 0, 0, 1, 0, 1, M.num_cols); // P(2,:) = P(exj,:)
-        matf32_submatrix_copy(P_row, P, 0, 0, exj, 0, 1, M.num_cols); // P(exj,:) = P(1:0)
+        matf32_submatrix_copy(Pj_row, P, 0, 0, 1, 0, 1, kkt_M.num_cols); // P(2,:) = P(exj,:)
+        matf32_submatrix_copy(P_row, P, 0, 0, exj, 0, 1, kkt_M.num_cols); // P(exj,:) = P(1:0)
     }
 
     matf32_t* Pt = &m2;
@@ -412,14 +411,14 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     matf32_zeros(Pt);
 
     matf32_t* PM = &m3;
-    matf32_init(PM, P->num_rows, M.num_cols, m3data);
+    matf32_init(PM, P->num_rows, kkt_M.num_cols, m3data);
     matf32_zeros(PM);
 
     matf32_t* PMPt = &m4;
     matf32_init(PMPt, P->num_rows, P->num_rows, m4data);
     matf32_zeros(PMPt);
 
-    matf32_mul(P, &M, PM); // PM = P*M
+    matf32_mul(P, &kkt_M, PM); // PM = P*M
     matf32_trans(P, Pt); // P = P'
     matf32_mul(PM, Pt, PMPt); // PMPt = P*M*P'
 
@@ -430,10 +429,10 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     matf32_zeros(E); // Erase previous data in m3data
 
     matf32_t* C = &m5; // C for saving: PMPt(s+1:end, 1:s)
-    matf32_init(C, M.num_rows-s, s, m5data); // Initialize C
+    matf32_init(C, kkt_M.num_rows-s, s, m5data); // Initialize C
 
     matf32_t* B = &m6; // B for saving: PMPt(s+1:end, s+1:end)
-    matf32_init(B, M.num_rows-s, M.num_cols-s, m6data); // Initialize B
+    matf32_init(B, kkt_M.num_rows-s, kkt_M.num_cols-s, m6data); // Initialize B
 
     // Assign values for matrices E, C and B
     matf32_submatrix_copy(PMPt, E, 0, 0, 0, 0, E->num_rows, E->num_cols); // E = PMPt(1:s, 1:s)
@@ -444,7 +443,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 
     float L_data[MAX_MAT_SIZE];
     matf32_t L;
-    matf32_init(&L, M.num_rows, M.num_cols, L_data);
+    matf32_init(&L, kkt_M.num_rows, kkt_M.num_cols, L_data);
     matf32_zeros(&L);
     matf32_eye(&L);
 
@@ -460,7 +459,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     matf32_submatrix_copy(CEi, &L, 0, 0, s, 0, CEi->num_rows, CEi->num_cols); 
 
     matf32_t* D = &m7; // D for saving [E 0; 0 C*E^-1*C']
-    matf32_init(D, M.num_rows, M.num_cols, m7data); // Initialize D
+    matf32_init(D, kkt_M.num_rows, kkt_M.num_cols, m7data); // Initialize D
     matf32_zeros(D); // Erase previous data in m7data
     
     matf32_t* Ct = &m9; // Ct for the transpose of C
@@ -491,20 +490,20 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     // --------------- Solve linear system: L*z1 = Pb ---------------
     
     matf32_t* z1 = &m5; // Define z1
-    matf32_init(z1, M.num_rows, 1, m5data); // Initialize z1
+    matf32_init(z1, kkt_M.num_rows, 1, m5data); // Initialize z1
     matf32_zeros(z1); // Erase previous data in m5data
 
     matf32_t* Pb = &m6; // Define Pb
-    matf32_init(Pb, P->num_rows, n.num_cols, m6data); // Initialize Pb
+    matf32_init(Pb, P->num_rows, kkt_n.num_cols, m6data); // Initialize Pb
     matf32_zeros(Pb); // Erase previous data in m6data
 
-    matf32_mul(P, &n, Pb); // Pb = P*n (n = b, just different notation)
+    matf32_mul(P, &kkt_n, Pb); // Pb = P*n (n = b, just different notation)
     linsolve(&L, Pb, z1); // Solve L*z1 = Pb
 
     // --------------- Solve linear system: D*z2 = z1 ---------------
     
     matf32_t* z2 = &m6; // z2 for the solution of D*z2 = z1
-    matf32_init(z2, M.num_rows, 1, m6data); // Initialize z2
+    matf32_init(z2, kkt_M.num_rows, 1, m6data); // Initialize z2
     matf32_zeros(z2); // Erase previous data in m6data
 
     linsolve(D, z1, z2); // Solve D*z2 = z1
@@ -512,7 +511,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     // --------------- Solve linear system: L'*z3 = z2 ---------------
     
     matf32_t* z3 = &m5; // Define z3
-    matf32_init(z3, M.num_rows, 1, m5data); // Initialize z3
+    matf32_init(z3, kkt_M.num_rows, 1, m5data); // Initialize z3
     matf32_zeros(z3); // Erase previous data in m5data
 
     matf32_trans(&L, Lt); // L = L'
@@ -520,11 +519,11 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 
     // --------------- Calculate QP solution vector y = P'*z3 ---------------
     
-    matf32_init(&y, M.num_rows, 1, y_data); // Initialize y
-    matf32_mul(Pt, z3, &y); // y = P'*z3
+    matf32_init(&kkt_y, kkt_M.num_rows, 1, kkt_y_data); // Initialize y
+    matf32_mul(Pt, z3, &kkt_y); // y = P'*z3
 
     // y = [x lambda]', so save x and discard the lambda (lagrange multipliers)
-    matf32_submatrix_copy(&y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
+    matf32_submatrix_copy(&kkt_y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
     return QP_SUCESS;
 }
@@ -652,26 +651,26 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 }
 
                 // Create KKT Matrix M 
-                matf32_init(&M, Q->num_rows+Aeq->num_rows+A_w->num_rows, Q->num_cols+Aeq->num_rows+A_w->num_rows, M_data);
-                matf32_zeros(&M);
+                matf32_init(&kkt_M, Q->num_rows+Aeq->num_rows+A_w->num_rows, Q->num_cols+Aeq->num_rows+A_w->num_rows, kkt_M_data);
+                matf32_zeros(&kkt_M);
                 
                 // M = [Q 0 0; Aeq 0 0; A_w 0 0]
-                matf32_submatrix_copy(Q, &M, 0, 0, 0, 0, Q->num_rows, Q->num_cols); // Copy Q into M
-                matf32_submatrix_copy(Aeq, &M, 0, 0, Q->num_rows, 0, Aeq->num_rows, Aeq->num_cols); // Copy Aeq into M
-                matf32_submatrix_copy(A_w, &M, 0, 0, Q->num_rows+Aeq->num_rows, 0, A_w->num_rows, A_w->num_cols); // Copy A_w into M
+                matf32_submatrix_copy(Q, &kkt_M, 0, 0, 0, 0, Q->num_rows, Q->num_cols); // Copy Q into M
+                matf32_submatrix_copy(Aeq, &kkt_M, 0, 0, Q->num_rows, 0, Aeq->num_rows, Aeq->num_cols); // Copy Aeq into M
+                matf32_submatrix_copy(A_w, &kkt_M, 0, 0, Q->num_rows+Aeq->num_rows, 0, A_w->num_rows, A_w->num_cols); // Copy A_w into M
 
                 // M = [Q Aeq' 0; Aeq 0 0; A_w 0 0]
                 matf32_t* Aeqt = &m5;
                 matf32_init(Aeqt, Aeq->num_cols, Aeq->num_rows, m5data);
                 matf32_trans(Aeq, Aeqt); // Aeq'
-                matf32_submatrix_copy(Aeqt, &M, 0, 0, 0, Q->num_cols, Aeqt->num_rows, Aeqt->num_cols); // Copy Aeq' into M
+                matf32_submatrix_copy(Aeqt, &kkt_M, 0, 0, 0, Q->num_cols, Aeqt->num_rows, Aeqt->num_cols); // Copy Aeq' into M
 
                 // M = [Q Aeq' A_w'; Aeq 0 0; A_w 0 0]
                 matf32_t* A_wt = &m5;
                 matf32_init(A_wt, A_w->num_cols, A_w->num_rows, m5data);
                 matf32_zeros(A_wt);
                 matf32_trans(A_w, A_wt);
-                matf32_submatrix_copy(A_wt, &M, 0, 0, 0, Q->num_cols+Aeq->num_rows, A_wt->num_rows, A_wt->num_cols); // Save A_w' into M
+                matf32_submatrix_copy(A_wt, &kkt_M, 0, 0, 0, Q->num_cols+Aeq->num_rows, A_wt->num_rows, A_wt->num_cols); // Save A_w' into M
 
                 // Create KKT vector l
                 matf32_init(l, Q->num_rows+Aeq->num_rows+A_w->num_rows, 1, m4data);
@@ -704,7 +703,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                err_status = linsolve(&M, l, &p);
+                err_status = linsolve(&kkt_M, l, &p);
                 matf32_init(&lambda, A_w->num_rows, 1, lambda_data);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
                 matf32_submatrix_copy(&p, &lambda, Q->num_rows+Aeq->num_rows, 0, 0, 0, lambda.num_rows, 1);
@@ -712,15 +711,15 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
             else // Equality Constraints + Inactive inequality constraints
             {
                 // M = [Q Aeq'; Aeq 0]
-                matf32_init(&M, Q->num_rows+Aeq->num_rows, Q->num_cols+Aeq->num_rows, M_data);
-                matf32_zeros(&M);
-                matf32_submatrix_copy(Q, &M, 0, 0, 0, 0, Q->num_rows, Q->num_cols); // Copy Q into M
-                matf32_submatrix_copy(Aeq, &M, 0, 0, Q->num_rows, 0, Aeq->num_rows, Aeq->num_cols); // Copy Aeq into M
+                matf32_init(&kkt_M, Q->num_rows+Aeq->num_rows, Q->num_cols+Aeq->num_rows, kkt_M_data);
+                matf32_zeros(&kkt_M);
+                matf32_submatrix_copy(Q, &kkt_M, 0, 0, 0, 0, Q->num_rows, Q->num_cols); // Copy Q into M
+                matf32_submatrix_copy(Aeq, &kkt_M, 0, 0, Q->num_rows, 0, Aeq->num_rows, Aeq->num_cols); // Copy Aeq into M
 
                 matf32_t* Aeqt = &m5;
                 matf32_init(Aeqt, Aeq->num_cols, Aeq->num_rows, m5data);
                 matf32_trans(Aeq, Aeqt); // Aeq'
-                matf32_submatrix_copy(Aeqt, &M, 0, 0, 0, Q->num_cols, Aeqt->num_rows, Aeqt->num_cols); // Copy Aeq' into M
+                matf32_submatrix_copy(Aeqt, &kkt_M, 0, 0, 0, Q->num_cols, Aeqt->num_rows, Aeqt->num_cols); // Copy Aeq' into M
 
                 // l = [-Q*x_k - c; Aeq*x_k - beq]
                 matf32_init(l, Q->num_rows + Aeq->num_rows, 1, m4data);
@@ -745,7 +744,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                err_status = linsolve(&M, l, &p);
+                err_status = linsolve(&kkt_M, l, &p);
                 matf32_init(&lambda, 1, 1, lambda_data);
                 matf32_zeros(&lambda);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
@@ -779,16 +778,16 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 }
 
                 // M = [Q A_w'; A_w 0]
-                matf32_init(&M, Q->num_rows+A_w->num_rows, Q->num_cols+A_w->num_rows, M_data);
-                matf32_zeros(&M);
-                matf32_submatrix_copy(Q, &M, 0, 0, 0, 0, Q->num_rows, Q->num_cols);
-                matf32_submatrix_copy(A_w, &M, 0, 0, Q->num_rows, 0, A_w->num_rows, A_w->num_cols);
+                matf32_init(&kkt_M, Q->num_rows+A_w->num_rows, Q->num_cols+A_w->num_rows, kkt_M_data);
+                matf32_zeros(&kkt_M);
+                matf32_submatrix_copy(Q, &kkt_M, 0, 0, 0, 0, Q->num_rows, Q->num_cols);
+                matf32_submatrix_copy(A_w, &kkt_M, 0, 0, Q->num_rows, 0, A_w->num_rows, A_w->num_cols);
 
                 matf32_t* A_wt = &m5;
                 matf32_init(A_wt, A_w->num_cols, A_w->num_rows, m5data);
                 matf32_zeros(A_wt);
                 matf32_trans(A_w, A_wt);
-                matf32_submatrix_copy(A_wt, &M, 0, 0, 0, Q->num_cols, A_wt->num_rows, A_wt->num_cols);
+                matf32_submatrix_copy(A_wt, &kkt_M, 0, 0, 0, Q->num_cols, A_wt->num_rows, A_wt->num_cols);
 
                 // n = [-Q*x_k - c; A_w*x_k - b_w]
                 matf32_init(l, Q->num_rows + A_w->num_rows, 1, m4data);
@@ -811,7 +810,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                err_status = linsolve(&M, l, &p);
+                err_status = linsolve(&kkt_M, l, &p);
                 matf32_init(&lambda, Ax_b->num_rows, 1, lambda_data);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
                 matf32_submatrix_copy(&p, &lambda, Qx_c->num_rows, 0, 0, 0, lambda.num_rows, 1);
