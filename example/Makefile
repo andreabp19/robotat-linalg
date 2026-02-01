@@ -16,8 +16,8 @@ linsolve_demo: lib
 quadprog_demo: lib
 	$(CC) quadprog_demo.c $(SRC)*.o -I$(SRC) -lm -o build/quadprog_demo
 
-control_demo: lib
-	$(CC) control_demo.c $(SRC)*.o -I$(SRC) -lm -o build/control_demo
+control_pid_demo: lib
+	$(CC) control_pid_demo.c $(SRC)*.o -I$(SRC) -lm -o build/control_pid_demo
 
 robotics_demo: lib
 	$(CC) robotics_demo.c $(SRC)*.o -I$(SRC) -lm -o build/robotics_demo
