@@ -35,7 +35,7 @@ For numerical computation, divided in the following library files:
 
 * matf32: matrix linear algebra, including basic operations and matrix factorizations.
 * linsolve: linear solver methods based on the matrix factorizations in matf32.
-* quadprog: convex quadratic solver, based on linsolve and including methods for solving KKT systems and an active-set method. 
+* quadprog: convex quadratic solver based on linsolve, includes both direct and active-set methods. 
 
 ## Robotat Control
 
