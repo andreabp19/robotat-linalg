@@ -8,14 +8,6 @@ A collection of libraries 100% written in C for embedded numerical computation, 
 * Memory-efficient: Static memory allocation used in all routines (no dynamic memory).
 * Device flexibility: Applicable to different embedded devices, such as Arduino, ESP32 and more.
 
-# About this repository
-
-Out of legacy and continuity with the previous version, this repository is called robotat-linalg, but currently contains three different libraries:
-
-* Robotat Linalg: Numerical Computation, subdidivided in three libraries for matrix algebra (matf32), linear systems (linsolve) and convex quadratic programming (quadprog).
-* Robotat Control: Linear and nonlinear control algorithms.
-* Robotat Robotics: Robotics algorithms.
-
 # Supported platforms
 
 As of late 2025, all libraries have been tested in the following devices, with some considerations for each:
@@ -27,7 +19,7 @@ As of late 2025, all libraries have been tested in the following devices, with s
 * STM NUCLEO F446RE (Arm 32-Bits):
     * This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
 
-# About each library
+# Libraries in this project
 
 ## Robotat Linalg
 
