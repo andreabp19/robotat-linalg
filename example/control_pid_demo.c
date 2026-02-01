@@ -39,27 +39,6 @@ float R[K]; // Input signal
 // Matrices and variables definitions
 // ---------------------------------------------------------------------------
 
-static float m1data[MAX_MAT_SIZE];
-static matf32_t m1;
-static float m2data[MAX_MAT_SIZE];
-static matf32_t m2;
-static float m3data[MAX_MAT_SIZE];
-static matf32_t m3;
-static float m4data[MAX_MAT_SIZE];
-static matf32_t m4;
-static float m5data[MAX_MAT_SIZE];
-static matf32_t m5;
-static float m6data[MAX_MAT_SIZE];
-static matf32_t m6;
-static float m7data[MAX_MAT_SIZE];
-static matf32_t m7;
-static float m8data[MAX_MAT_SIZE];
-static matf32_t m8;
-static float m9data[MAX_MAT_SIZE];
-static matf32_t m9;
-static float m10data[MAX_MAT_SIZE];
-static matf32_t m10;
-
 float A_data[MAX_MAT_SIZE];
 matf32_t A;
 
