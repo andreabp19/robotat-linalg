@@ -1,0 +1,49 @@
+/** @mainpage Robotat Embedded C Libraries
+ *
+ * @section intro Overview
+ * A collection of libraries 100% written in C for embedded numerical computation, control and robotics algorithms.
+ * This project is developed at Universidad del Valle de Guatemala (UVG) and it's aimed at students, educators and 
+ * enthusiasts that are interested in developing embedded control and robotics applications.
+ *
+ *@section features Key features
+ * - Self-Contained libraries: Only uses the C Standard Library (no external libraries needed).
+ * - Memory-efficient: Static memory allocation used in all routines (no dynamic memory).
+ * - Device flexibility: Applicable to different embedded devices, such as Arduino, ESP32 and more.
+ *
+ * @section contents Content (Alphabetical Order)
+ * 1. Robotat Linalg: linsolve (linear solver)
+ * 2. Robotat Linalg: matf32 (matrix linear algebra)
+ * 3. Robotat Linalg: quadprog (convex quadratic solver)
+ * 4. Robotat Control (control algorithms)
+ * 5. Robotat Robotics (robotics algorithms)
+ *
+ * @section platforms Supported Platforms
+ * Tested and verified in the following platforms, with some considerations for each:
+ * - ESP32 (Xtensa 32-Bits)
+ * - Arduino MEGA 2560 (AVR 8-Bits)
+ *      - The routines: quadprog_qp_ldlt, quadprog_qp_nullspace, and the model predictive control
+ *          cannot be implemented in this device due to memory limitations.
+ *      - The routine matf32_print doesn't work correctly in this device, as printf cannot be used
+ *          in the Arduino MEGA (and so, calling printf will lead to issues). It's recommended to 
+ *          declare your own print function, using Serial, as this is due to board limitations.
+ * - STM NUCLEO F446RE (Arm 32-Bits)
+ *      - This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
+ *
+ * @section Bibliography
+ * Several books have been used as reference for the algorithms in this project. Both in the code files, and in
+ * this document, the respective algorithms and books are mentioned, and below is the complete list
+ * of references:
+ * - 1997. J. Demmel. Applied Numerical Linear Algebra. SIAM.
+ * - 1997. L. Trefethen. Numerical Linear Algebra. SIAM. 
+ * - 1998. G. Franklin. Digital Control of Dynamic Systems. Addison-Wesley.
+ * - 2000. J. Nocedal. Numerical Optimization. Springer Science & Business Media.
+ * - 2004. S. Boyd. Convex Optimization. Cambridge University Press.
+ * - 2005. J. Craig. Introduction to Robotics: Mechanics and Control. Pearson Prentice Hall.
+ * - 2011. P. Corke. Robotics, Vision and Conrol: Fundamental Algorithms in Matlab. Springer Science & Business Media.
+ * - 2013. J. Epperson. An Introduction to Numerical Methods and Analysis. John Wiley Sons.
+ * - 2013. G. Golub. Matrix Computations. JHU Press.
+ * - 2013. N. Kutz. Data-Driven Modeling & Scientific Computation: Methods for Complex Systems & Big Data. OUP Oxford.
+ * - 2014. G. Franklin. Feedbac Control of Dynamic Systems. Pearson.
+ * - 2019. B. Kouvaritakis. Model Predictive Control: Classical, Robust and Stochastic. Springer International.
+ * - 2021. J. Martins. Engineering Design Optimization. Cambridge University Press.
+ */

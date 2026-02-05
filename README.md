@@ -15,7 +15,7 @@ As of late 2025, all libraries have been tested in the following devices, with s
 * ESP32 (Xtensa 32-Bits): All routines work in this device with no issue.
 * Arduino MEGA 2560 (AVR 8-Bits):
     * The routines: quadprog_qp_ldlt, quadprog_qp_nullspace, and the model predictive control cannot be implemented in this device due to memory limitations.
-    * The routine matf32_print doesn't work correctly in this device, as printf cannot be used in the Arduino MEGA (and so, calling printf will lead to issues). It's recommended to declare your own printf function, using Serial print functions, in order to use matf32_print (but DO NOT change matf32_print itself, this limitation is due to device characteristics, not a functionality issue in itself).
+    * The routine matf32_print doesn't work correctly in this device, as printf cannot be used in the Arduino MEGA (and so, calling printf will lead to issues). It's recommended to declare your own print function, using Serial, as this is due to board limitations.
 * STM NUCLEO F446RE (Arm 32-Bits):
     * This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
 

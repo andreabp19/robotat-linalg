@@ -1,0 +1,17 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{latexheader}[2024/01/01 Extra math packages]
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{microtype}
+\usepackage{needspace}
+
+% Disable Doxygen's premature page-break heuristics
+\renewcommand{\ensurespace}[1]{}
+\renewcommand{\Needspace}[1]{}
+
+\makeatletter
+\let\DoxyNeedspace\@gobble
+\let\DoxyEnsureSpace\@gobble
+\makeatother
