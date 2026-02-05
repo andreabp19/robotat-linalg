@@ -104,17 +104,16 @@ int main(void)
     // Iterate over the input signal with the PID controller
     for (uint8_t k = 0; k < K-1; k++)
     {
-        // Discretize signal
+        // Update PID output
         u.p_data[0] = ctr_pid_update(&pid, R[k], Y[k]);
         
-        // Update system
+        // Update LTI system
         matf32_mul(&A, &x, &Ax); // A*x
         matf32_mul(&B, &u, &Bu); // B*u
         matf32_add(&Ax, &Bu, &x); // x = A*x + B*u
-
         matf32_mul(&C, &x, &y); // y = C*x
 
-        // Save new data
+        // Save trajectories
         U[k+1] = u.p_data[0];
         X[k+1] = x.p_data[0];
         Y[k+1] = y.p_data[0];

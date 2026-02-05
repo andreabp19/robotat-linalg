@@ -175,8 +175,6 @@ int main(void)
     //printf("bin:\n");
     //matf32_print(&bin);
 
-
-
     //printf("\n------------------------------ mpc_M Submatrices ------------------------------\n\n");
     //printf("M = [A, A^2, ..., A^N]'\n\n\n");
     //printf("M = {&M1, &M2, ..., &MN}'\n\n\n");
@@ -234,11 +232,6 @@ int main(void)
         ctr_mpc_update(&mpc, &qp_Q, &qp_c, &x_k, &u_k);
         mpc_time[k] = (float)(clock()-time)/CLOCKS_PER_SEC;
         
-        //printf("x_k:\n");
-        //matf32_print(&x_k);
-        //printf("u_k:\n");
-        //matf32_print(&u_k);
-        
         U[k] = u_k.p_data[0];
         X1[k] = x_k.p_data[0];
         X2[k] = x_k.p_data[1];
@@ -292,21 +285,4 @@ int main(void)
         printf("%.9f ", cost[k]);
     }
     printf("\n");
-
-    // Mean Time Measurement for solving the MPC
-    //float mean_mpc_lti_time = 0;
-    //for (uint16_t i = 0; i < 100; ++i)
-    //{
-    //    matf32_ones(&x_k);
-    //    matf32_zeros(&u_k);
-    //    time = clock();
-    //    for (uint16_t k = 0; k < 2*N; ++k)
-    //    {
-    //        ctr_mpc_set_qpc(&mpc, &qp_c);
-    //        //ctr_mpc_set_constraints(&mpc, 10, -10);
-    //        ctr_mpc_update(&mpc, &qp_Q, &qp_c, &x_k, &u_k);
-    //    }
-    //    mean_mpc_lti_time += (float)(clock()-time)/CLOCKS_PER_SEC/2*N;
-    //}
-    //printf("Mean Time (s): %.9f\n\n", mean_mpc_lti_time/100);
 }

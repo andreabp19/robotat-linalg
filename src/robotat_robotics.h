@@ -342,25 +342,6 @@ rob_trotz(rob_frame_t* p_F, float theta, bool angle_units);
  * \f[
  * ^Ap = ^AT_B \cdot ^Bp
  * \f]
- *  
- * As the operation has a fixed size, the most efficient way is to operate element-by-element.
- * As such, it's implemented manually as follows:
- * 
- * \f[
- * ^Ap_{1,1} = T_{1,1}\cdot {^Bp_{1,1}} + T_{1,2}\cdot {^Bp_{2,1}} + T_{1,3}\cdot {^Bp_{3,1}} + T_{1,4}\cdot {^Bp_{4,1}} 
- * \f]
- * 
- * \f[
- * ^Ap_{2,1} = T_{2,1}\cdot {^Bp_{1,1}} + T_{2,2}\cdot {^Bp_{2,1}} + T_{2,3}\cdot {^Bp_{3,1}} + T_{2,4}\cdot {^Bp_{4,1}} 
- * \f]
- * 
- * \f[
- * ^Ap_{3,1} = T_{3,1}\cdot {^Bp_{1,1}} + T_{3,2}\cdot {^Bp_{2,1}} + T_{3,3}\cdot {^Bp_{3,1}} + T_{3,4}\cdot {^Bp_{4,1}}
- * \f]
- * 
- * \f[
- * ^Ap_{4,1} = T_{4,1}\cdot {^Bp_{1,1}} + T_{4,2}\cdot {^Bp_{2,1}} + T_{4,3}\cdot {^Bp_{3,1}} + T_{4,4}\cdot {^Bp_{4,1}}
- * \f]
  * 
  * @param[in]   p_F     Pointer to reference frame struct to work with.
  * @param[in]   p_srcp  Coordinates vector with reference to original frame.
@@ -491,17 +472,7 @@ rob_quat_scale(const rob_quat_t* p_srcq, const float p_c, rob_quat_t* p_dstq);
 
 
 /**
- * @brief   Multiplies two quaternions (Hamilton product) such that, for two quaternions:
- * 
- * \f[ q_1 = a_1 + b_1i + c_1j + d_1k \f]
- * \f[ q_2 = a_2 + b_2i + c_2j + d_2k \f]
- * 
- * the multiplication is as follows for each component of the result quaternion:
- * \f[ (a_1 a_2 - b_1 b_2 - c_1 c_2 - d_1 d_2) \f]
- * \f[ + (a_1 b_2 + b_1 a_2 + c_1 d_2 - d_1 c_2)i \f]
- * \f[ + (a_1 c_2 - b_2 c_2 + c_1 a_2 + d_1 b_2)j \f]
- * \f[ + (a_1 d_2 + b_1 c_2 - c_1 b_2 + d_1 a_2)k \f]
- * 
+ * @brief   Multiplies two quaternions (Hamilton product) of two quaternions.
  * 
  * @param[in]   p_srcq1    Pointer to the first quaternion
  * @param[in]   p_srcq2    Pointer to the second quaternion
