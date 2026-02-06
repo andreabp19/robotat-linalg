@@ -22,6 +22,9 @@ control_pid_demo: lib
 control_mpc_demo: lib
 	$(CC) control_mpc_demo.c $(SRC)*.o -I$(SRC) -lm -o build/control_mpc_demo
 
+control_kalman_filter_demo: lib
+	$(CC) control_kalman_filter_demo.c $(SRC)*.o -I$(SRC) -lm -o build/control_kalman_filter_demo
+
 robotics_demo: lib
 	$(CC) robotics_demo.c $(SRC)*.o -I$(SRC) -lm -o build/robotics_demo
 
