@@ -1,7 +1,7 @@
 
 /**
  * @author Andrea Pineda
- * @date created 19 jul. 2025, last modified 13 jan. 2026
+ * @date created 19 Jul. 2025, last modified 9 Feb. 2026
  */
 
 #include <math.h>               // For sin() and cos()

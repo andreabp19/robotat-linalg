@@ -6,7 +6,7 @@
  * @brief Robotics algorithms, based on MATLAB Robotics 
  * Toolbox of Peter Corke. Includes routines for homogeneous
  * transformations, rotationes matrices and quaternions.
- * @date created 19 jul. 2025, last modified 13 jan. 2026
+ * @date created 19 Jul. 2025, last modified 6 Feb. 2026
 */
 
 #ifndef ROBOTAT_ROBOTICS_H_
