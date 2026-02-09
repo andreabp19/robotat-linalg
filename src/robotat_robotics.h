@@ -138,7 +138,7 @@ typedef struct
  */
 typedef struct
 {
-    const matf32_t* p_v;        /**< Points to coordinates vector for this reference point */
+    matf32_t* p_v;              /**< Points to coordinates vector for this reference point */
     rob_frame_id_t ref_frame;   /**< Label or ID for the associated reference frame */
 } rob_point_t;
 
@@ -347,9 +347,11 @@ rob_trotz(rob_frame_t* p_F, float theta, bool angle_units);
  * @param[in]   p_srcp  Coordinates vector with reference to original frame.
  * @param[out]  p_dstp  Coordinates vector to the new frame of reference.
  * 
- * @return None
+ * @return Status check
+ *              ROB_MATH_SUCCESS : Frame IDs align, operation successful.
+ *              TRANSFORM_FRAMES_MISMATCH : Frame IDs misalign, cannot apply transformation.
  */
-void
+rob_status_t
 rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 
 
@@ -383,9 +385,11 @@ rob_inv_transform(rob_frame_t* const p_F, matf32_t* const p_Tinv);
  * @param[out]  p_dstp      Points to reference point with respect to the new frame.
  * @param[in]   euler_tag   Tag to indicate the rotation sequence to apply, for example: XYZ, ZYZ, etc.
  * 
- * @return None
+ * @return Status check
+ *              ROB_MATH_SUCCESS : Frame IDs align, operation successful.
+ *              TRANSFORM_FRAMES_MISMATCH : Frame IDs misalign, cannot apply transformation.
  */
-void
+rob_status_t
 rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t angle_sequence, float phi, float theta, float psi, bool angle_units);
 
 
@@ -528,9 +532,11 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq);
  * @param[in]       p_srcp      Points to original reference point
  * @param[in,out]   p_dstp      Points to destination reference point
  * 
- * @return None
+ * @return Status check
+ *              ROB_MATH_SUCCESS : Frame IDs align, operation successful.
+ *              TRANSFORM_FRAMES_MISMATCH : Frame IDs misalign, cannot apply transformation.
  */
-void
+rob_status_t
 rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp);
 
 

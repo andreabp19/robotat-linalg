@@ -230,18 +230,25 @@ rob_trotz(rob_frame_t* p_F, float theta, bool angle_units)
 // 2.3. Applying transformations and rotation sequences
 // ----------------------------------------------------------------------------------------------------
 
-void
+rob_status_t
 rob_apply_transform(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 {    
     float *T_data = p_F->p_T->p_data;
     float *src_data = p_srcp->p_v->p_data;
     float *dst_data = p_dstp->p_v->p_data;
+
+    if (rob_check_transform_frames(p_F, p_srcp, p_dstp) == TRANSFORM_FRAMES_MISMATCH)
+    {
+        return TRANSFORM_FRAMES_MISMATCH;
+    }
     
     // Working directly with floats, adjusting indexes as necessary to fulfill the equations in the comment above.
     dst_data[0] = T_data[0]*src_data[0] + T_data[1]*src_data[1] + T_data[2]*src_data[2] + T_data[3]*src_data[3];
     dst_data[1] = T_data[4]*src_data[0] + T_data[5]*src_data[1] + T_data[6]*src_data[2] + T_data[7]*src_data[3];
     dst_data[2] = T_data[8]*src_data[0] + T_data[9]*src_data[1] + T_data[10]*src_data[2] + T_data[11]*src_data[3];
     dst_data[3] = T_data[12]*src_data[0] + T_data[13]*src_data[1] + T_data[14]*src_data[2] + T_data[15]*src_data[3];
+
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -278,7 +285,7 @@ rob_inv_transform(rob_frame_t* const p_F, matf32_t* const p_Tinv)
 }
 
 
-void
+rob_status_t
 rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp, rob_angle_sequences_t angle_sequence, float phi, float theta, float psi, bool angle_units)
 {  
     switch(angle_sequence)
@@ -504,7 +511,7 @@ rob_quat_inv(const rob_quat_t* p_srcq, rob_quat_t* p_dstq)
 
 
 // By nature, affects only the rotation matrix, to add a translation use rob_transl() before applying the transform.
-void
+rob_status_t
 rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dstp)
 {
     rob_quat2tr(p_srcq, p_F);
@@ -1133,10 +1140,10 @@ rob_frame_print(rob_frame_t* p_F)
     printf("-------------------------\n");
     printf("REFERENCE FRAME\n");
     printf("-------------------------\n");
-    printf("Origin Tag: ");
+    printf("Origin: ");
     rob_frame_id_print(p_F->ref_frame);
     printf("\n");
-    printf("Destination Tag: ");
+    printf("Destination: ");
     rob_frame_id_print(p_F->dst_frame);
     printf("\n");
     printf("Angle Units: ");
@@ -1209,7 +1216,7 @@ rob_angle_units_print(bool angle_units)
 void
 rob_quat_print(const rob_quat_t* p_srcq)
 {
-    printf("\n\n%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
+    printf("\n%.9f + %.9fi + %.9fj + %.9fk\n\n", *p_srcq->p_s, *p_srcq->p_i, *p_srcq->p_j, *p_srcq->p_k);
 }
 
 
