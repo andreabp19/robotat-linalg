@@ -1,7 +1,7 @@
 /** @mainpage Robotat Embedded C Libraries
  *
  * @section intro Overview
- * A collection of libraries 100% written in C for embedded numerical computation, control and robotics algorithms.
+ * Embedded C libraries for numerical computation, control and robotics algorithms.
  * This project is developed at Universidad del Valle de Guatemala (UVG) and it's aimed at students, educators and 
  * enthusiasts that are interested in developing embedded control and robotics applications.
  *
