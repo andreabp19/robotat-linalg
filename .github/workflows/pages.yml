@@ -1,56 +1,45 @@
-name: Doxygen GitHub Pages Deploy Action
+name: Doxygen Github Pages Deploy Action
 
 on:
   push:
-    branches:
-      - master
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
-      - name: Install dot
-        run: sudo apt install graphviz
-
-      - name: Install Doxygen
-        run: sudo apt install doxygen
-
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz doxygen
 
       - name: Generate Doxygen Documentation
         run: doxygen Doxyfile
 
-      - name: Create .nojekyll (ensures pages with underscores work on gh pages)
-        run: touch .nojekyll
+      - name: Create .nojekyll
+        run: touch docs/.nojekyll
 
       - name: Setup Pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: './docs'
+          path: ./docs
 
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
-
-      #- name: Push to docs branch.
-      #  uses: moodiest/push-to-branch-action@develop
-      #  env:
-      #    REPO: self
-      #    BRANCH: docs
-      #    FOLDER: .
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-          
+        uses: actions/deploy-pages@v5
