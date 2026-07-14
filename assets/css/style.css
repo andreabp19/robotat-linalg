@@ -1,0 +1,113 @@
+
+/* ====================================================================================================
+Robotat Linalg - style.css
+==================================================================================================== */
+
+/* ---------------------------------------------------------------------------------------------------
+Imports
+--------------------------------------------------------------------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Serif:wght@300;400&display=swap');
+
+/* ---------------------------------------------------------------------------------------------------
+General layout
+--------------------------------------------------------------------------------------------------- */
+
+:root {
+  --color-page-background: #ffffff;
+  --color-page-foreground: #e2e2e2;
+  --color-text-main: #141414;
+  --color-text-secondary: #424242;
+  --color-text-content: #787878;
+  --color-accent-main: #407bb9;
+  --color-accent-dark: #2f465e;
+  --color-accent-light: #75ace7;
+  --color-sidebar-background: #141414;
+  --color-code-background: #232323;
+  --color-code-foreground: #ececec;
+  --color-card-background: #cecece;
+  --color-border-color: #424242;
+  --color-white: #fff;
+  --color-black: #000;
+
+  --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-family-monospace: 'SFMono-Regular', Consolas, Menlo, monospace;
+  --font-family-eyebrow: 'JetBrains Mono', var(--font-family-monospace);
+  --font-family-heading: 'IBM Plex Sans', var(--font-family);
+  --font-family-eyebrow: 'IBM Plex Serif', serif;
+
+  --max-width: 1100px;
+  --radius: 2.5px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background: var(--color-page-background);
+  color: var(--color-page-foreground);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--primary-light-color);
+  text-decoration: none;
+}
+a:hover { color: var(--color-accent-main); }
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Navigation Bar (navbar)
+--------------------------------------------------------------------------------------------------- */
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--sidebar-background);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 14px 24px;
+}
+
+.nav-brand {
+  font-weight: 700;
+  color: var(--color-page-background);
+  letter-spacing: 0.02em;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  color: var(--color-text-content);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+.nav-links a:hover { color: var(--color-accent-light); }
