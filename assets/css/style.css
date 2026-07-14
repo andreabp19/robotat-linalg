@@ -26,7 +26,7 @@ General layout
   --color-code-background: #232323;
   --color-code-foreground: #ececec;
   --color-card-background: #cecece;
-  --color-border-color: #424242;
+  --color-border: #424242;
   --color-white: #fff;
   --color-black: #000;
 
@@ -56,7 +56,7 @@ body {
 }
 
 a {
-  color: var(--primary-light-color);
+  color: var(--color-accent-light);
   text-decoration: none;
 }
 a:hover { color: var(--color-accent-main); }
@@ -75,9 +75,9 @@ nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--sidebar-background);
+  background: var(--color-sidebar-background);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .nav-inner {
