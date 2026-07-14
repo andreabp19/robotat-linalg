@@ -34,8 +34,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout main (source + doxyfile)
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Checkout gh-pages (landing page)
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
 
       - name: Install dependencies
         run: |
@@ -45,8 +53,13 @@ jobs:
       - name: Generate Doxygen Documentation
         run: doxygen Doxyfile
 
-      - name: Create .nojekyll
-        run: touch docs/.nojekyll
+      - name: Assemble site
+        run: |
+          mkdir -p public
+          cp -r site/. public/
+          mkdir -p public/docs
+          cp -r docs/. public/docs/
+          touch public/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -54,7 +67,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./docs
+          path: ./public
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v5
