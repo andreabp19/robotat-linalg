@@ -225,8 +225,221 @@ Features Section
 }
 
 /* ---------------------------------------------------------------------------------------------------
-   Card Grid
-   --------------------------------------------------------------------------------------------------- */
+Benchmarks Section
+--------------------------------------------------------------------------------------------------- */
+
+.benchmark-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr;
+  gap: 48px;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.slideshow-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.slideshow {
+  flex: 1;
+  /* border: 3px solid var(--color-text-content); */
+  background-color: var(--color-page-background);
+  /* border-radius: var(--radius); */
+  overflow: hidden;
+  aspect-ratio: 4.5/5;
+  padding: 10px;
+}
+
+.slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+.slide.active {
+  display: block;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.slide-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--color-page-background);
+  background: var(--color-page-background);
+  color: var(--color-border);
+  font-size: 1.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.slide-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-border);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.dot.active {
+  background: var(--color-accent-main);
+  transform: scale(1.2);
+}
+
+@media (max-width: 780px) {
+  .benchmark-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.table-body {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.table-body th,
+.table-body td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-body th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-align: center;
+}
+
+.table-body td {
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.table-body th:first-child,
+.table-body td:first-child {
+  text-align: left;
+}
+
+.table-body td:first-child {
+  color: var(--color-text-secondary);
+}
+
+.table-body tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-footnote {
+  font-size: 0.8rem;
+  color: var(--color-text-content);
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+.table-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-top: 10px;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.benchmark-caption {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  text-align: center;
+  margin: 12px 0 0;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Footer
+--------------------------------------------------------------------------------------------------- */
+
+footer {
+  padding: 48px 0 32px;
+  background: var(--color-page-background);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 32px;
+  margin-bottom: 16px;
+}
+
+.footer-grid h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-content);
+  margin: 0 0 14px;
+}
+
+.footer-grid ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-grid li { margin-bottom: 8px; }
+
+.footer-grid a {
+  color: var(--color-text-content);
+  font-size: 0.9rem;
+}
+.footer-grid a:hover { color: var(--color-text-main); }
+
+.footer-bottom {
+  font-size: 0.85rem;
+  color: var(--color-text-content);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-container {
+  padding-bottom: 5px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.footer-container > p.lead {
+  color: var(--color-text-content);
+  max-width: var(--max-width);
+  margin-bottom: 20px;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Card Grid
+--------------------------------------------------------------------------------------------------- */
 
 .card-grid {
   display: grid;
@@ -287,63 +500,4 @@ Features Section
   width: 48px;
   height: 48px;
   filter: brightness(0) opacity(1)
-}
-
-/* ---------------------------------------------------------------------------------------------------
-Footer
---------------------------------------------------------------------------------------------------- */
-
-footer {
-  padding: 48px 0 32px;
-  background: var(--color-page-background);
-}
-
-.footer-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 32px;
-  margin-bottom: 16px;
-}
-
-.footer-grid h4 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-content);
-  margin: 0 0 14px;
-}
-
-.footer-grid ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.footer-grid li { margin-bottom: 8px; }
-
-.footer-grid a {
-  color: var(--color-text-content);
-  font-size: 0.9rem;
-}
-.footer-grid a:hover { color: var(--color-text-main); }
-
-.footer-bottom {
-  font-size: 0.85rem;
-  color: var(--color-text-content);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.footer-container {
-  padding-bottom: 5px;
-  max-width: var(--max-width);
-  margin: 0 auto;
-}
-
-.footer-container > p.lead {
-  color: var(--color-text-content);
-  max-width: var(--max-width);
-  margin-bottom: 20px;
 }

@@ -4,8 +4,8 @@
    ==================================================================================================== -->
 
 <!----------------------------------------------------------------------------------------------------
-   Website data
-   --------------------------------------------------------------------------------------------------- -->
+Website data
+--------------------------------------------------------------------------------------------------- -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -23,8 +23,8 @@
 <body>
 
 <!----------------------------------------------------------------------------------------------------
-   Navigation Bar (navbar)
-   --------------------------------------------------------------------------------------------------- -->
+Navigation Bar (navbar)
+--------------------------------------------------------------------------------------------------- -->
 
 <nav>
   <div class="nav-inner">
@@ -136,6 +136,89 @@ Features Section
 </section>
 
 <!----------------------------------------------------------------------------------------------------
+Benchmarks Section
+--------------------------------------------------------------------------------------------------- -->
+
+<section id="benchmarks">
+  <div class="container">
+    <p class="section-title">Performance</p>
+    <h2 class="section-subtitle">In representative test cases for PID, Kalman filtering and MPC,
+      Robotat Control outperformed Matlab in both execution speed and convergence accuracy.
+    </h2>
+    <div class="benchmark-grid">
+      <div>
+        <p class="table-title">
+          Mean execution time (in seconds) for representative control test cases.
+        </p>
+        <table class="table-body">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>PID</th>
+              <th>Kalman filter</th>
+              <th>MPC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MATLAB</td>
+              <td>3.75E-05</td>
+              <td>7.04E-03</td>
+              <td>1.52E-01</td>
+            </tr>
+            <tr>
+              <td>Linux-amd64</td>
+              <td>1.40E-06</td>
+              <td>5.27E-06</td>
+              <td>8.84E-05</td>
+            </tr>
+            <tr>
+              <td>ESP32-WROOM-32</td>
+              <td>2.00E-08</td>
+              <td>3.00E-08</td>
+              <td>5.00E-07</td>
+            </tr>
+            <tr>
+              <td>STM32 NUCLEO F446RE</td>
+              <td>1.27E-06</td>
+              <td>2.35E-05</td>
+              <td>6.56E-04</td>
+            </tr>
+            <tr>
+              <td>Arduino Mega 2560</td>
+              <td>7.95E-06</td>
+              <td>9.53E-04</td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="table-footnote">The Arduino Mega could not execute the MPC due to limited RAM.</p>
+      </div>
+
+      <div>
+        <p class="benchmark-caption" id="benchmarkCaption">PID's controlled output and LTI system's state using PID.</p>
+        <div class="slideshow-wrapper">
+          <button class="slide-btn prev" aria-label="Previous benchmark">&#8249;</button>
+          <div class="slideshow">
+            <div class="slide active" data-caption="PID's controlled output and LTI system's state using PID.">
+              <img src="./assets/figures/benchmark_pid.png" alt="PID controlled output">
+            </div>
+            <div class="slide" data-caption="LTI system's real and estimated state using Kalman filter.">
+              <img src="./assets/figures/benchmark_kalman_filter.png" alt="LTI system's state with Kalman Filter">
+            </div>
+            <div class="slide" data-caption="LTI system's states using MPC.">
+              <img src="./assets/figures/benchmark_mpc_states.png" alt="LTI system's states with MPC">
+            </div>
+          </div>
+          <button class="slide-btn next" aria-label="Next benchmark">&#8250;</button>
+        </div>
+        <div class="slide-dots" id="benchmarkDots"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!----------------------------------------------------------------------------------------------------
 Footer
 --------------------------------------------------------------------------------------------------- -->
 
@@ -156,7 +239,7 @@ Footer
       <div>
         <h4>Resources</h4>
         <ul>
-          <li><a href="./doxygen/index.html">Docs</a></li>
+          <li><a href="./docs/html/index.html">Docs</a></li>
           <li><a href="#userguide">User's Guide</a></li>
           <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
         </ul>
@@ -171,5 +254,6 @@ Footer
   </div>
 </footer>
 
+<script src="./assets/js/main.js"></script>
 </body>
 </html>
