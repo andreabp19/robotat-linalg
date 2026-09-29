@@ -1,4 +1,4 @@
-# Robotat Embedded C Libraries
+# Robotat Linalg: Lightweight Embedded Numerical Library Stack for Control and Robotics Applications
 
 Embedded C libraries for numerical computation, control and robotics algorithms. This project is developed at Universidad del Valle de Guatemala (UVG) and it's aimed at students, educators and enthusiasts that are interested in developing embedded control and robotics applications.
 
@@ -50,6 +50,4 @@ For robotics algorithms, based on MATLAB Robotics Toolbox by Peter Corke, adapti
 
 # History and development
 
-The initial idea was adapted from CControl of Daniel Martensson (https://github.com/DanielMartensson/CControl), leading to the first version of Robotat Linalg in 2022 (https://github.com/danielp96/robotat-linalg).
-
-The current version (this repository) was developed in 2025 by revising and expanding upon the existing code of the 2022 version, completed the Robotat Control library, and finally, added the Robotat Robotics library based on MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
+This project is based on both CControl of Daniel Martensson (https://github.com/DanielMartensson/CControl) and on the previous version of Robotat Linalg (https://github.com/danielp96/robotat-linalg). The Robotat Robotics library is based on MATLAB Robotics Toolbox of Peter Corke (https://github.com/petercorke/spatialmath-matlab).
