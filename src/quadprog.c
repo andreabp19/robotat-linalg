@@ -275,7 +275,7 @@ quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
 }
 
 
-// TODO: Rewrite to implement reusable matrix pointers (consider moving the factorization to matf32 and creating linsolve_ldlt to shorten de function)
+// TODO: Rewrite to implement reusable matrix pointers (consider separating the factorization into a matf32_ldlt and a linsolve_ldlt, to keep only the QP solution here)
 quadprog_status_t
 quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 {
@@ -529,7 +529,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 }
 
 
-// active set binding direction method
+// Active-Set Binding Direction Method, based on Algorithm 5.4 of Martins, Engineering Design Optimization.
 quadprog_status_t
 quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
 {

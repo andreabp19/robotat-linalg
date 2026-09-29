@@ -824,7 +824,6 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
 }
 
 
-// TODO: Check if it works correctly
 err_status_t
 matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 {
