@@ -9,9 +9,12 @@ This branch contains all the test files used for evaluation and validation of th
 1. Run MATLAB scripts to generate baseline results: numerical input data and results are saved in a `.h` header file file, while execution time results are saved in a `.mat` file (check that all printing and exporting commands like `fprintf` and `save` are properly uncommented).
 
 2. To compare MATLAB numerical results with those obtained in each embedded device, the resulting `.h` files should go in the `include/` folder inside each PlatformIO project (check the `.h` file has the correct name as it's imported inside the `main.cpp`).
-    2.1 Inside each `main.cpp`, there's the corresponding variables to contain the MATLAB results as read from the `.h`, make sure to uncomment all relevant code sections.
-    2.2 Comment or uncomment the test and printing code as needed. However, take into account that trying all individual time measurements in the larger files (such as those for matf32 that contain many routines being tested) might lead to crashing the device due to the large amount of data being printed out. It's recommended to test the routines in smaller batches (especially in the Arduino Mega), the code structure allows to comment/uncomment with ease each routine's test section.
-    2.3 Time measurements and numerical error results, from PlatformIO projects, can be copypasted to a `.txt` to be processed in MATLAB afterwards.
+
+3. Inside each `main.cpp`, there's the corresponding variables to contain the MATLAB results as read from the `.h`, make sure to uncomment all relevant code sections.
+
+4. Comment or uncomment the test and printing code as needed. However, take into account that trying all individual time measurements in the larger files (such as those for matf32 that contain many routines being tested) might lead to crashing the device due to the large amount of data being printed out. It's recommended to test the routines in smaller batches (especially in the Arduino Mega), the code structure allows to comment/uncomment with ease each routine's test section.
+
+5. Time measurements and numerical error results, from PlatformIO projects, can be copypasted to a `.txt` to be processed in MATLAB afterwards.
 
 ## File organization: 
 
