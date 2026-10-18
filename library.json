@@ -8,15 +8,15 @@
             "name":"Andrea Pineda",
             "email":"bar20575@uvg.edu.gt",
             "maintainer":true
-        }
+        },
         {
             "name":"Daniel Pineda",
-            "email":"bar18714@uvg.edu.gt",
-            "maintainer":true
+            "email":"bar18714@uvg.edu.gt"
         },
         {
             "name":"Miguel Zea",
-            "email":"mezea@uvg.edu.gt"
+            "email":"mezea@uvg.edu.gt",
+            "maintainer":true
         }
     ],
     "export":
