@@ -11,13 +11,6 @@
  * - Single-preicision arithmetic (float32)
  * - Multiple Platforms (PC, Arduino, ESP32, STM32, etc.)
  *
- * @section contents Content
- * 1. Robotat Linalg: linsolve (linear solver)
- * 2. Robotat Linalg: matf32 (matrix linear algebra)
- * 3. Robotat Linalg: quadprog (convex quadratic solver)
- * 4. Robotat Control (control algorithms)
- * 5. Robotat Robotics (robotics algorithms)
- *
  * @section platforms Supported Platforms
  * Tested and verified in the following platforms, with some considerations for each:
  * - ESP32 (Xtensa 32-Bits)
