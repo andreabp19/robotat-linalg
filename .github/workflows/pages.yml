@@ -50,6 +50,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y graphviz doxygen
 
+      - name: Fetch Doxygen Awesome theme
+        uses: actions/checkout@v4
+        with:
+          repository: jothepro/doxygen-awesome-css
+          ref: v2.4.2
+          path: doxygen-awesome-css
+
       - name: Generate Doxygen Documentation
         run: doxygen Doxyfile
 
