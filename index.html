@@ -102,7 +102,7 @@ Features Section
     <div>
       <p class="section-title">Algorithms</p>
 
-      <!-- Card grid row 3 -->
+      <!-- Card grid row 2 -->
       <div class="features-grid">
 
         <div class="card-item-without-border">
@@ -157,7 +157,7 @@ Benchmarks Section
     <div class="benchmark-grid">
       <div>
         <p class="table-title">
-          Worst-case execution time (in seconds) for representative control test cases.
+          Maximum observed execution time (in seconds) for representative control test cases.
         </p>
         <table class="table-body">
           <thead>
@@ -171,13 +171,13 @@ Benchmarks Section
           <tbody>
             <tr>
               <td>MATLAB</td>
-              <td>1.57E-03</td>
+              <td>1.35E-03</td>
               <td>2.71E-03</td>
               <td>5.76E-02</td>
             </tr>
             <tr>
               <td>Linux-amd64</td>
-              <td>2.20E-05</td>
+              <td>1.80E-05</td>
               <td>3.40E-05</td>
               <td>5.90E-03</td>
             </tr>
@@ -189,7 +189,7 @@ Benchmarks Section
             </tr>
             <tr>
               <td>STM32 NUCLEO F446RE</td>
-              <td>3.70E-02</td>
+              <td>1.30E-02</td>
               <td>3.30E-05</td>
               <td>6.37E-02</td>
             </tr>
@@ -201,7 +201,7 @@ Benchmarks Section
             </tr>
           </tbody>
         </table>
-        <p class="table-footnote">The Arduino Mega could not execute the MPC due to limited RAM.</p>
+        <p class="table-footnote">MPC not executed in the Arduino Mega due to RAM limitations.</p>
       </div>
 
       <div>
@@ -209,13 +209,13 @@ Benchmarks Section
         <div class="slideshow-wrapper">
           <button class="slide-btn prev" aria-label="Previous benchmark">&#8249;</button>
           <div class="slideshow">
-            <div class="slide active" data-caption="PID's controlled output and LTI system's state using PID.">
+            <div class="slide active" data-caption="PID's controlled output (u) and LTI system's state (x) using PID.">
               <img src="./assets/figures/benchmark_pid.png" alt="PID controlled output">
             </div>
-            <div class="slide" data-caption="LTI system's real and estimated state using Kalman filter.">
+            <div class="slide" data-caption="LTI system's real and estimated states (x) using Kalman filter.">
               <img src="./assets/figures/benchmark_kalman_filter.png" alt="LTI system's state with Kalman Filter">
             </div>
-            <div class="slide" data-caption="LTI system's states using MPC.">
+            <div class="slide" data-caption="LTI system's states (x) using MPC.">
               <img src="./assets/figures/benchmark_mpc_states.png" alt="LTI system's states with MPC">
             </div>
           </div>
