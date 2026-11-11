@@ -19,6 +19,15 @@ As of late 2025, all libraries have been tested in the following devices, with s
 * STM NUCLEO F446RE (Arm 32-Bits):
     * This device has the same limitation and solution described for the matf32_print routine using the Arduino MEGA 2560.
 
+# Installation in PlatformIO Projects
+
+External libraries must be included in the ```platformio.ini``` file in PlatformIO projects, using the ```lib_deps```
+command. To include Robotat Linalg, add the ```HTTPS``` direction, as provided in the Github Repository:
+      
+```lib_deps = https://github.com/andreabp19/robotat-linalg.git```
+
+If you have more than one library in ```lib_deps```, such as for sensors or any other library, separate each one in different lines.
+
 # Libraries in this project
 
 ## Robotat Linalg
