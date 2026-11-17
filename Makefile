@@ -1,6 +1,6 @@
 
 SRC = src
-BUILD_DIR = build
+BUILD_DIR = build/$(CC)-$(OPT)
 
 COMPILERS = gcc clang
 OPT_LEVELS = O0 Os O2 O3
@@ -9,14 +9,17 @@ CFLAGS = -Wall -Wextra
 CORTEXM4_FLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 LIB_FILES = matf32 linsolve quadprog robotat_control robotat_robotics
 
-CC = gcc
-OPT = O2
-FILE = matf32
-TARGET = host
+CC := gcc
+OPT := O2
+FILE := matf32
+TARGET := host
 
-static_library:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -$(OPT) -c $(SRC)/$(FILE).c -o $(BUILD_DIR)/robotat-linalg-$(CC)-$(OPT)-$(FILE).o
+OBJS = $(LIB_FILES:%=$(BUILD_DIR)/%.o)
 
+static_library: $(OBJS)
+
+$(BUILD_DIR)/%.o: $(SRC)/%.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -$(OPT) -c $< -o $@
 
 .PHONY: static_library
