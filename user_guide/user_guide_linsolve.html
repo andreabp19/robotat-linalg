@@ -1,0 +1,246 @@
+<!-- ====================================================================================================
+   Robotat Linalg - Quadprog User Guide
+   ==================================================================================================== -->
+
+<!----------------------------------------------------------------------------------------------------
+Website data
+----------------------------------------------------------------------------------------------------->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Robotat Linalg User's Guide">
+  <title>Linsolve - Robotat Linalg User's Guide</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/user_guide.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../assets/js/math.js"></script>
+  <script defer src="../assets/js/sidebar.js"></script>
+</head>
+<body class="guide">
+
+<!----------------------------------------------------------------------------------------------------
+Navigation Bar (navbar)
+----------------------------------------------------------------------------------------------------->
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="./index.html">Robotat Linalg</a>
+    <ul class="nav-links">
+      <li><a href="./user_guide.html">User's Guide</a></li>
+      <li><a href="./docs/html/index.html">Docs</a></li>
+      <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!----------------------------------------------------------------------------------------------------
+Side Bar (navigating the user guide)
+----------------------------------------------------------------------------------------------------->
+
+<div class="guide-layout">
+
+  <aside class="guide-sidebar">
+  <h4>User's Guide</h4>
+  <ul>
+
+    <li>
+      <details>
+        <summary><a href="user_guide.html">Getting started</a></summary>
+        <ul>
+          <li><a href="user_guide.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide.html#platformio_install">2. Installing in PlatformIO</a></li>
+          <li><a href="user_guide.html#importing_libraries">3. Importing the Robotat libraries</a></li>
+          <li><a href="user_guide.html#platforms">4. Supported platforms</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotat_linalg.html">Robotat Linalg</a></summary>
+        <ul>
+          <li>
+            <details>
+              <summary><a href="user_guide_robotat_linalg.html">Overview and configuration</a></summary>
+              <ul>
+                <li><a href="user_guide_robotat_linalg.html#configuration">1. Configuration constants</a></li>
+                <li><a href="user_guide_robotat_linalg.html#errstatus">2. Status and error structs</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_matf32.html">Matf32</a></summary>
+              <ul>
+                <li><a href="user_guide_matf32.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_matf32.html#matrix_declaration">2. Matrix declaration</a></li>
+                <li><a href="user_guide_matf32.html#matrix_basic_operations">3. Basic matrix operations</a></li>
+                <li><a href="user_guide_matf32.html#matrix_factorizations">4. Matrix factorizations</a></li>
+                <li><a href="user_guide_matf32.html#auxiliary_routines">5. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_linsolve.html">Linsolve</a></summary>
+              <ul>
+                <li><a href="user_guide_linsolve.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_linsolve.html#linsolve_methods">2. Linear solver methods</a></li>
+                <li><a href="user_guide_linsolve.html#auxiliary_routines">3. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_quadprog.html">Quadprog</a></summary>
+              <ul>
+                <li><a href="user_guide_quadprog.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_quadprog.html#qp_definition">2. QPs definition</a></li>
+                <li><a href="user_guide_quadprog.html#qp_solver">3. Quadratic solver methods</a></li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_control.html">Robotat Control</a></summary>
+        <ul>
+          <li><a href="user_guide_control.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_control.html#pid">2. PID controller</a></li>
+          <li><a href="user_guide_control.html#lti_systems">3. LTI systems</a></li>
+          <li><a href="user_guide_control.html#nonlin_systems">4. Nonlinear systems</a></li>
+          <li><a href="user_guide_control.html#kalman_filter">5. Kalman filter</a></li>
+          <li><a href="user_guide_control.html#mpc">6. Model Predictive Control</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotics.html">Robotat Robotics</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#ref_frames">2. Reference frames</a></li>
+          <li><a href="user_guide_robotics.html#rotation_matrices">3. Rotation matrices</a></li>
+          <li><a href="user_guide_robotics.html#homogeneous_transformations">4. Homogeneous transformations</a></li>
+          <li><a href="user_guide_robotics.html#quaternions">5. Quaternions</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_examples.html">Examples</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#example1">2. Example 1</a></li>
+          <li><a href="user_guide_robotics.html#example2">3. Example 2</a></li>
+        </ul>
+      </details>
+    </li>
+
+  </ul>
+  </aside>
+
+  <main class="guide-content">
+    <h1>Robotat Linalg: Linsolve - Linear Solver</h1>
+    <p class="lead">Methods for solving linear systems \(\textbf{Ax} = \textbf{b}\)</p>
+
+    <h2 id="introduction">1. Introduction</h2>
+
+    Linear systems are encountered in linear and quadratic optimization problems. For that reason, <code>linsolve</code> provides different methods for solving these systems.
+This guide explains the structure of the linear solver and how to use the different methods provided in <code>linsolve</code>.
+
+    <h2 id="linear_systems">2. Linear solver structure and use</h2>
+
+    The linear systems solved by <code>linsolve</code> have the form of the form \(\textbf{Ax} = \textbf{b}\), where \(A\) is a matrix, 
+and \(x\) and \(b\) are vectors. When using <code>linsolve</code>, the matrix and vectors for the linear system must be declared and initialized as 
+seen in the guide for <code>matf32</code>, remembering that the number of columns of \(A\) must match the number of elements in the vectors:
+
+<pre><code>#define M (3)
+#define N (4)
+
+float A_data[MAX_MAT_SIZE];
+float x_data[MAX_MAT_SIZE];
+float b_data[MAX_MAT_SIZE];
+
+matf32_t A, x, b;
+matf32_init(&A, M, N, A_data);
+matf32_init(&x, N, 1, x_data);
+matf32_init(&b, N, 1, b_data);
+</code></pre>
+
+    Before executing the linear solver, make sure \(A\) and \(b\) have nonzero data according to the desired application. The vector \(x\) must
+remain empty as it will contain the result after executing the <code>linsolve</code> solver. The following example uses random matrices,
+and then solves the system:
+
+<pre><code>// Fills the matrices with random values
+matf32_randn(&A, 0, 1);
+matf32_randn(&x, 0, 1);
+matf32_randn(&b, 0, 1);
+
+// Solves the linear system and obtains values for the solution x
+linsolve(&A, &b, &x);
+</code></pre>
+
+    The <code>linsolve</code> routine in the above example chooses the most adequate method, from the available selection of methods, 
+
+    <img src="../assets/figures/linear_solver_flow_diagram.png" alt="linsolve_structure" class="img-md img-center" width="400">
+
+    <h2 id="auxiliary_routines">3. Auxiliary routines</h2>
+
+    <div class="guide-pager">
+      <span></span>
+      <a href="user_guide_quadprog.html">Quadprog &rarr;</a>
+    </div>
+  </main>
+
+</div>
+
+<!----------------------------------------------------------------------------------------------------
+Footer
+----------------------------------------------------------------------------------------------------->
+
+<!--- To-Do: Add border at the end of the previous section like in the landing page -->
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-grid">
+
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#top">Back to top</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg/blob/main/LICENSE.txt">License</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="./docs/html/index.html">Docs</a></li>
+          <li><a href="#userguide">User's Guide</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Robotat Linalg. Released under the MIT License.</span>
+      <span>Built with GitHub Pages with Flaticon icons.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

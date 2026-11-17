@@ -1,0 +1,561 @@
+<!-- ====================================================================================================
+   Robotat Linalg - Matf32 User Guide
+   ==================================================================================================== -->
+
+<!----------------------------------------------------------------------------------------------------
+Website data
+----------------------------------------------------------------------------------------------------->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Robotat Linalg User's Guide">
+  <title>Matf32 - Robotat Linalg User's Guide</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/user_guide.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../assets/js/math.js"></script>
+  <script defer src="../assets/js/sidebar.js"></script>
+</head>
+<body class="guide">
+
+<!----------------------------------------------------------------------------------------------------
+Navigation Bar (navbar)
+----------------------------------------------------------------------------------------------------->
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="./index.html">Robotat Linalg</a>
+    <ul class="nav-links">
+      <li><a href="./user_guide.html">User's Guide</a></li>
+      <li><a href="./docs/html/index.html">Docs</a></li>
+      <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!----------------------------------------------------------------------------------------------------
+Side Bar (navigating the user guide)
+----------------------------------------------------------------------------------------------------->
+
+<div class="guide-layout">
+
+  <aside class="guide-sidebar">
+  <h4>User's Guide</h4>
+  <ul>
+
+    <li>
+      <details>
+        <summary><a href="user_guide.html">Getting started</a></summary>
+        <ul>
+          <li><a href="user_guide.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide.html#platformio_install">2. Installing in PlatformIO</a></li>
+          <li><a href="user_guide.html#importing_libraries">3. Importing the Robotat libraries</a></li>
+          <li><a href="user_guide.html#platforms">4. Supported platforms</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotat_linalg.html">Robotat Linalg</a></summary>
+        <ul>
+          <li>
+            <details>
+              <summary><a href="user_guide_robotat_linalg.html">Overview and configuration</a></summary>
+              <ul>
+                <li><a href="user_guide_robotat_linalg.html#configuration">1. Configuration constants</a></li>
+                <li><a href="user_guide_robotat_linalg.html#errstatus">2. Status and error structs</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_matf32.html">Matf32</a></summary>
+              <ul>
+                <li><a href="user_guide_matf32.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_matf32.html#matrix_declaration">2. Matrix declaration</a></li>
+                <li><a href="user_guide_matf32.html#matrix_basic_operations">3. Basic matrix operations</a></li>
+                <li><a href="user_guide_matf32.html#matrix_factorizations">4. Matrix factorizations</a></li>
+                <li><a href="user_guide_matf32.html#auxiliary_routines">5. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_linsolve.html">Linsolve</a></summary>
+              <ul>
+                <li><a href="user_guide_linsolve.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_linsolve.html#linsolve_methods">2. Linear solver methods</a></li>
+                <li><a href="user_guide_linsolve.html#auxiliary_routines">3. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_quadprog.html">Quadprog</a></summary>
+              <ul>
+                <li><a href="user_guide_quadprog.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_quadprog.html#qp_definition">2. QPs definition</a></li>
+                <li><a href="user_guide_quadprog.html#qp_solver">3. Quadratic solver methods</a></li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_control.html">Robotat Control</a></summary>
+        <ul>
+          <li><a href="user_guide_control.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_control.html#pid">2. PID controller</a></li>
+          <li><a href="user_guide_control.html#lti_systems">3. LTI systems</a></li>
+          <li><a href="user_guide_control.html#nonlin_systems">4. Nonlinear systems</a></li>
+          <li><a href="user_guide_control.html#kalman_filter">5. Kalman filter</a></li>
+          <li><a href="user_guide_control.html#mpc">6. Model Predictive Control</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotics.html">Robotat Robotics</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#ref_frames">2. Reference frames</a></li>
+          <li><a href="user_guide_robotics.html#rotation_matrices">3. Rotation matrices</a></li>
+          <li><a href="user_guide_robotics.html#homogeneous_transformations">4. Homogeneous transformations</a></li>
+          <li><a href="user_guide_robotics.html#quaternions">5. Quaternions</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_examples.html">Examples</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#example1">2. Example 1</a></li>
+          <li><a href="user_guide_robotics.html#example2">3. Example 2</a></li>
+        </ul>
+      </details>
+    </li>
+
+  </ul>
+  </aside>
+
+  <main class="guide-content">
+    <h1>Robotat Linalg: Matf32 - Linear Algebra</h1>
+    <p class="lead">Matrix and vector operations, and matrix factorizations.</p>
+
+    <h2 id="introduction">1. Introduction</h2>
+
+    This guide explains the basics of how to use the <code>matf32</code> library of Robotat Linalg, starting
+    with <code>matf32_t</code> matrix declaration and initialization, adding values to matrices, executing basic
+    matrix operations such as additions and multiplications, and the use of the different matrix factorizations. Lastly,
+    some useful auxiliary routines are explained, such as printing matrices and computing additional metrics like the norm
+    and condition number of the matrices.
+
+    <h2 id="matrix_definition">2. Matrix declaration, initialization, and assignments</h2>
+
+    <h3 id="matf32_svd">Declaring and initializing matrices</h3>
+
+    Matrix and vector representation in <code>matf32</code> is done through the custom
+struct <code>matf32_t</code>, which contains the dimensions of the matrix and a float pointer
+to point to the data of the matrix. It's necessary to declare and initialize a <code>matf32_t</code>
+instance, along with the array for its data:
+    
+<pre><code>float A_data[9];                // Data array for matrix A
+matf32_t A;                     // Matrix A
+matf32_init(&A, 3, 3, A_data);  // Initialize A as a 3x3 matrix
+</code></pre>
+
+In the above example, the dimensions of the matrix and the size of <code>A_data</code> have been entered
+manually (with no variables). However, the size and/or shape of a matrix might need to be adjusted depending
+on the application, for example, if the matrix is going to be reused. In those cases, it's recommended to enter
+the dimensions as variables, and the number of elements for <code>A_data</code> using the constant <code>MAX_MAT_SIZE</code>.
+
+<pre><code>uint8_t rows = 3;
+uint8_t cols = 3;
+
+float A_data[MAX_MAT_SIZE];
+matf32_init(&A, rows, cols, A_data);
+</code></pre>
+
+The constant <code>MAX_MAT_SIZE</code> has, by default, a value of 100. This corresponds to a <code>10 x 10</code> matrix,
+which is the largest matrix the libraries are configured and validated for currently. While this occupies more memory than
+introducing the number of elements manually, it allows to reserve enough space to resize or reshape the matrix as need.
+For example, <code>A</code> could be defined as a 3x3 matrix, so only 9 elements of the reserved space would be used, and then
+reinitialized as a <code>8 x 8</code> matrix and use 64 elements of the memory that was already reserved for <code>A_data</code>.
+In other words, how to define <code>A_data</code> will largely depend on whether you need to reuse the matrix somewhere else or
+modify it's shape or dimensions.
+
+    <h3 id="matrix_value_assignments">Assigning values to matrices</h3>
+
+    <p>Just after initializing a <code>matf32_t</code> matrix, it will have the values assigned to its data array. For example, if
+    the data array was not initialized with some values, as in <code>float A_data[MAX_MAT_SIZE];</code>, the matrix will have all
+    values equal to zero (or could even have some garbage data). On the contrary, if the array was assigned some values, as in
+    <code>float A_data[MAX_MAT_SIZE] = {1, 2, 3, 4}</code>, the matrix will already have those values assigned to their respective positions.</p>
+
+    However, <code>matf32</code> also has routines for assigning specific values to the matrix, and those are explained in the following example:
+
+<pre><code>matf32_ones(&A); // Fills matrix A with 1s in all elements
+
+matf32_zeros(&A); // Fills matrix A with 0s in all elements
+
+matf32_set(&A, m, n, c);  // Assigns a scalar c to the element (m,n)
+
+matf32_eyes(&A);  // Turns A into an identity matrix
+
+matf32_set_row(&A, c, m); // Assigns the scalar c to all elements in row m
+
+matf32_set_col(&A, c, n); // Assigns the scalar c to all elements in column
+
+matf32_randn(&A, mu, s);  // Fills A with random values, mu: mean, s: std.dev.
+</code></pre>
+
+    <h2 id="matrix_basic_operations">3. Basic matrix operations</h2>
+
+    The basic matrix operations included in Robotat Linalg are the following: addition,
+subtraction, multiplications, inverse, transpose, dot product, powers of matrices, and some
+auxiliary operations such as the norm and condition number. This section provides an
+example of how to use each routine, using the following matrices as example:
+
+    <h3 id="matf32_add">Matrix addition</h3>
+
+<pre><code>matf32_add(&A, &B, &R);  // R = A + B
+</code></pre>
+
+    <div class="callout note">
+      <p><code>A</code>, <code>B</code> and <code>R</code> must have the same size and shape. The result could
+      also be saved in either <code>A</code> or <code>B</code>, in case rewriting their content doesn't impact future operations.</p>
+    </div>
+
+    <h3 id="matf32_sub">Matrix subtraction</h3>
+
+<pre><code>matf32_sub(&A, &B, &R);  // R = A - B
+</code></pre>
+
+    <div class="callout note">
+      <p><code>A</code>, <code>B</code> and <code>R</code> must have the same size and shape. The result could
+      also be saved in either <code>A</code> or <code>B</code>, in case rewriting their content doesn't impact future operations.</p>
+    </div>
+
+    <h3 id="matf32_scale">Matrix-scalar multiplication</h3>
+
+<pre><code>matf32_scale(&A, 5, &R);  // R = A * 5
+</code></pre>
+
+    <div class="callout note">
+      The result could also be saved in either <code>A</code> or <code>B</code>, in case rewriting their content doesn't impact future operations.</p>
+    </div>
+
+    <h3 id="matf32_add">Matrix-matrix multiplication</h3>
+
+<pre><code>matf32_mul(&A, &B, &R);  // R = A * B
+</code></pre>
+
+    <div class="callout note">
+      <p><code>A</code> number columns must match the number of rows in <code>B</code>, and <code>R</code> must have the same number of
+    rows as <code>A</code> and the number of columns of <code>B</code>. </p>
+    </div>
+
+    <div class="callout warning">
+      <p>The result CANNOT be saved in <code>A</code> or <code>B</code>, as the routine checks against it to prevent distorting their
+    values, and will return error if any of the input matrices is used for saving the result. </p>
+    </div>
+
+    <h3 id="matf32_vecposmul">Matrix-vector, vector-Matrix, and vector-vector multiplications</h3>
+
+<pre><code>matf32_vecposmul(&A, colvec->p_data, R->p_data);              // R = A * colvec
+matf32_vecpremul(&A, worvec->p_data, R->p_data);              // R = rowvec * A
+matf32_vecmul_col_row(rowvec->p_data, colvec->p_data, &R);    // R = rowvec * colvec
+</code></pre>
+
+    <div class="callout note">
+      <p>Notice that the vectors are accessed through their data array directly, instead of their pointer as
+        is the case with <code>A</code>. This is for simplicity and only happens with vectors in a couple of routines. </p>
+    </div>
+
+    <h3 id="matf32_exp">Power of a matrix</h3>
+
+<pre><code>matf32_exp(&A, &R, exp); // R = A ^ exp, with exp = 1, 2, ..., n
+</code></pre>
+
+    <div class="callout note">
+      <p>There's no set limit for the exponent that can be used, but we aware that routine execution time
+        will increase with larger exponents, because it means more multiplications.
+      </p>
+    </div>
+
+    <h3 id="matf32_inv">Inverse of a matrix</h3>
+
+<pre><code>matf32_inv(&A, &invA); // invA = inv(A)
+</code></pre>
+
+    <h3 id="matf32_pinv">Pseudoinverse of a matrix</h3>
+
+<pre><code>matf32_pinv(&A, &pinvA, BASIC_PINV); // pinvA = pinv(A)
+matf32_pinv(&A, &pinvA, SVD_PINV); // pinvA = pinv(A), using the SVD.
+</code></pre>
+
+    <div class="callout note">
+      <p>The equation used for the pseudoinverse <code>BASIC_PINV</code> is \(\textbf{A}^+ = (\textbf{A}^\top \textbf{A})^{-1}\textbf{A}^\top\) </p>
+    </div>
+
+    <h2 id="matrix_factorizations">4. Matrix factorizations</h2>
+
+    Matrix factorizations allow to decompose a matrix into several other matrices. This is
+useful for algorithms such as for solving linear systems and optimization problems, as it
+helps break down the system and simplify the steps towards the solution. The factorizations
+included in this library are used in <code>linsolve</code> and <code>quadprog</code> for the
+linear and quadratic solvers, and are well-known so they can be found in numerical linear
+algebra books.
+
+    <h3 id="matf32_lu">LU Factorization</h3>
+
+    The LU factorization decomposes a matrix \(A\) into two matrices: an \(m \times n\) lower triangular \(L\) and a \(n \times n\)
+    upper triangular \(U\):
+
+    $$
+    \underbrace{\begin{bmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{bmatrix}}_{A}
+    =
+    \underbrace{\begin{bmatrix} l_{11} & 0 & 0 \\ l_{21} & l_{22} & 0 \\ l_{31} & l_{32} & l_{33} \end{bmatrix}}_{L}
+    \underbrace{\begin{bmatrix} u_{11} & u_{12} & u_{13} \\ 0 & u_{22} & u_{23} \\ 0 & 0 & u_{33} \end{bmatrix}}_{U}
+    \tag{1}
+    $$
+
+    <p>The corresponding routine in <code>matf32</code> is <code>matf32_lu</code>. In addition to matrices for \(L\) and \(U\), an 
+    <code>uint16_t</code> array <code>p_index</code> is also needed to save the permutations (i.e. changes in the position of certain rows) executed during
+    the factorization. The <code>p_index</code> array must be interpreted as follows: index 0 of the array corresponds to row 0 of \(A\), and the number
+    contained at index 0 of the array is the row with which row 1 was switched. For example, if index 0 has the number 3, that means row 0 of \(A\) was switch
+    with row 3, and if index 0 has the value 0 then it means the row didn't change its position. Inside the routines, this array is later used in <code>linsolve</code>
+    to solve linear systems, and it's also necessary to reconstruct the original matrix \(A\) using the decomposed matrices.</p>
+
+    <p>To implement the LU factorization, follow the example below:</p>
+
+<pre><code>#define ROWS (3)    // Adjust number of rows as needed
+#define COLS (3)    // Adjust number of columns as needed
+
+uint16_t p_data[ROWS];
+
+float A_data[MAX_MAT_SIZE];
+float L_data[MAX_MAT_SIZE];
+float U_data[MAX_MAT_SIZE];
+
+matf32_t A, L, U;
+
+matf32_init(&A, ROWS, COLS, A_data);
+matf32_init(&L, ROWS, COLS, L_data);
+matf32_init(&U, COLS, COLS, U_data);
+
+matf32_lu(&A, &L, &U, p_index);
+</code></pre>
+
+    <h3 id="matf32_qr">QR Factorization</h3>
+
+    The QR factorization decomposes a matrix \(A\) into two matrices: an \(m \times n\) rectangular matrix \(Q\) and
+    an \(n \times n\) upper triangular matrix \(R\):
+
+    $$
+    \underbrace{\begin{bmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{bmatrix}}_{A}
+    =
+    \underbrace{\begin{bmatrix} q_{11} & q_{12} & q_{13} \\ q_{21} & q_{22} & q_{23} \\ q_{31} & q_{32} & q_{33} \end{bmatrix}}_{Q}
+    \underbrace{\begin{bmatrix} r_{11} & r_{12} & r_{13} \\ 0 & r_{22} & r_{23} \\ 0 & 0 & r_{33} \end{bmatrix}}_{R}
+    \tag{1}
+    $$
+
+    <p>This factorization can be applied to both square and rectangular matrices, and is generally very robust. To implement it, use
+    the routine <code>matf32_qr</code>, as in the following example:
+    </p>
+
+<pre><code>#define ROWS (3)    // Adjust number of rows as needed
+#define COLS (3)    // Adjust number of columns as needed
+
+float A_data[MAX_MAT_SIZE];
+float Q_data[MAX_MAT_SIZE];
+float R_data[MAX_MAT_SIZE];
+
+matf32_t A, Q, R;
+
+matf32_init(&A, ROWS, COLS, A_data);
+matf32_init(&Q, ROWS, COLS, Q_data);
+matf32_init(&R, COLS, COLS, R_data);
+
+matf32_qr(&A, &Q, &R);
+</code></pre>
+
+    <h3 id="matf32_cholesky">Cholesky Factorization</h3>
+
+    The Cholesky factorization is based on the LU factorization, but uses only the lower
+    triangular matrix factor to build the decomposition:
+
+    $$
+    \underbrace{\begin{bmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{bmatrix}}_{A}
+    =
+    \underbrace{\begin{bmatrix} l_{11} & 0 & 0 \\ l_{21} & l_{22} & 0 \\ l_{31} & l_{32} & l_{33} \end{bmatrix}}_{L}
+    \underbrace{\begin{bmatrix} l_{11} & l_{12} & l_{13} \\ 0 & l_{22} & l_{23} \\ 0 & 0 & l_{33} \end{bmatrix}}_{L^{\top}}
+    \tag{1}
+    $$
+
+    This factorization can only be applied to symmetric positive definite matrices, for that reason, if another type of matrix is introduced
+    into the routine <code>matf32_cholesky</code>, it will return error. To implement it, follow the example below. This routine will return
+    the "Cholesky factor", i.e. the lower triangular matrix \(L\).
+
+<pre><code>#define ROWS (3)    // Adjust number of rows as needed
+#define COLS (3)    // Adjust number of columns as needed
+
+float A_data[MAX_MAT_SIZE];
+float L_data[MAX_MAT_SIZE];
+
+matf32_t A, L;
+
+matf32_init(&A, ROWS, COLS, A_data);
+matf32_init(&L, ROWS, COLS, L_data);
+
+matf32_cholesky(&A, &L);
+</code></pre> 
+
+    <div class="callout note">
+      <p>Symmetric positive definite matrices are always square, and have only positive eigenvalues.
+        Mathematically, the condition to define them is \(x^{\top} A x > 0\), for a nonzero vector \(x\),
+        and can be constructed by taking a nonsingular (invertible) matrix \(C\) and computing \(A = C^{\top} C\).
+      </p>
+    </div>
+
+    <h3 id="matf32_svd">Singular Value Decomposition (SVD)</h3>
+
+    The Singular Value Decomposition (SVD) allows to factorize a matrix \(A\) into three parts: an
+    \(m \times m\) matrix \(U\), an \(m \times n\) matrix \(\Sigma \), and an \(n \times n\)
+    matrix \(V\). Matrices \(U\) and \(V\) are orthogonale, while \(\Sigma \) is a diagonal matrix
+    containing the singular values of \(A\):
+
+    $$
+    \underbrace{\begin{bmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{bmatrix}}_{A}
+    =
+    \underbrace{\begin{bmatrix} u_{11} & u_{12} & u_{13} \\ u_{21} & u_{22} & u_{23} \\ u_{31} & u_{32} & u_{33} \end{bmatrix}}_{U}
+    \underbrace{\begin{bmatrix} s_{11} & 0 & 0 \\ 0 & s_{22} & 0 \\ 0 & 0 & s_{33} \end{bmatrix}}_{S}
+    \underbrace{\begin{bmatrix} v_{11} & v_{12} & v_{13} \\ v_{21} & v_{22} & v_{23} \\ v_{31} & v_{32} & v_{33} \end{bmatrix}}_{V}
+    \tag{1}
+    $$
+
+    Every matrix has an SVD, which means this method can be applied to any matrix. The SVD implemented in <code>matf32</code> uses
+    a One-Sided Jacobi method, and is implemented through the <code>matf32_jacobi_svd</code> routine, as in the following example:
+
+<pre><code>#define ROWS (3)    // Adjust number of rows as needed
+#define COLS (3)    // Adjust number of columns as needed
+
+float A_data[MAX_MAT_SIZE];
+float U_data[MAX_MAT_SIZE];
+float S_data[MAX_MAT_SIZE]; // "Sigma", singular values matrix
+float V_data[MAX_MAT_SIZE];
+
+matf32_t A, U, S, V;
+
+matf32_init(&A, ROWS, COLS, A_data);
+matf32_init(&U, ROWS, ROWS, U_data);
+matf32_init(&S, ROWS, COLS, S_data);
+matf32_init(&V, COLS, COLS, V_data);
+
+matf32_jacobi_svd(&A, &U, S, V);
+</code></pre> 
+
+    <div class="callout note">
+      <p>Warning: This routine will change the content of \(A\) in order to execute the factorization. If you
+        need the original data of \(A\) intact, use a copy of \(A\) instead.
+      </p>
+    </div>
+
+    <h2 id="auxiliary_routines">5. Auxiliary routines</h2>
+
+    <h3 id="matf32_norm">Norm of a matrix</h3>
+
+<pre><code>float normA = matf32_norm(&A); 
+</code></pre>
+
+    <h3 id="matf32_cond">Condition number of a matrix</h3>
+
+<pre><code>float condA;
+matf32_cond(&A, &condA); 
+</code></pre>
+
+    <h3 id="matf32_print">Print a matrix on the terminal</h3>
+
+<pre><code>matf32_print(&A); 
+</code></pre>
+
+    <div class="callout warning">
+      <p>Warning: This routine only works if the embedded device supports <code>printf</code>. If it doesn't
+        seemingly print anything, in devices such as Arduino and STM32, check for <code>printf</code> support.
+        If not supported, you have to write a custom function to print matrices, you can use this template:
+
+<pre><code>void print_matrix(float* matrix, uint16_t rows, uint16_t cols)
+{
+  for (uint16_t i = 0; i < rows; ++i)
+  {
+    for (uint16_t j = 0; j < cols; ++j)
+    {
+      Serial.print(matrix[i + j*rows],9);
+      Serial.print("  ");
+    }
+    Serial.println();
+  }
+  Serial.println();
+} 
+</code></pre>
+      </p>
+    </div>
+
+    <div class="guide-pager">
+      <span></span>
+      <a href="user_guide_linsolve.html">Linsolve &rarr;</a>
+    </div>
+  </main>
+
+</div>
+
+<!----------------------------------------------------------------------------------------------------
+Footer
+----------------------------------------------------------------------------------------------------->
+
+<!--- To-Do: Add border at the end of the previous section like in the landing page -->
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-grid">
+
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#top">Back to top</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg/blob/main/LICENSE.txt">License</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="./docs/html/index.html">Docs</a></li>
+          <li><a href="#userguide">User's Guide</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Robotat Linalg. Released under the MIT License.</span>
+      <span>Built with GitHub Pages with Flaticon icons.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

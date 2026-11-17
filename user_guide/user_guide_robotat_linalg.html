@@ -1,0 +1,328 @@
+<!-- ====================================================================================================
+   Robotat Linalg - Matf32 User Guide
+   ==================================================================================================== -->
+
+<!----------------------------------------------------------------------------------------------------
+Website data
+----------------------------------------------------------------------------------------------------->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Robotat Linalg User's Guide">
+  <title>Getting started - Robotat Linalg User's Guide</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/user_guide.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../assets/js/math.js"></script>
+</head>
+<body class="guide">
+
+<!----------------------------------------------------------------------------------------------------
+Navigation Bar (navbar)
+----------------------------------------------------------------------------------------------------->
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="./index.html">Robotat Linalg</a>
+    <ul class="nav-links">
+      <li><a href="./user_guide.html">User's Guide</a></li>
+      <li><a href="./docs/html/index.html">Docs</a></li>
+      <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!----------------------------------------------------------------------------------------------------
+Side Bar (navigating the user guide)
+----------------------------------------------------------------------------------------------------->
+
+<div class="guide-layout">
+
+  <aside class="guide-sidebar">
+  <h4>User's Guide</h4>
+  <ul>
+
+    <li>
+      <details>
+        <summary><a href="user_guide.html">Getting started</a></summary>
+        <ul>
+          <li><a href="user_guide.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide.html#platformio_install">2. Installing in PlatformIO</a></li>
+          <li><a href="user_guide.html#importing_libraries">3. Importing the Robotat libraries</a></li>
+          <li><a href="user_guide.html#platforms">4. Supported platforms</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotat_linalg.html">Robotat Linalg</a></summary>
+        <ul>
+          <li>
+            <details>
+              <summary><a href="user_guide_robotat_linalg.html">Overview and configuration</a></summary>
+              <ul>
+                <li><a href="user_guide_robotat_linalg.html#configuration">1. Configuration constants</a></li>
+                <li><a href="user_guide_robotat_linalg.html#errstatus">2. Status and error structs</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_matf32.html">Matf32</a></summary>
+              <ul>
+                <li><a href="user_guide_matf32.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_matf32.html#matrix_declaration">2. Matrix declaration</a></li>
+                <li><a href="user_guide_matf32.html#matrix_basic_operations">3. Basic matrix operations</a></li>
+                <li><a href="user_guide_matf32.html#matrix_factorizations">4. Matrix factorizations</a></li>
+                <li><a href="user_guide_matf32.html#auxiliary_routines">5. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_linsolve.html">Linsolve</a></summary>
+              <ul>
+                <li><a href="user_guide_linsolve.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_linsolve.html#linsolve_methods">2. Linear solver methods</a></li>
+                <li><a href="user_guide_linsolve.html#auxiliary_routines">3. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_quadprog.html">Quadprog</a></summary>
+              <ul>
+                <li><a href="user_guide_quadprog.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_quadprog.html#qp_definition">2. QPs definition</a></li>
+                <li><a href="user_guide_quadprog.html#qp_solver">3. Quadratic solver methods</a></li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_control.html">Robotat Control</a></summary>
+        <ul>
+          <li><a href="user_guide_control.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_control.html#pid">2. PID controller</a></li>
+          <li><a href="user_guide_control.html#lti_systems">3. LTI systems</a></li>
+          <li><a href="user_guide_control.html#nonlin_systems">4. Nonlinear systems</a></li>
+          <li><a href="user_guide_control.html#kalman_filter">5. Kalman filter</a></li>
+          <li><a href="user_guide_control.html#mpc">6. Model Predictive Control</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotics.html">Robotat Robotics</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#ref_frames">2. Reference frames</a></li>
+          <li><a href="user_guide_robotics.html#rotation_matrices">3. Rotation matrices</a></li>
+          <li><a href="user_guide_robotics.html#homogeneous_transformations">4. Homogeneous transformations</a></li>
+          <li><a href="user_guide_robotics.html#quaternions">5. Quaternions</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_examples.html">Examples</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#example1">2. Example 1</a></li>
+          <li><a href="user_guide_robotics.html#example2">3. Example 2</a></li>
+        </ul>
+      </details>
+    </li>
+
+  </ul>
+  </aside>
+
+  <main class="guide-content">
+    <h1>Robotat Linalg Overview and Configuration</h1>
+    <p class="lead">Constants to adjust the behavior and matrix dimension scope of the libraries,
+      and a custom struct for reporting specific errors that could happen during the execution of a routine.
+    </p>
+
+    <h2 id="configuration">1. Configuration constants</h2>
+
+    <h3 class="code-h3" id="max_vec_size">MAX_VEC_SIZE</h3>
+
+    Maximum number of elements for vectors. Set by default to 10 in order to keep problems
+small and dense. Warning: All libraries were validated on values within this range so it's
+highly recommended to keep it that way, but in case you do increase the dimension limit,
+take into consideration that no operation is validated for vectors and matrices of dimensiones
+11 and beyond and no proper functioning can be guaranteed as it's beyond the current scope
+of this project.
+
+    <h3 class="code-h3" id="max_mat_size">MAX_MAT_SIZE</h3>
+
+    Maximum number of elements for matrices. Set by default to <code>MAX_VEC_SIZE * MAX_VEC_SIZE</code>
+so it aligns with the size limit for vectors. That is, by default is set to 100 elements, which corresponds
+to 10x10 matrices at most. As with <code>MAX_VEC_SIZE</code>, it can be increased to accomodate for larger
+matrices, but bear in mind that's beyond the current validation scope of the project, and thus, would
+require additional numerical validation to ensure proper results.
+
+    <h3 class="code-h3" id="max_iteration_count_svd">MAX_ITERATION_COUNT_SVD</h3>
+
+    Number of iterations to be used in the jacobi method for computing the Singular Value
+Decomposition (SVD) of a matrix (routine matf32 jacobi svd). The algorithm implemented
+for the SVD uses a definite number of iterations, as opposed to a precision threshold in the
+result to determine when to stop because, depending on the problem, it could take a long time to reach a
+specified precision, leading to execution issues in the microcontrollers. On the other hand, more iteration
+increase execution time of the routine, so adjust as you see fit for your specific application and precision needs.
+
+    <h3 class="code-h3" id="max_iteration_count_sqp">MAX_ITERATION_COUNT_SQP</h3>
+
+    Number of iterations to be used in the active-set method of the quadratic solver (routine
+quadprog sqp). Set by default to 30 iterations, can be increased if necessary, but most
+problems during testing solved in less than 10 iterations and the algorithm exits on it's own
+from the iteration loop once a precision threshold is achieved, so this constant won't affect
+in most cases (it's mostly a preventive measure in case the algorithm can't solve a problem
+for some reason, so it's not stuck in an unending loop).
+
+    <h3 class="code-h3" id="math_matrix_check">MATH_MATRIX_CHECK</h3>
+
+    The existence of this constant allows to check for matrix sizes where the corresponding
+macros are used. Comment this constant to ignore matrix checks defined this way.
+
+    <h3 class="code-h3" id="mmath_equal_precision">MATH_EQUAL_PRECISION</h3>
+  
+    A float value set by default to 1E-05 to check for numerical precision in the results. This
+means that a result will be considered equal to, or correct, with respect to another value
+if both results have at least five decimal places in common. Note: in the case of matrices,
+this is evaluated element by element, that is, if a single element has less than five decimals
+of precision with respect to another matrix, both matrices will be considered different.
+
+    <h3 class="code-h3" id="ill_conditioning_threshold">ILL_CONDITIONING_THRESHOLD</h3>
+
+    A float value to determine the threshold for using the Singular Value Decomposition
+in the linsolve routine for the linear solver. By default, it's set to 100, but the appropiate
+value will depend on the specific system to solve given that all numerical methods tend to
+accumulate some numerical error. That is, try it yourself and check how much precision
+do you need, set the threshold to the condition number you consider appropiate to use the
+SVD on.
+
+    <h2 id="errstatus">2. Status and error struct: err_status_t</h2>
+
+    <p>
+      The custom struct err_status_t allows to signal the success or error a numerical operation.
+    This struct is defined inside of matf32, though it's use throughout all the Robotat libraries
+    as a function return type, including for some control and robotics routines. Below is an example
+    of how to initialize an instance of err_status_t and how to print its value on the terminal:
+    </p>
+
+<pre><code>err status t status;              // Declaration of err_status_t instance
+status = matf32 cholesky(&A, &L); // Obtain status of the routine's execution
+err_status_print(status);         // Print status
+</code></pre>
+
+    <p>
+      The meaning of the each status message is detailed in the sections below, along with the aspects to
+      check in the code in each case.
+    </p>
+
+    <h3 class="code-h3" id="math_success">MATH_SUCCESS</h3>
+
+    Indicates that an operation was executed correctly and without error. It's used by the
+routines with type err status t across all libraries in this project.
+
+    <h3 class="code-h3" id="math_argument_error">MATH_ARGUMENT_ERROR</h3>
+
+    This error indicates that an input matrix is incorrect, whether due to its dimensiones,
+shape or content (such as introducing a non symmetric matrix when a symmetric one was
+expected). To know the exact problem, always check the arguments and documentation of
+the routine, as well as the characteristics of the input matrix that was used.
+
+    <h3 class="code-h3" id="math_length_error">MATH_LENGTH_ERROR</h3>
+
+    Signals an error in the length of a matrix of vector, contrary to what was expected in a
+certain operation. To know the exact problem, check the dimensions of the matrices.
+
+    <h3 class="code-h3" id="math_size_mismatch">MATH_SIZE_MISMATCH</h3>
+
+    This error indicates that the dimensions of different matrices don't match as expected,
+for example, as needed for factorizations or in LTI systems where a specific relationship in
+the dimensions of the matrices is expected for proper multiplication. If this error arises,
+then it's necessary to check again the matrix dimensions.
+
+    <h3 class="code-h3" id="math_naninf">MATH_NANINF</h3>
+
+    This error indicates that values such as NaN or Inf were detected in the result, which are
+problematic and unwanted. That means that something went wrong during the operation
+and, most probably, has to do with the input values that were used.
+
+    <h3 class="code-h3" id="math_singular">MATH_SINGULAR</h3>
+
+    This error indicates that a matrix is very close to, or definitely, singular. That means it
+cannot be inverted and that operations such as those in the quadratic solver methods will
+have some trouble with the precision and result of the solution.
+
+    <h3 class="code-h3" id="math_test_failure">MATH_TEST_FAILURE</h3>
+
+    This error indicates that a test case failed. It's currently not implemented as it's mostly
+used for diagnostic tests.
+
+    <h3 class="code-h3" id="decomposition_failure">DECOMPOSITION_FAILURE</h3>
+
+    This error indicates that a matrix factorization/decomposition failed to be generated
+correctly, and either the algorithm itself failed or the process had to be interrupted.
+
+    <div class="guide-pager">
+      <span></span>
+      <a href="user_guide_matf32.html">Matf32 &rarr;</a>
+    </div>
+  </main>
+
+</div>
+
+<!----------------------------------------------------------------------------------------------------
+Footer
+----------------------------------------------------------------------------------------------------->
+
+<!--- To-Do: Add border at the end of the previous section like in the landing page -->
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-grid">
+
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#top">Back to top</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg/blob/main/LICENSE.txt">License</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="./docs/html/index.html">Docs</a></li>
+          <li><a href="#userguide">User's Guide</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Robotat Linalg. Released under the MIT License.</span>
+      <span>Built with GitHub Pages with Flaticon icons.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

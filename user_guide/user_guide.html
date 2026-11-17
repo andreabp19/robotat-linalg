@@ -1,0 +1,278 @@
+
+<!-- ====================================================================================================
+   Robotat Linalg - User Guide Landing Page
+   ==================================================================================================== -->
+
+<!----------------------------------------------------------------------------------------------------
+Website data
+----------------------------------------------------------------------------------------------------->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Robotat Linalg User's Guide">
+  <title>Getting started - Robotat Linalg User's Guide</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/user_guide.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../assets/js/math.js"></script>
+  <script defer src="../assets/js/sidebar.js"></script>
+</head>
+<body class="guide">
+
+<!----------------------------------------------------------------------------------------------------
+Navigation Bar (navbar)
+----------------------------------------------------------------------------------------------------->
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="./index.html">Robotat Linalg</a>
+    <ul class="nav-links">
+      <li><a href="./user_guide.html">User's Guide</a></li>
+      <li><a href="./docs/html/index.html">Docs</a></li>
+      <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!----------------------------------------------------------------------------------------------------
+Side Bar (navigating the user guide)
+----------------------------------------------------------------------------------------------------->
+
+<div class="guide-layout">
+
+  <aside class="guide-sidebar">
+  <h4>User's Guide</h4>
+  <ul>
+
+    <li>
+      <details>
+        <summary><a href="user_guide.html">Getting started</a></summary>
+        <ul>
+          <li><a href="user_guide.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide.html#platformio_install">2. Installing in PlatformIO</a></li>
+          <li><a href="user_guide.html#importing_libraries">3. Importing the Robotat libraries</a></li>
+          <li><a href="user_guide.html#platforms">4. Supported platforms</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotat_linalg.html">Robotat Linalg</a></summary>
+        <ul>
+          <li>
+            <details>
+              <summary><a href="user_guide_robotat_linalg.html">Overview and configuration</a></summary>
+              <ul>
+                <li><a href="user_guide_robotat_linalg.html#configuration">1. Configuration constants</a></li>
+                <li><a href="user_guide_robotat_linalg.html#errstatus">2. Status and error structs</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_matf32.html">Matf32</a></summary>
+              <ul>
+                <li><a href="user_guide_matf32.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_matf32.html#matrix_declaration">2. Matrix declaration</a></li>
+                <li><a href="user_guide_matf32.html#matrix_basic_operations">3. Basic matrix operations</a></li>
+                <li><a href="user_guide_matf32.html#matrix_factorizations">4. Matrix factorizations</a></li>
+                <li><a href="user_guide_matf32.html#auxiliary_routines">5. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_linsolve.html">Linsolve</a></summary>
+              <ul>
+                <li><a href="user_guide_linsolve.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_linsolve.html#linsolve_methods">2. Linear solver methods</a></li>
+                <li><a href="user_guide_linsolve.html#auxiliary_routines">3. Auxiliary routines</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><a href="user_guide_quadprog.html">Quadprog</a></summary>
+              <ul>
+                <li><a href="user_guide_quadprog.html#introduction">1. Introduction</a></li>
+                <li><a href="user_guide_quadprog.html#qp_definition">2. QPs definition</a></li>
+                <li><a href="user_guide_quadprog.html#qp_solver">3. Quadratic solver methods</a></li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_control.html">Robotat Control</a></summary>
+        <ul>
+          <li><a href="user_guide_control.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_control.html#pid">2. PID controller</a></li>
+          <li><a href="user_guide_control.html#lti_systems">3. LTI systems</a></li>
+          <li><a href="user_guide_control.html#nonlin_systems">4. Nonlinear systems</a></li>
+          <li><a href="user_guide_control.html#kalman_filter">5. Kalman filter</a></li>
+          <li><a href="user_guide_control.html#mpc">6. Model Predictive Control</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_robotics.html">Robotat Robotics</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#ref_frames">2. Reference frames</a></li>
+          <li><a href="user_guide_robotics.html#rotation_matrices">3. Rotation matrices</a></li>
+          <li><a href="user_guide_robotics.html#homogeneous_transformations">4. Homogeneous transformations</a></li>
+          <li><a href="user_guide_robotics.html#quaternions">5. Quaternions</a></li>
+        </ul>
+      </details>
+    </li>
+
+    <li>
+      <details>
+        <summary><a href="user_guide_examples.html">Examples</a></summary>
+        <ul>
+          <li><a href="user_guide_robotics.html#introduction">1. Introduction</a></li>
+          <li><a href="user_guide_robotics.html#example1">2. Example 1</a></li>
+          <li><a href="user_guide_robotics.html#example2">3. Example 2</a></li>
+        </ul>
+      </details>
+    </li>
+
+  </ul>
+  </aside>
+
+  <main class="guide-content">
+    <h1>Getting started with Robotat Linalg</h1>
+    <p class="lead">Brief introduction to Robotat Linalg and how to use it.</p>
+
+    <h2 id="introduction">Introduction: What is Robotat Linalg?</h2>
+    <p>
+      Single-precision devices with low memory capacity generally have no native support
+      for complex algorithms such as control and robotics. Robotat Linalg provides the
+      numerical infrastructure to cover this gap, allowing to perform onboard linear algebra,
+      control, and robotics routines.
+      
+      Robotat linalg's key features are:
+      <ul>
+        <li>Single-precision arithmetic (float32)</li>
+        <li>Static memory allocation</li>
+        <li>No external libraries or dependencies, only the C Standard Library</li>
+      </ul>
+
+      These characteristics turn Robotat Linalg into a practical tool for embedded control and robotics,
+      as it allows greater control over memory resources, while keeping all routines tailored for
+      single-precision devices, such as Arduino, ESP32 and STM32 boards.
+
+      Regarding potential applications, Robotat Linalg is currently divided across several libraries, 
+      covering different algorithms:
+      <ul><li>Robotat Linalg</li>
+        <ul>
+          <li>Matf32: Linear algebra, matrix operations and factorizations.</li>
+          <li>Linsolve: Linear solver, using direct methods such as LU, QR, Cholesky and SVD.</li>
+          <li>Quadprog: Convex quadratic solver, using linsolve, an active set method and KKT direct methods.</li>
+        </ul>
+        <li>Robotat Control: PID controller, LTI and nonlinear systems, Kalman filter, LTI shooting-based MPC.</li>
+        <li>Robotat Robotics: homogeneous transformations, </li>
+      </ul>
+
+      These libraries already cover the essentials for a variety of control and robotics applications. Additionally,
+      it's portable across different devices and environments.
+    </p>
+
+    <h2 id="platformio_install">Installing in PlatformIO projects</h2>
+
+    <p>External libraries must be included in the <code>platformio.ini</code> file in PlatformIO projects, using the <code>lib_deps</code>
+      command. To include Robotat Linalg, add the <code>HTTPS</code> direction, as provided in the Github Repository:
+      
+      <pre><code>lib_deps = https://github.com/andreabp19/robotat-linalg.git</code></pre>
+
+      If you have more than one library in <code>lib_deps</code>, such as for sensors or any other library, separate them in different lines:
+
+      <pre><code>lib_deps =  some-other-library
+            https://github.com/andreabp19/robotat-linalg.git</code></pre>
+    </p>
+
+    <h2 id="importing_libraries">Importing the Robotat libraries</h2>
+    <p>
+      The libraries are modular and are built like a stack. That means, the base layer is Matf32. Linsolve builds directly on top of it, and
+      then Quadprog builds on top of Linsolve. Those three libraries form the Robotat Linalg core, in other words, the numerical infrastructure
+      of the stack. Robotat Control and Robotics are both part of the application layer, and depending on the algorithm to use, might need one or
+      more of the Robotat Linalg core libraries. The dependencies are handled internally, meaning that if you include Quadprog, both Matf32 and
+      Linsolve will be included as well, and similar for the control and robotics libraries.
+
+      Include the library you need according to their respective file names:
+
+<pre><code>#include "matf32.h" 
+#include "linsolve.h"         // Includes both matf32 and linsolve
+#include "quadprog.h"         // Includes matf32, linsolve and quadprog
+#include "robotat_linalg.h"   // Includes matf32, linsolve and quadprog
+#include "robotat_control.h"  // Includes robotat_linalg
+#include "robotat_linalg.h"   // Includes matf32
+</code></pre>
+
+    <h2 id="platforms">Supported platforms</h2>
+    <p>Robotat Linalg is targeted towards single-precision architecture embedded
+      devices. As of late 2026, it has been tested in ESP32, STM32 Nucleo, and Arduino 
+      Mega development boards, and was partially tested in Tiva C. The library stack is
+      portable and can be adapted for other devices, as long as they have enough RAM
+      to contain the libraries and execute the routines. Performance speed will vary
+      depending on the capabilities of the device.
+    </p>
+
+    <div class="guide-pager">
+      <span></span>
+      <a href="user_guide_robotat_linalg.html">Robotat Linalg Core &rarr;</a>
+    </div>
+  </main>
+
+</div>
+
+<!----------------------------------------------------------------------------------------------------
+Footer
+----------------------------------------------------------------------------------------------------->
+
+<!--- To-Do: Add border at the end of the previous section like in the landing page -->
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-grid">
+
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#top">Back to top</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg/blob/main/LICENSE.txt">License</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="./docs/html/index.html">Docs</a></li>
+          <li><a href="#userguide">User's Guide</a></li>
+          <li><a href="https://github.com/andreabp19/robotat-linalg">GitHub</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Robotat Linalg. Released under the MIT License.</span>
+      <span>Built with GitHub Pages with Flaticon icons.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

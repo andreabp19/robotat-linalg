@@ -1,0 +1,352 @@
+/* ====================================================================================================
+Robotat Linalg - User Guide CSS
+==================================================================================================== */
+
+/* ---------------------------------------------------------------------------------------------------
+Base of the style
+--------------------------------------------------------------------------------------------------- */
+
+body.guide {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+body.guide .nav-brand:hover { 
+  color: var(--color-accent-light);
+}
+
+.guide-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 48px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.guide-sidebar {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  font-size: 0.9rem;
+  padding-right: 8px;
+}
+
+.guide-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guide-sidebar li {
+  margin: 0;
+}
+
+.guide-sidebar ul ul {
+  padding-left: 14px;
+}
+
+.guide-sidebar a {
+  display: block;
+  padding: 4px 0 4px 12px;
+  color: var(--color-text-content);
+  border-left: 2px solid var(--color-border);
+}
+
+.guide-sidebar a:hover { color: var(--color-text-main); }
+.guide-sidebar a.active,
+.guide-sidebar a[aria-current="page"] {
+  color: var(--color-accent-main);
+  border-left-color: var(--color-accent-main);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Collapsible sidebar
+--------------------------------------------------------------------------------------------------- */
+
+.guide-sidebar summary {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+.guide-sidebar summary::-webkit-details-marker {
+  display: none;
+}
+
+.guide-sidebar summary > a {
+  flex: 1;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.guide-sidebar summary::after {
+  content: "";
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  margin: 0 10px;
+  border-right: 2px solid var(--color-text-content);
+  border-bottom: 2px solid var(--color-text-content);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+.guide-sidebar details[open] > summary::after {
+  transform: rotate(45deg);
+}
+.guide-sidebar summary:hover::after {
+  border-color: var(--color-accent-main);
+}
+
+.guide-sidebar details > ul {
+  padding-left: 14px;
+  margin-bottom: 6px;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Content
+--------------------------------------------------------------------------------------------------- */
+
+.guide-content {
+  max-width: 760px;
+  min-width: 0;
+}
+
+.guide-content h1, .guide-content h2, .guide-content h3, .guide-content h4 {
+  font-family: var(--font-family-heading);
+  color: var(--color-text-main);
+  line-height: 1.3;
+  scroll-margin-top: 80px;
+}
+
+.guide-content h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.guide-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.guide-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 2rem 0 .75rem;
+}
+.guide-content h3.code-h3 {
+  font-family: var(--font-family-monospace);
+  font-size: 1.05rem;
+}
+
+.guide-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 .5rem;
+}
+
+.guide-content a {
+  color: var(--color-accent-main);
+}
+
+.guide-content a:hover {
+  color: var(--color-accent-dark);
+  text-decoration: underline;
+}
+
+.guide-content p.lead {
+  font-size: 1.15rem;
+  color: var(--color-text-content);
+}
+
+.guide-content ul, .guide-content ol {
+  padding-left: 1.5rem;
+}
+
+.guide-content li {
+  margin-bottom: .35rem;
+}
+
+.guide-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.guide-content hr {
+  border: 0; border-top: 1px solid var(--color-border);
+  margin: 2.5rem 0;
+}
+
+.guide-content img.img-center { display: block; margin: 1rem auto; }
+
+/* ---------------------------------------------------------------------------------------------------
+Style for code snippets
+--------------------------------------------------------------------------------------------------- */
+
+.guide-content code {
+  font-family: var(--font-family-monospace);
+  font-size: 0.88em;
+  background: var(--color-card-background);
+  color: var(--color-text-main);
+  padding: 0.1em 0.4em;
+  border-radius: var(--radius);
+}
+.guide-content pre {
+  background: var(--color-code-background);
+  color: var(--color-code-foreground);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.5;
+  font-size: 0.88rem;
+  margin: 1.25rem 0;
+}
+.guide-content pre code {
+  background: none; color: inherit;
+  padding: 0; font-size: inherit;
+}
+
+kbd {
+  font-family: var(--font-family-monospace);
+  font-size: 0.85em;
+  border: 1px solid var(--color-border);
+  border-bottom-width: 2px;
+  border-radius: var(--radius);
+  padding: 0.1em 0.4em;
+  background: var(--color-page-background);
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Tables
+--------------------------------------------------------------------------------------------------- */
+.guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 1.25rem 0;
+  display: block;
+  overflow-x: auto;
+}
+.guide-content th,
+.guide-content td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.guide-content th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Boxes for notes like warnings and tips
+--------------------------------------------------------------------------------------------------- */
+.callout {
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent-main);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 1.5rem 0;
+  background: #f6f8fa;
+}
+.callout > :first-child { margin-top: 0; }
+.callout > :last-child  { margin-bottom: 0; }
+.callout::before {
+  display: block;
+  font-family: var(--font-family-eyebrow);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.callout.note::before     { content: "Note";           color: var(--color-accent-main); }
+.callout.tip              { border-left-color: #2e8b57; }
+.callout.tip::before      { content: "Tip";            color: #2e8b57; }
+.callout.warning          { border-left-color: #c77d12; }
+.callout.warning::before  { content: "Warning"; color: #c77d12; }
+.callout.exercise         { border-left-color: var(--color-accent-dark); }
+.callout.exercise::before { content: "Exercise";       color: var(--color-accent-dark); }
+
+/* Collapsible solutions: <details><summary>Solution</summary>...</details> */
+.guide-content details {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  margin: 1rem 0;
+}
+.guide-content summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-accent-main);
+}
+.guide-content details[open] summary { margin-bottom: 8px; }
+
+/* Prev / next ------------------------------------------------------- */
+.guide-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.guide-pager a {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-weight: 600;
+}
+.guide-pager a:hover { border-color: var(--color-accent-main); text-decoration: none; }
+
+/* ---------------------------------------------------------------------------------------------------
+Footer
+--------------------------------------------------------------------------------------------------- */
+body.guide footer .container {
+  border: 0;
+  padding-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------------------------------
+Math (KaTex, for LaTex equations)
+--------------------------------------------------------------------------------------------------- */
+.guide-content .katex-display {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+}
+.guide-content .katex {
+  font-size: 1.05em;
+}
+.guide-content .katex-display > .katex {
+  color: var(--color-text-main);
+}
+
+.math-code {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  margin: 1.5rem 0;
+}
+.math-code pre {
+  margin: 0;
+}
+.math-code p {
+  margin: 0; font-size: 0.9rem;
+  color: var(--color-text-content);
+}
+@media (max-width: 860px) {
+  .math-code { grid-template-columns: 1fr; }
+}
