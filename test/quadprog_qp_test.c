@@ -306,7 +306,7 @@ int main(void)
         for (uint8_t j = 0; j < 1; j++)
         {
             time = clock();
-            quadprog_qp_linsolve(&qp, &x_qr, QR);
+            quadprog_qp_linsolve(&qp, &x_qr, QR_SQUARE);
             qp_qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
         mean_qp_qr_time = mean(qp_qr_time, z);
