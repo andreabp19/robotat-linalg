@@ -2,7 +2,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 13 Nov 2025
+ * @date Created 23 Aug 2025, last modified: 16 Nov. 2026
  * 
  * For testing linsolve in computer
  */
@@ -87,7 +87,7 @@ float cond_B = 0;
 
 err_status_t status;
 
-void main(void)
+int main(void)
 {
     clock_t time;
 
@@ -283,8 +283,6 @@ void main(void)
         
         uint16_t svd_failures = 0;
 
-        bool linsolve_svd = 0;
-
         // Iterations: 100
         for (uint8_t j = 0; j < x; j++)
         {
@@ -298,8 +296,6 @@ void main(void)
             svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
 
             matf32_mul(&A_copy, &temp, &Ax);
-
-            linsolve_svd = matf32_is_equal(&Ax, &b);
         }
 
         mean_svd_time = mean(svd_time, x);

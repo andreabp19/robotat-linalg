@@ -83,7 +83,6 @@ ctr_pid_update(ctr_pid_t* const pid, float r_k, float y_k)
 	float u_k_1 = pid->u_k_1;
 	float u_k_2 = pid->u_k_2;
 	
-	float E_k;
 	float a0;
 
 	float kp = pid->kp;
@@ -533,6 +532,15 @@ ctr_sys_nonlin_simulate(ctr_sys_nonlin_t* sys, const matf32_t* const x_k, matf32
 			matf32_add(x_k, k1, x_k_1);			// x_k_1 = x_k + (delta/6)(k1 + 2k2 + 2k3 + k4)
 
 			break;
+
+		default: // Default is forward euler
+
+			// To-Do: Turn FE and RK4 into separate functions so this is easy to execut
+			sys->dynamics(fss, x_k, u_k);	// f(x_k, u_k)
+			matf32_scale(fss, delta, fss); 	// f(x_k, u_k)*delta
+			matf32_add(x_k, fss, x_k_1); 	// x_k_1 = x_k + f(x_k, u_k)*delta
+
+			break;
 	}
 
 	return MATH_SUCCESS;
@@ -576,10 +584,7 @@ ctr_kalman_predict(ctr_kalman_t* const kf, const matf32_t* inputs)
 
 	// State, input, output and noise dimensions
 	const float dim_xhat = kf->sys->state_dim;
-	const float dim_u = kf->sys->input_dim;
-	const float dim_y = kf->sys->output_dim;
 	const float dim_w = kf->Qw->num_rows;
-	const float dim_v = kf->Qv->num_rows;
 
 	// Use the dynamics to get the a-priori estimate
 	matf32_t* const Ax = &m1;
@@ -623,10 +628,7 @@ ctr_kalman_correct(ctr_kalman_t* const kf, const matf32_t* measurements)
 
 	// State, input, output and noise dimensions
 	const float dim_xhat = kf->sys->state_dim;
-	const float dim_u = kf->sys->input_dim;
 	const float dim_y = kf->sys->output_dim;
-	const float dim_w = kf->Qw->num_rows;
-	const float dim_v = kf->Qv->num_rows;
 	
 	// Get the innovation covariance matrix and its inverse
 	matf32_t* const Ct = &m1;
@@ -709,6 +711,8 @@ ctr_mpc_lti_init(ctr_mpc_lti_shooting_t* mpc, quadprog_t* qp, ctr_sys_lti_t* sys
 	mpc->bin = bin;
 
 	mpc->state_constraints = state_constraints;
+
+	return MATH_SUCCESS;
 }
 
 err_status_t
@@ -850,6 +854,8 @@ ctr_mpc_set_qpQ(ctr_mpc_lti_shooting_t* mpc, matf32_t* qp_Q)
 
 	// Calculate qp_Q = 2*(C'*Q*C - R)
 	matf32_scale(CtQC, 2, qp_Q);
+
+	return MATH_SUCCESS;
 }
 
 err_status_t
@@ -909,6 +915,8 @@ ctr_mpc_set_qpc(ctr_mpc_lti_shooting_t* mpc, matf32_t* qp_c)
 	// Calculate qp_c = 2*F*x_k
 	matf32_mul(F, x_k, qp_c); // qp_c = F*x_k
 	matf32_scale(qp_c, 2, qp_c); // qp_c = 2*F*x_k
+
+	return MATH_SUCCESS;
 }
 
 err_status_t

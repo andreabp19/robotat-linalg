@@ -1,14 +1,13 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 22 Oct 2025
+ * @date Created 23 Aug 2025, last modified: 16 Nov. 2026
  * 
  * For testing matf32 in computer
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
 
 #include "matf32.h"
@@ -195,7 +194,7 @@ int main(void)
         // matf32_add
         // ---------------------------------------------------------------------------
 
-        /*float add_time[x];
+        float add_time[x];
         float mean_add_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -210,13 +209,13 @@ int main(void)
         bool add_ans = matf32_is_equal(&temp, &R_add);
         //printf("matf32_add%i\n",n);
         //printf("%.9f\n", mean_add_time);
-        printf("matf32_add           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_add_time, add_ans?"success":"failure");*/
+        printf("matf32_add           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_add_time, add_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_sub
         // ---------------------------------------------------------------------------
 
-        /*float sub_time[x];
+        float sub_time[x];
         float mean_sub_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -231,13 +230,13 @@ int main(void)
         bool sub_ans = matf32_is_equal(&temp, &R_sub);
         //printf("matf32_sub%i\n", n);
         //printf("%.9f\n", mean_sub_time);
-        printf("matf32_sub           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_sub_time, sub_ans?"success":"failure");*/
+        printf("matf32_sub           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_sub_time, sub_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_scale
         // ---------------------------------------------------------------------------
 
-        /*float scale_time[x];
+        float scale_time[x];
         float mean_scale_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -252,13 +251,13 @@ int main(void)
         bool scale_ans = matf32_is_equal(&temp, &R_scale);
         //printf("matf32_scale%i\n", n);
         //printf("%.9f\n", mean_scale_time);
-        printf("matf32_scale         , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_scale_time, scale_ans?"success":"failure");*/
+        printf("matf32_scale         , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_scale_time, scale_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_trans
         // ---------------------------------------------------------------------------
 
-        /*float trans_time[x];
+        float trans_time[x];
         float mean_trans_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -273,13 +272,13 @@ int main(void)
         bool trans_ans = matf32_is_equal(&temp, &R_trans);
         //printf("matf32_trans%i\n", n);
         //printf("%.9f\n", mean_trans_time);
-        printf("matf32_trans         , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_trans_time, trans_ans?"success":"failure");*/
+        printf("matf32_trans         , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_trans_time, trans_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_mul
         // ---------------------------------------------------------------------------
 
-        /*float mul_time[x];
+        float mul_time[x];
         float mean_mul_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -294,13 +293,13 @@ int main(void)
         bool mul_ans = matf32_is_equal(&temp, &R_mul);
         //printf("matf32_mul%i\n", n);
         //printf("%.9f\n", mean_mul_time);
-        printf("matf32_mul           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_mul_time, mul_ans?"success":"failure");*/
+        printf("matf32_mul           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_mul_time, mul_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_inv
         // ---------------------------------------------------------------------------
 
-        /*float inv_time[x];
+        float inv_time[x];
         float mean_inv_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -315,13 +314,13 @@ int main(void)
         bool inv_ans = matf32_is_equal(&temp, &R_inv);
         //printf("matf32_inv%i\n", n);
         //printf("%.9f\n", mean_inv_time);
-        printf("matf32_inv           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_inv_time, inv_ans?"success":"failure");*/
+        printf("matf32_inv           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_inv_time, inv_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_dot
         // ---------------------------------------------------------------------------
 
-        /*float dot_time[x];
+        float dot_time[x];
         float mean_dot_time = 0;
 
         float dot_temp_data[1];
@@ -343,13 +342,13 @@ int main(void)
         bool dot_ans = matf32_is_equal(&dot_temp, &R_dot);
         //printf("matf32_dot%i\n", n);
         //printf("%.9f\n", mean_dot_time);
-        printf("matf32_dot           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_dot_time, dot_ans?"success":"failure");*/
+        printf("matf32_dot           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_dot_time, dot_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_vecposmul
         // ---------------------------------------------------------------------------
         
-        /*float vecposmul_time[x];
+        float vecposmul_time[x];
         float mean_vecposmul_time = 0;
         float vecposmul_result[n];
 
@@ -368,13 +367,13 @@ int main(void)
         bool vecposmul_ans = matf32_is_equal(&vecposmul_temp, &R_vecposmul);
         //printf("matf32_vecposmul%i\n", n);
         //printf("%.9f\n", mean_vecposmul_time);
-        printf("matf32_vecposmul     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecposmul_time, vecposmul_ans?"success":"failure");*/
+        printf("matf32_vecposmul     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecposmul_time, vecposmul_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_vecpremul
         // ---------------------------------------------------------------------------
 
-        /*float vecpremul_time[x];
+        float vecpremul_time[x];
         float mean_vecpremul_time = 0;
         float vecpremul_result[n];
 
@@ -393,13 +392,13 @@ int main(void)
         bool vecpremul_ans = matf32_is_equal(&vecpremul_temp, &R_vecpremul);
         //printf("matf32_vecpremul%i\n", n);
         //printf("%.9f\n", mean_vecpremul_time);
-        printf("matf32_vecpremul     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecpremul_time, vecpremul_ans?"success":"failure");*/
+        printf("matf32_vecpremul     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecpremul_time, vecpremul_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_vecmul_col_row
         // ---------------------------------------------------------------------------
         
-        /*float vecmul_time[x];
+        float vecmul_time[x];
         float mean_vecmul_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -414,13 +413,13 @@ int main(void)
         bool vecmul_ans = matf32_is_equal(&temp, &R_vecmul);
         //printf("matf32_vecmul%i\n", n);
         //printf("%.9f\n", mean_vecmul_time);
-        printf("matf32_vecmul_col_row, Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecmul_time, vecmul_ans?"success":"failure");*/
+        printf("matf32_vecmul_col_row, Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecmul_time, vecmul_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_arr_add
         // ---------------------------------------------------------------------------
 
-        /*float arr_add_time[x];
+        float arr_add_time[x];
         float mean_arr_add_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -435,13 +434,13 @@ int main(void)
         bool arr_add_ans = matf32_is_equal(&temp, &R_arr_add);
         //printf("matf32_arr_add%i\n", n);
         //printf("%.9f\n", mean_arr_add_time);
-        printf("matf32_arr_add       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_add_time, arr_add_ans?"success":"failure");*/
+        printf("matf32_arr_add       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_add_time, arr_add_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_arr_sub
         // ---------------------------------------------------------------------------
 
-        /*float arr_sub_time[x];
+        float arr_sub_time[x];
         float mean_arr_sub_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -456,13 +455,13 @@ int main(void)
         bool arr_sub_ans = matf32_is_equal(&temp, &R_arr_sub);
         //printf("matf32_arr_sub%i\n", n);
         //printf("%.9f\n", mean_arr_sub_time);
-        printf("matf32_arr_sub       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_sub_time, arr_sub_ans?"success":"failure");*/
+        printf("matf32_arr_sub       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_sub_time, arr_sub_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_arr_mul
         // ---------------------------------------------------------------------------
 
-        /*float arr_mul_time[x];
+        float arr_mul_time[x];
         float mean_arr_mul_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -477,7 +476,7 @@ int main(void)
         bool arr_mul_ans = matf32_is_equal(&temp, &R_arr_mul);
         //printf("matf32_arr_mul%i\n", n);
         //printf("%.9f\n", mean_arr_mul_time);
-        printf("matf32_arr_mul       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_mul_time, arr_mul_ans?"success":"failure");*/
+        printf("matf32_arr_mul       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_mul_time, arr_mul_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_exp
@@ -498,14 +497,14 @@ int main(void)
         bool exp_ans = matf32_is_equal(&temp, &R_exp);
         printf("matf32_exp%i\n", n);
         printf("%.9f\n", mean_exp_time);
-        //printf("matf32_exp           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_exp_time, exp_ans?"success":"failure");
+        printf("matf32_exp           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_exp_time, exp_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_pinv
         // ---------------------------------------------------------------------------
 
         // ------------------------- BASIC PINV -------------------------
-        /*float pinv_basic_time[x];
+        float pinv_basic_time[x];
         float mean_pinv_basic_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -520,11 +519,11 @@ int main(void)
         bool pinv_basic_ans = matf32_is_equal(&temp, &R_pinv_basic);
         //printf("matf32_pinv,basic%i\n",n);
         //printf("%.9f\n", mean_pinv_time);
-        printf("matf32_pinv: Basic   , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_pinv_basic_time, pinv_basic_ans?"success":"failure");*/
+        printf("matf32_pinv: Basic   , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_pinv_basic_time, pinv_basic_ans?"success":"failure");
 
         // ------------------------- SVD PINV -------------------------
 
-        /*float pinv_svd_time[x];
+        float pinv_svd_time[x];
         float mean_pinv_svd_time = 0;
 
         for (uint8_t j = 0; j < x; j++)
@@ -539,13 +538,13 @@ int main(void)
         bool pinv_svd_ans = matf32_is_equal(&temp, &R_pinv_svd);
         //printf("matf32_pinv,svd%i\n",n);
         //printf("%.9f\n", mean_pinv_time);
-        printf("matf32_pinv: SVD     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_pinv_svd_time, pinv_svd_ans?"success":"failure");*/
+        printf("matf32_pinv: SVD     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_pinv_svd_time, pinv_svd_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_lu
         // ---------------------------------------------------------------------------
         
-        /*float lu_time[x];
+        float lu_time[x];
         float mean_lu_time = 0;
         
         uint16_t p_index[n];
@@ -566,13 +565,13 @@ int main(void)
         bool lu_ans = matf32_is_equal(&PA, &R_lu);
         //printf("matf32_lu%i\n",n);
         //printf("%.9f\n", mean_lu_time);
-        printf("matf32_lu            , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_lu_time, lu_ans?"success":"failure");*/
+        printf("matf32_lu            , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_lu_time, lu_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_cholesky
         // ---------------------------------------------------------------------------
 
-        /*float cholesky_time[x];
+        float cholesky_time[x];
         float mean_cholesky_time = 0;
 
         matf32_zeros(&temp);
@@ -589,13 +588,13 @@ int main(void)
         bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
         //printf("matf32_cholesky%i\n", n);
         //printf("%.9f\n", mean_cholesky_time);
-        printf("matf32_cholesky      , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_cholesky_time, cholesky_ans?"success":"failure");*/
+        printf("matf32_cholesky      , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_cholesky_time, cholesky_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_qr
         // ---------------------------------------------------------------------------
 
-        /*float qr_time[x];
+        float qr_time[x];
         float mean_qr_time = 0;
 
         matf32_zeros(&temp_Q);
@@ -614,13 +613,13 @@ int main(void)
         bool qr_ans = matf32_is_equal(&A, &R_qr);
         //printf("matf32_qr%i\n", n);
         //printf("%.9f\n", mean_qr_time);
-        printf("matf32_qr            , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_qr_time, qr_ans?"success":"failure");*/
+        printf("matf32_qr            , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_qr_time, qr_ans?"success":"failure");
 
         // ---------------------------------------------------------------------------
         // matf32_jacobi_svd
         // ---------------------------------------------------------------------------
 
-        /*if (n > 1)
+        if (n > 1)
         {
             float jacobi_svd_time[x];
             float mean_jacobi_svd_time = 0;
@@ -659,8 +658,8 @@ int main(void)
             //printf("jacobi_svd%i\n", n);
             //printf("%.9f\n", mean_jacobi_svd_time);
             printf("matf32_jacobi_svd    , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_jacobi_svd_time, jacobi_svd_ans?"success":"failure");
-        }*/
+        }
             
-        //printf("\n");
+        printf("\n");
     }
 }

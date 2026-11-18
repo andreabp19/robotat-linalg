@@ -1,5 +1,5 @@
 /**
- * Last modified: 16 Jan. 2025
+ * Last modified: 17 Nov. 2026
  *          By: Andrea Pineda
  */
 
@@ -29,8 +29,8 @@ generate_gauss(float mu, float sigma)
     // Compute the uniform norm
     do 
     {
-        U1 = -1 + ((float)rand() / RAND_MAX) * 2;
-        U2 = -1 + ((float)rand() / RAND_MAX) * 2;
+        U1 = -1 + ((float)rand() / (float)RAND_MAX) * 2;
+        U2 = -1 + ((float)rand() / (float)RAND_MAX) * 2;
         W = pow(U1, 2) + pow(U2, 2);
     } while (W >= 1 || W == 0);
 
@@ -891,7 +891,7 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 
 
 void 
-solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
+solve(float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
 {
     // Forward substitution with pivoting
     for (uint16_t i = 0; i < row; ++i) 
@@ -950,7 +950,7 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
     for (uint16_t i = 0; i < row; ++i)
     {
         tmpvec[i] = 1.0;
-        solve(p_src->p_data, &invmat->p_data[row * i], tmpvec, p, lu->p_data, row);
+        solve(&invmat->p_data[row * i], tmpvec, p, lu->p_data, row);
         tmpvec[i] = 0.0;
     }
 
@@ -1075,7 +1075,6 @@ matf32_vecposmul(const matf32_t* const p_srcm, float* const p_srcv, float* const
 void
 matf32_vecpremul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
 {
-    float* tmpvec;
     float* res = v1;
     zeros(res, 1, p_srcm->num_cols);
 
@@ -1118,8 +1117,6 @@ matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp)
     float temp_data[MAX_MAT_SIZE];
     matf32_t temp;
     matf32_init(&temp, p_src->num_rows, p_dst->num_cols, temp_data);
-
-    err_status_t status;
 
     for (uint16_t k = 1; k < exp; ++k)
     {
@@ -1251,8 +1248,6 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 err_status_t
 matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 {
-    float* p_a_data = p_a->p_data;
-    float* p_q_data = p_q->p_data;
     float* p_r_data = p_r->p_data;
 
     uint16_t rows = p_a->num_rows;
@@ -1395,7 +1390,6 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
     }
 #endif
 
-    float* p_a_data = p_a->p_data;
     float* p_l_data = p_l->p_data;
     float* p_u_data = p_u->p_data;
 
@@ -1501,14 +1495,10 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
     }
 #endif
 
-    err_status_t status;
-
     float* p_data_a = p_a->p_data;
     float* p_data_c = p_c->p_data;
 
     uint16_t size = p_a->num_cols;
-
-    float temp_v[size];
 
     float sum = 0;
     float dot = 0;

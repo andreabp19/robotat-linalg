@@ -2,7 +2,7 @@
 
 /**
  * @author: Andrea Pineda
- * @date: Created 23 Aug 2025, Last Modified 28 Oct 2025
+ * @date: Created 23 Aug 2025, Last Modified 16 Nov. 2026
  * 
  * For testing robotat_control in computer
  */
@@ -79,7 +79,6 @@ matf32_t R_c2d_tustin_Bd;
 int main(void)
 {
     clock_t time;
-    err_status_t status;
 
     // ---------------------------------------------------------------------------
     // STATE SPACE TESTING
@@ -137,7 +136,7 @@ int main(void)
             matf32_randn(&B_fwd_eul,0,1);
             sys_fwd_eul.is_continuous = true;
             time = clock();
-            status = ctr_c2d(&sys_fwd_eul, sample_time, FWD_EULER);
+            ctr_c2d(&sys_fwd_eul, sample_time, FWD_EULER);
             c2d_fwd_eul_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
 
@@ -196,7 +195,7 @@ int main(void)
             matf32_randn(&B_bwd_eul,0,1);
             sys_bwd_eul.is_continuous = true;
             time = clock();
-            status = ctr_c2d(&sys_bwd_eul, sample_time, BWD_EULER);
+            ctr_c2d(&sys_bwd_eul, sample_time, BWD_EULER);
             c2d_bwd_eul_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
 
@@ -254,7 +253,7 @@ int main(void)
             matf32_randn(&B_tustin,0,1);
             sys_tustin.is_continuous = true;
             time = clock();
-            status = ctr_c2d(&sys_tustin, sample_time, TUSTIN);
+            ctr_c2d(&sys_tustin, sample_time, TUSTIN);
             c2d_tustin_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
         }
 

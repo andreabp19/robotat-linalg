@@ -1,7 +1,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 3 Sep 2025, last modified: 4 Nov 2025
+ * @date Created 3 Sep 2025, last modified: 16 Nov. 2026
  * 
  * For testing quadprog in computer
  */
@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
 
 #include "quadprog.h"
@@ -120,9 +119,6 @@ quadprog_t sqp;
 int main(void)
 {
     clock_t time;
-    err_status_t status;
-    linsolve_method_t linsolve_method;
-    quadprog_status_t quadprog_status;
 
     printf("\n\n");
 
