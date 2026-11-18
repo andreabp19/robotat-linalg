@@ -17,7 +17,6 @@ AR_ARM = arm-none-eabi-ar
 CC := gcc
 CC_ARM = arm-none-eabi-gcc
 OPT := O2
-TARGET := host
 
 OBJS = $(LIB_FILES:%=$(BUILD_DIR)/%.o)
 ARM_OBJS = $(LIB_FILES:%=$(ARM_BUILD)/%.o)
@@ -68,6 +67,6 @@ $(TEST_BUILD)/%.o: $(TST_SRC)/%.c
 	$(CC) $(CFLAGS) -$(OPT) -I$(SRC) -c $< -o $@
 
 clean: 
-	rm -rf build
+	rm -rf build logs
 
 .PHONY: static_library static_test static_arm_library clean all
