@@ -31,7 +31,7 @@ all:
 		for o in $(OPT_LEVELS); do \
 			echo "== $$cc $$o"; \
 			$(MAKE) -k static_library static_test CC=$$cc OPT=$$o > logs/$$cc-$$o.log 2>&1 \
-			&& echo "   ok" || echo "   FAILED (see logs/$$cc-$$o.log)"; \
+			&& echo "   OK" || echo "   FAILED (see logs/$$cc-$$o.log)"; \
 		done; \
 	done
 
