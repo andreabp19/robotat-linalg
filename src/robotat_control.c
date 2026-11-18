@@ -2,7 +2,7 @@
 /**
  * @author Miguel Zea
  * 
- * Last modified: 31 Jan. 2026
+ * Last modified: 18 Nov. 2026
  * 		By: Andrea Pineda
  * 
  */
@@ -366,8 +366,8 @@ ctr_linloc(ctr_sys_nonlin_t* const src_sys, ctr_sys_lti_t* const dst_sys, const 
 	const uint16_t state_dim = src_sys->state_dim;
 	const uint16_t input_dim = src_sys->input_dim;
 	const uint16_t output_dim = src_sys->output_dim;
-	float xss_i; // xss[i, 1]
-	float uss_i; // uss[i, 1]
+	float xss_i = 0; // xss[i, 1]
+	float uss_i = 0; // uss[i, 1]
 
 	matf32_init(fss, state_dim, 1, m1data);
 	matf32_init(hss, output_dim, 1, m2data);
