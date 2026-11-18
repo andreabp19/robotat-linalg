@@ -2,7 +2,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 13 Nov 2025
+ * @date Created 23 Aug 2025, last modified: 16 Nov. 2026
  * 
  * For testing robotat_robotics in computer
  */
@@ -149,8 +149,6 @@ int main(void)
 {
     clock_t time;
 
-    rob_status_t status;
-
     // Initialize matrices for Frame AB
     matf32_init(&F_AB_T, 4, 4, F_AB_T_data);  // Homogeneous transformation matrix
     matf32_init(&F_AB_R, 3, 3, F_AB_R_data);  // Rotation matrix
@@ -161,7 +159,7 @@ int main(void)
 
     // Initialize reference frame
     // Note: last argument 0=radians, 1=degrees
-    status = rob_frame_init(&F_AB, &F_AB_T, &F_AB_R, &F_AB_v, FRAME_A, FRAME_B, angle_units);
+    rob_frame_init(&F_AB, &F_AB_T, &F_AB_R, &F_AB_v, FRAME_A, FRAME_B, angle_units);
 
     // Initialize vector points
     rob_refpoint_init(&p_A, &p_A_v, p_A_data, FRAME_A);
@@ -233,7 +231,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_transl(F_AB.p_v, &F_AB);
+        rob_transl(F_AB.p_v, &F_AB);
         transl_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -260,7 +258,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_rotx(F_AB.p_R, theta, 0);
+        rob_rotx(F_AB.p_R, theta, 0);
         rotx_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -287,7 +285,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_roty(F_AB.p_R, theta, 0);
+        rob_roty(F_AB.p_R, theta, 0);
         roty_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -314,7 +312,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_rotz(F_AB.p_R, theta, 0);
+        rob_rotz(F_AB.p_R, theta, 0);
         rotz_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -658,7 +656,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_quat_inv(&q1, &temp_q);
+        rob_quat_inv(&q1, &temp_q);
         quat_inv_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -692,7 +690,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_rot2tr(F_AB.p_R, &F_AB);
+        rob_rot2tr(F_AB.p_R, &F_AB);
         rot2tr_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -723,7 +721,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_tr2rot(&F_AB, F_AB.p_R);
+        rob_tr2rot(&F_AB, F_AB.p_R);
         tr2rot_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -750,7 +748,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_rpy2rot(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R);
+        rob_rpy2rot(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R);
         rpy2rot_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -813,7 +811,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_update_transform(&F_AB, F_AB.p_R, F_AB.p_v);
+        rob_update_transform(&F_AB, F_AB.p_R, F_AB.p_v);
         update_transform_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -841,7 +839,7 @@ int main(void)
     {
         time = clock();
         // In robotics toolbox there seems only ZYZ is implemented for eul2r
-        status = rob_eul2rot(phi, theta, psi, ZYZ, angle_units, F_AB.p_R);
+        rob_eul2rot(phi, theta, psi, ZYZ, angle_units, F_AB.p_R);
         eul2rot_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -907,7 +905,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_rot2quat(F_AB.p_R, &temp_q);
+        rob_rot2quat(F_AB.p_R, &temp_q);
         rot2quat_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -965,7 +963,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_rpy2quat(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R, &temp_q);
+        rob_rpy2quat(roll, pitch, yaw, XYZ, angle_units, F_AB.p_R, &temp_q);
         rpy2quat_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
@@ -992,7 +990,7 @@ int main(void)
     for (uint8_t i = 0; i < x; i++)
     {
         time = clock();
-        status = rob_eul2quat(phi, theta, psi, ZYZ, angle_units, F_AB.p_R, &temp_q);
+        rob_eul2quat(phi, theta, psi, ZYZ, angle_units, F_AB.p_R, &temp_q);
         eul2quat_time[i] = (float)(clock()-time)/CLOCKS_PER_SEC;
     }
 
