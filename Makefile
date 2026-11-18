@@ -10,7 +10,7 @@ TARGET_LIST = host cortexm4
 CFLAGS = -Wall -Wextra
 CORTEXM4_FLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 LIB_FILES = matf32 linsolve quadprog robotat_control robotat_robotics
-TEST_FILES = matf32_test linsolve_test quadprog_qp_test quadprog_sqp_test
+TEST_FILES = matf32_test linsolve_test quadprog_qp_test quadprog_sqp_test control_pid_test control_lti_sys_test control_nonlin_sys_test control_kalman_filter_test control_mpc_test robotics_test
 
 AR := ar
 CC := gcc
@@ -25,7 +25,7 @@ LIB = $(BUILD_DIR)/librobotat.a
 static_library: $(LIB)
 static_test: $(TEST_BINS)
 
-matrix:
+all:
 	@mkdir -p logs
 	@for cc in $(COMPILERS); do \
 		for o in $(OPT_LEVELS); do \
@@ -52,4 +52,4 @@ $(TEST_BUILD)/%.o: $(TST_SRC)/%.c
 clean: 
 	rm -rf build
 
-.PHONY: static_library static_test clean matrix
+.PHONY: static_library static_test clean all
