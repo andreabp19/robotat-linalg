@@ -72,13 +72,21 @@ All error and warning messages printed correctly into the log files for each com
 
 **Objective:** Modify ```matf32_test.c``` and ```linsolve_test.c``` test files to self-check for PASS/FAIL the test cases.
 
-**Approach and solution:** Previously I had both numerical and timing tests in the same file, so I removed the timing tests and modified the numerical test cases to report PASS/FAIL, matrix conditioning and the largest absolute error observed between the resulting matrix and the MATLAB reference data. Additionally, the total number of tests and of failed tests are counted and printed out at the end of the program, and the ```main``` returns 1 if at least one test failed. 
+**Approach and solution:** Previously I had both numerical and timing tests in the same file (for all tests), so I removed the timing tests and modified the numerical test cases to report PASS/FAIL, matrix conditioning and the largest absolute error observed between the resulting matrix and the MATLAB reference data. Additionally, the total number of tests and of failed tests are counted and printed out at the end of the program, and the ```main``` returns 1 if at least one test failed. 
+
+In the case of ```linsolve_test.c```, I added an additional error metric, besides element-wise error. For this reason, there's now two linsolve test files: ```linsolve_test_residual_error.c```, using residual-based error to evaluate the stability of the solver methods; and ```linsolve_test_forward_error.c``` for the usual numerical error comparison against MATLAB. This was made to take advantage of the more automated tests and add the residual-based error metric, which is usually recommended in the theory books to evaluate the performance of solvers.
+
+Both error metrics used a tolerance of 1E-05, so any error below that threshold would be considered correct and the test case would pass. As always, this was decided based on the limitations of accuracy in ```float32```, as the fifth decimal is the safest choice to provide as much accuracy while avoiding the last digits that could have error accumulation from garbage values beyond the limit of the single precision.
+
+After changing the code, I modified the Makefile to add the command ```test```, which takes every selected test file (in this case, ```matf32``` and ```linsolve``` test files) and executes them, while printing the results and number of tests that failed the error threshold. 
 
 **Results:**
 
-Below is the summary of FAIL results executing ```matf32_test.c``` with the changes implemented:
+Below is the output of the files, with the current test data, as printed by the summary created with ```make test``` from the Makefile. Approximately 96% of test cases passed successfully. Those who failed, are shown above in the summary, alongside with the conditioning for the input matrix and the maximum observed error, according to the chosen metrics.
 
 ```
+make test
+== matf32_test
 matf32_exp, 3 x 3: FAIL, conditioning A: 23.7020, max. error: 0.000011444
 matf32_pinv,basic, 3 x 3: FAIL, conditioning A: 23.7020, max. error: 0.000022411
 matf32_pinv,basic, 5 x 5: FAIL, conditioning A: 50.8983, max. error: 0.000029802
@@ -88,12 +96,13 @@ matf32_exp, 8 x 8: FAIL, conditioning A: 47.8661, max. error: 0.000015259
 matf32_pinv,basic, 8 x 8: FAIL, conditioning A: 47.8661, max. error: 0.000011444
 matf32_exp, 9 x 9: FAIL, conditioning A: 25.5908, max. error: 0.000015259
 matf32_exp, 10 x 10: FAIL, conditioning A: 33.1580, max. error: 0.000015259
-
 matf32: 190/199 passed
+== linsolve_test_forward_error
+Cholesky, 1 x 1: FAIL, conditioning A: 1.0000, max. error: 0.000976562
+SVD, 8 x 8: FAIL, conditioning A: 199.4066, max. error: 0.000028014
+matf32: 58/60 passed
+== linsolve_test_residual_error
+matf32: 60/60 passed
+SOME TESTS FAILED
+make: *** [Makefile:50: test] Error 1
 ```
-
-Approximately 95% of test cases passed successfully. Those who failed, are shown above, alongside with the conditioning for the input matrix and the maximum observed absolute error in the elements of the matrix. This error metric was chosen to evaluate numerical agreement against MATLAB, as the operations in this file require to be as correct as possible in individual elements to ensure more complex operations have correct results. The usual metric for ```robotat-linalg``` numerical agreement so far is 1E-05 (five correct decimal values compared to the MATLAB reference), while all the maximum errors in this case have an order of 1E-04.
-
-In the case of ```linsolve_test.c```, I changed the error metric from element-wise error to residual-based error, as it's a more recommended metric for evaluating the solutions of solver methods. The reason for this is that this metric evaluates "how useful" the solution is, even if it has visible numerical differences to a baseline result. Numerically, this translates to: a smaller residual-based error means the solution is accurate even if it differs from the baseline. This also allowed me to make the tests completely self-checking and have a more robust error evaluation, because this metric doesn't rely on reference results as it can be computed with the matrices and computed solution for the system.
-
-The residual-based error was also evaluated with a tolerance of 1E-05, so any error below that threshold would be considered correct and the test case would pass. In this case, all test cases passed, as the error was much lower than the threshold.
