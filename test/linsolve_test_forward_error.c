@@ -2,7 +2,7 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 18 Nov. 2026
+ * @date Created 19 Nov. 2026, last modified: 19 Nov. 2026
  * 
  * For testing linsolve in computer
  */
@@ -75,6 +75,8 @@ float USVt_data[MAX_MAT_SIZE];
 matf32_t USVt;
 float Ax_data[MAX_MAT_SIZE];
 matf32_t Ax;
+float Dx_data[MAX_MAT_SIZE];
+matf32_t Dx;
 
 float cond_A = 0;
 
@@ -84,7 +86,7 @@ float norm_b = 0;
 uint16_t total_tests_counter = 0;
 uint16_t fails_counter = 0;
 
-void check_test_case(const char *routine, int m, int n, const matf32_t* const A, const matf32_t* const b, const matf32_t* const x, uint16_t *total_tests_counter, uint16_t *fails_counter);
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter, float cond_A, float max_error);
 
 float matf32_max_numerical_error(const matf32_t* const A, const matf32_t* const B);
 
@@ -113,6 +115,7 @@ int main(void)
         matf32_init(&U_trans, U.num_cols, U.num_rows, U_trans_data);
         matf32_init(&US, U.num_rows, S.num_cols, US_data);
         matf32_init(&USVt, A.num_rows, A.num_cols, USVt_data);
+        matf32_init(&Ax, A.num_rows, 1, Ax_data);
         
         matf32_submatrix_copy(&A, &A_copy, 0, 0, 0, 0, A.num_rows, A.num_cols);
 
@@ -123,6 +126,7 @@ int main(void)
             matf32_init(&temp2, n-1, 1, temp2_data);
             matf32_init(&D, n, n-1, D_list[i-1]);
             matf32_init(&R_qr, n-1, 1, R_qr_list[i-1]);
+            matf32_init(&Dx, D.num_rows, 1, Dx_data);
         }
 
         // ---------------------------------------------------------------------------
@@ -131,7 +135,7 @@ int main(void)
 
         matf32_zeros(&temp);
         linsolve(&A_L, &b, &temp);
-        check_test_case("Forward Substitution", n, n, &A_L, &b, &temp, &total_tests_counter, &fails_counter);
+        check_test_case("Forward Substitution", n, n, matf32_is_equal(&temp, &R_fwd_subs), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_fwd_subs));
 
         // ---------------------------------------------------------------------------
         // linsolve - Backward Substitution
@@ -139,7 +143,7 @@ int main(void)
 
         matf32_zeros(&temp);
         linsolve(&A_U, &b, &temp);
-        check_test_case("Backward Substitution", n, n, &A_U, &b, &temp, &total_tests_counter, &fails_counter);
+        check_test_case("Backward Substitution", n, n, matf32_is_equal(&temp, &R_bwd_subs), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_bwd_subs));
 
         // ---------------------------------------------------------------------------
         // linsolve - Cholesky
@@ -147,7 +151,7 @@ int main(void)
         
         matf32_zeros(&temp);
         linsolve(&C, &b, &temp);
-        check_test_case("Cholesky", n, n, &C, &b, &temp, &total_tests_counter, &fails_counter);
+        check_test_case("Cholesky", n, n, matf32_is_equal(&temp, &R_cholesky), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_cholesky));
 
         // ---------------------------------------------------------------------------
         // linsolve - QR
@@ -155,7 +159,7 @@ int main(void)
         
         matf32_zeros(&temp2);
         linsolve(&D, &b, &temp2);
-        check_test_case("QR", n, n, &D, &b, &temp2, &total_tests_counter, &fails_counter);
+        check_test_case("QR", n, n-1, matf32_is_equal(&temp2, &R_qr), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp2, &R_qr));
 
         // ---------------------------------------------------------------------------
         // linsolve - LU
@@ -163,7 +167,7 @@ int main(void)
 
         matf32_zeros(&temp);
         linsolve(&B, &b, &temp);
-        check_test_case("LU", n, n, &B, &b, &temp, &total_tests_counter, &fails_counter);
+        check_test_case("LU", n, n, matf32_is_equal(&temp, &R_lu), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_lu));
 
         // ---------------------------------------------------------------------------
         // linsolve - SVD Jacobi
@@ -171,57 +175,20 @@ int main(void)
 
         matf32_zeros(&temp);
         linsolve(&A, &b, &temp);
-        check_test_case("SVD", n, n, &A, &b, &temp, &total_tests_counter, &fails_counter);
+        matf32_mul(&A, &temp, &Ax); // In this case, compares against the reconstruction because MATLAB doesn't give the exact same result due to implementation differences
+        check_test_case("SVD", n, n, matf32_is_equal(&Ax, &b), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&Ax, &b));
 
         printf("\n\n");
     }
+
+    printf("\nmatf32: %u/%u passed\n", total_tests_counter - fails_counter, total_tests_counter);
+
+    return fails_counter > 0 ? 1 : 0; // If there was at least one fail, return 1
 }
 
-void check_test_case(const char *routine, int m, int n, const matf32_t* const A, const matf32_t* const b, const matf32_t* const x, uint16_t *total_tests_counter, uint16_t *fails_counter)
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter, float cond_A, float max_error)
 {
-    float Ax_data[MAX_MAT_SIZE];
-    matf32_t Ax;
-
-    float b_Ax_data[MAX_MAT_SIZE];
-    matf32_t b_Ax;
-
-    matf32_init(&Ax, A->num_rows, 1, Ax_data);
-    matf32_init(&b_Ax, A->num_rows, 1, b_Ax_data);
-
-    matf32_mul(A, x, &Ax);         // A*x
-    matf32_sub(b, &Ax, &b_Ax);     // residual = b - A*x
-
-    float residual;
-
-    if (A->num_rows > A->num_cols)
-    {
-        // Residual for an overdetermined system
-        float At_data[MAX_MAT_SIZE];
-        matf32_t At;
-        float Atr_data[MAX_MAT_SIZE];
-        matf32_t Atr;
-        float Atb_data[MAX_MAT_SIZE];
-        matf32_t Atb;
-
-        matf32_init(&At,  A->num_cols, A->num_rows, At_data);
-        matf32_init(&Atr, A->num_cols, 1, Atr_data);
-        matf32_init(&Atb, A->num_cols, 1, Atb_data);
-
-        matf32_trans(A, &At);          // A'
-        matf32_mul(&At, &b_Ax, &Atr);  // residual = A' * (b - Ax)
-        matf32_mul(&At, b, &Atb);      // overdetermined b = (A' * b)
-
-        residual = matf32_norm(&Atr) / matf32_norm(&Atb);
-    }
-    else
-    {
-        // Residual for square matrices
-        residual = matf32_norm(&b_Ax) / matf32_norm(b);
-    }
-
-    bool result = residual < 1E-05;
-
-    printf("%s, %i x %i: %s, %.9f\n", routine, m, n, result?"PASS":"FAIL", residual);
+    printf("%s, %i x %i: %s, conditioning A: %.4f, max. error: %.9f\n", routine, m, n, result?"PASS":"FAIL", cond_A, max_error);
 
     *total_tests_counter += 1;
 
@@ -229,4 +196,34 @@ void check_test_case(const char *routine, int m, int n, const matf32_t* const A,
     {
         *fails_counter += 1;
     }
+}
+
+float matf32_max_numerical_error(const matf32_t* const A, const matf32_t* const B) // A and B must have the same dimensions and shape
+{
+    float max_error = 0;
+    float numerical_error = 0;
+
+    uint16_t elements = A->num_rows*A->num_cols;
+
+    if (A->num_rows != B->num_rows || A->num_cols != B->num_cols)
+    {
+        return MATH_SIZE_MISMATCH;
+    }
+
+    for (uint16_t k = 0; k < elements; k++)
+    {
+        numerical_error = fabsf(A->p_data[k] - B->p_data[k]);
+
+        if (isnan(numerical_error))
+        {
+            return numerical_error;
+        } 
+
+        if (numerical_error > max_error)
+        {
+            max_error = numerical_error;
+        }
+    }
+
+    return max_error;
 }
