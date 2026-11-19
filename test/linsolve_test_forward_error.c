@@ -175,7 +175,7 @@ int main(void)
 
         matf32_zeros(&temp);
         linsolve(&A, &b, &temp);
-        matf32_mul(&A, &temp, &Ax); // In this case, compares against the reconstruction because MATLAB doesn't give the exact same result due to implementation differences
+        matf32_mul(&A, &temp, &Ax); // In this case computed manually for comparison because the current data doesn't match the matrix that I'm using, and can't get new MATLAB data.
         check_test_case("SVD", n, n, matf32_is_equal(&Ax, &b), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&Ax, &b));
 
         printf("\n\n");
