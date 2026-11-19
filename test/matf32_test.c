@@ -119,10 +119,19 @@ matf32_t A_QR;
 float PA_data[MAX_MAT_SIZE];
 matf32_t PA;
 
-uint8_t total_tests_counter = 0;
-uint8_t fails_counter = 0;
+float Vt_data[MAX_MAT_SIZE];
+matf32_t Vt;
+float US_data[MAX_MAT_SIZE];
+matf32_t US;
+float USVt_data[MAX_MAT_SIZE];
+matf32_t USVt;
 
-void check_test_case(const char *routine, int m, int n, bool result);
+float cond_A = 0;
+
+uint16_t total_tests_counter = 0;
+uint16_t fails_counter = 0;
+
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter, float cond_A);
 
 int main(void)
 {
@@ -131,6 +140,8 @@ int main(void)
     for (uint8_t i = 0; i < 10; i++)
     {
         uint8_t n = i + 1; // i is 1 value below the dimension n, for each matrix
+
+        uint16_t p_index[n]; // Permutations vector for LU factorization
 
         matf32_init(&temp, n, n, temp_data);
         matf32_init(&temp_L, n, n, temp_L_data);
@@ -162,6 +173,12 @@ int main(void)
         matf32_init(&R_qr, n, n, R_qr_list[i]);
         matf32_init(&A_QR, A.num_rows, A.num_cols, A_QR_data);
         matf32_init(&PA, A.num_rows, A.num_cols, PA_data);
+
+        matf32_zeros(&temp_L);
+        matf32_zeros(&temp_U);
+        matf32_zeros(&temp);
+        matf32_zeros(&temp_Q);
+        matf32_zeros(&temp_R);
         
         if (n > 1)
         {
@@ -169,56 +186,62 @@ int main(void)
             matf32_init(&U, A.num_rows, A.num_cols, U_data);
             matf32_init(&S, A.num_rows, A.num_cols, S_data);
             matf32_init(&V, A.num_rows, A.num_cols, V_data);
+            matf32_init(&Vt, V.num_cols, V.num_rows, Vt_data);
+            matf32_init(&US, U.num_rows, S.num_cols, US_data);
+            matf32_init(&USVt, U.num_rows, Vt.num_cols, USVt_data);
             matf32_init(&R_jacobi_svd, n, n, R_jacobi_svd_list[i-1]);
         }
 
         const matf32_t* mat_array[3] = {&A, &A, &A};
+
+        matf32_cond(&A, &cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_add
         // ---------------------------------------------------------------------------
 
         matf32_add(&A, &A, &temp);
-        check_test_case("matf32_add", n, n, matf32_is_equal(&temp, &R_add));
+        check_test_case("matf32_add", n, n, matf32_is_equal(&temp, &R_add), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_sub
         // ---------------------------------------------------------------------------
 
         matf32_sub(&A, &A, &temp);
-        check_test_case("matf32_sub", n, n, matf32_is_equal(&temp, &R_sub));
+        check_test_case("matf32_sub", n, n, matf32_is_equal(&temp, &R_sub), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_scale
         // ---------------------------------------------------------------------------
         
         matf32_scale(&A, c, &temp);
-        check_test_case("matf32_scale", n, n, matf32_is_equal(&temp, &R_scale));
+        check_test_case("matf32_scale", n, n, matf32_is_equal(&temp, &R_scale), &total_tests_counter, &fails_counter, cond_A);
         
         // ---------------------------------------------------------------------------
         // matf32_trans
         // ---------------------------------------------------------------------------
 
         matf32_trans(&A, &temp);
-        check_test_case("matf32_trans", n, n, matf32_is_equal(&temp, &R_trans));
+        check_test_case("matf32_trans", n, n, matf32_is_equal(&temp, &R_trans), &total_tests_counter, &fails_counter, cond_A);
         
         // ---------------------------------------------------------------------------
         // matf32_mul
         // ---------------------------------------------------------------------------
 
         matf32_mul(&A, &A, &temp);
-        check_test_case("matf32_mul", n, n, matf32_is_equal(&temp, &R_mul));
+        check_test_case("matf32_mul", n, n, matf32_is_equal(&temp, &R_mul), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_inv
         // ---------------------------------------------------------------------------
 
         matf32_inv(&A, &temp);
-        check_test_case("matf32_inv", n, n, matf32_is_equal(&temp, &R_inv));
+        check_test_case("matf32_inv", n, n, matf32_is_equal(&temp, &R_inv), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_dot
         // ---------------------------------------------------------------------------
+
         float dot_temp_data[1];
         matf32_t dot_temp;
 
@@ -226,7 +249,7 @@ int main(void)
         matf32_dot(&rowvec, &colvec, dot_temp_data);
         matf32_set(&dot_temp, 1, 1, *dot_temp_data);
 
-        check_test_case("matf32_dot", n, n, matf32_is_equal(&dot_temp, &R_dot));
+        check_test_case("matf32_dot", n, n, matf32_is_equal(&dot_temp, &R_dot), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_vecposmul
@@ -238,7 +261,7 @@ int main(void)
         matf32_init(&vecposmul_temp, n, 1, vecposmul_result);
 
         matf32_vecposmul(&A, colvec.p_data, vecposmul_temp.p_data);
-        check_test_case("matf32_vecposmul", n, n, matf32_is_equal(&vecposmul_temp, &R_vecposmul));
+        check_test_case("matf32_vecposmul", n, n, matf32_is_equal(&vecposmul_temp, &R_vecposmul), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_vecpremul
@@ -250,68 +273,64 @@ int main(void)
         matf32_init(&vecpremul_temp, 1, n, vecpremul_result);
 
         matf32_vecpremul(&A, rowvec.p_data, vecpremul_temp.p_data);
-        check_test_case("matf32_vecpremul", n, n, matf32_is_equal(&vecpremul_temp, &R_vecpremul));
+        check_test_case("matf32_vecpremul", n, n, matf32_is_equal(&vecpremul_temp, &R_vecpremul), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_vecmul_col_row
         // ---------------------------------------------------------------------------
 
         matf32_vecmul_col_row(colvec_list[i], rowvec_list[i], &temp);
-        check_test_case("matf32_vecmul", n, n, matf32_is_equal(&temp, &R_vecmul));
+        check_test_case("matf32_vecmul", n, n, matf32_is_equal(&temp, &R_vecmul), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_arr_add
         // ---------------------------------------------------------------------------
 
         matf32_arr_add(mat_array, 3, &temp);
-        check_test_case("matf32_arr_add", n, n, matf32_is_equal(&temp, &R_arr_add));
+        check_test_case("matf32_arr_add", n, n, matf32_is_equal(&temp, &R_arr_add), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_arr_sub
         // ---------------------------------------------------------------------------
 
         matf32_arr_sub(mat_array, 3, &temp);
-        check_test_case("matf32_arr_sub", n, n, matf32_is_equal(&temp, &R_arr_sub));
+        check_test_case("matf32_arr_sub", n, n, matf32_is_equal(&temp, &R_arr_sub), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_arr_mul
         // ---------------------------------------------------------------------------
 
         matf32_arr_mul(mat_array, 3, &temp);
-        check_test_case("matf32_arr_mul", n, n, matf32_is_equal(&temp, &R_arr_mul));
+        check_test_case("matf32_arr_mul", n, n, matf32_is_equal(&temp, &R_arr_mul), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_exp
         // ---------------------------------------------------------------------------
 
         matf32_exp(&A, &temp, 4);
-        check_test_case("matf32_exp", n, n, matf32_is_equal(&temp, &R_exp));
+        check_test_case("matf32_exp", n, n, matf32_is_equal(&temp, &R_exp), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_pinv
         // ---------------------------------------------------------------------------
 
-        // ------------------------- BASIC PINV -------------------------
-        matf32_pinv(&A, &temp, BASIC_PINV);
-        check_test_case("matf32_pinv,basic", n, n, matf32_is_equal(&temp, &R_pinv_basic));
+        // ------------------------- BASIC PINV --------------------------------------
 
-        // ------------------------- SVD PINV -------------------------
+        matf32_pinv(&A, &temp, BASIC_PINV);
+        check_test_case("matf32_pinv,basic", n, n, matf32_is_equal(&temp, &R_pinv_basic), &total_tests_counter, &fails_counter, cond_A);
+
+        // ------------------------- SVD PINV ----------------------------------------
 
         matf32_pinv(&A, &temp, SVD_PINV);
-        check_test_case("matf32_pinv,svd", n, n, matf32_is_equal(&temp, &R_pinv_svd));
+        check_test_case("matf32_pinv,svd", n, n, matf32_is_equal(&temp, &R_pinv_svd), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_lu
         // ---------------------------------------------------------------------------
-        
-        uint16_t p_index[n];
-
-        matf32_zeros(&temp_L);
-        matf32_zeros(&temp_U);
 
         matf32_lu(&A, &temp_L, &temp_U, p_index);
         matf32_mul(&temp_L, &temp_U, &PA);
-        check_test_case("matf32_lu", n, n, matf32_is_equal(&PA, &R_lu));
+        check_test_case("matf32_lu", n, n, matf32_is_equal(&PA, &R_lu), &total_tests_counter, &fails_counter, cond_A);
         
         // ---------------------------------------------------------------------------
         // matf32_cholesky
@@ -319,17 +338,15 @@ int main(void)
 
         matf32_zeros(&temp);
         matf32_cholesky(&C, &temp);
-        check_test_case("matf32_cholesky", n, n, matf32_is_equal(&temp, &R_cholesky));
+        check_test_case("matf32_cholesky", n, n, matf32_is_equal(&temp, &R_cholesky), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_qr
         // ---------------------------------------------------------------------------
-        matf32_zeros(&temp_Q);
-        matf32_zeros(&temp_R);
 
         matf32_qr(&A, &temp_Q, &temp_R);
         matf32_mul(&temp_Q, &temp_R, &A_QR);
-        check_test_case("matf32_qr", n, n, matf32_is_equal(&A, &R_qr));
+        check_test_case("matf32_qr", n, n, matf32_is_equal(&A_QR, &R_qr), &total_tests_counter, &fails_counter, cond_A);
 
         // ---------------------------------------------------------------------------
         // matf32_jacobi_svd
@@ -337,33 +354,27 @@ int main(void)
 
         if (n > 1)
         {
-            float A_copy_data[MAX_MAT_SIZE];
-            matf32_t A_copy;
-            matf32_init(&A_copy, A.num_rows, A.num_cols, A_copy_data);
-            matf32_submatrix_copy(&A, &A_copy, 0, 0, 0, 0, A.num_rows, A.num_cols);
-
-            float Vt_data[MAX_MAT_SIZE];
-            matf32_t Vt;
-            matf32_init(&Vt, V.num_cols, V.num_rows, Vt_data);
-
-            float US_data[MAX_MAT_SIZE];
-            matf32_t US;
-            matf32_init(&US, U.num_rows, S.num_cols, US_data);
-
-            float USVt_data[MAX_MAT_SIZE];
-            matf32_t USVt;
-            matf32_init(&USVt, U.num_rows, Vt.num_cols, USVt_data);
-
-            matf32_jacobi_svd(&A_copy, &U, &S, &V);
-            matf32_trans(&V, &Vt);
+            matf32_jacobi_svd(&A, &U, &S, &V);
+            matf32_trans(&V, &Vt); // To-Do: Add functions in matf32 to reconstruct the factorizations, it will be easier
             matf32_mul(&U, &S, &US);
             matf32_mul(&US, &Vt, &USVt);
-            check_test_case("matf32_jacobi_svd", n, n, matf32_is_equal(&USVt, &R_jacobi_svd));
+            check_test_case("matf32_jacobi_svd", n, n, matf32_is_equal(&USVt, &R_jacobi_svd), &total_tests_counter, &fails_counter, cond_A);
         }
     }
+
+    printf("\nmatf32: %u/%u passed\n", total_tests_counter - fails_counter, total_tests_counter);
+
+    return fails_counter > 0 ? 1 : 0; // If there was at least one fail, return 1
 }
 
-void check_test_case(const char *routine, int m, int n, bool result)
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter, float cond_A)
 {
-    printf("%s, %i x %i: %s\n", routine, m, n, result?"PASS":"FAIL");
+    printf("%s, %i x %i: %s, conditioning A: %.4f\n", routine, m, n, result?"PASS":"FAIL", cond_A);
+
+    *total_tests_counter += 1;
+
+    if (!result)
+    {
+        *fails_counter += 1;
+    }
 }
