@@ -10,7 +10,8 @@ OPT_LEVELS = O0 Os O2 O3
 CFLAGS = -Wall -Wextra
 CORTEXM4_FLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 LIB_FILES = matf32 linsolve quadprog robotat_control robotat_robotics
-TEST_FILES = matf32_test linsolve_test quadprog_qp_test quadprog_sqp_test control_pid_test control_lti_sys_test control_nonlin_sys_test control_kalman_filter_test control_mpc_test robotics_test
+TEST_FILES = matf32_test linsolve_test_residual_error linsolve_test_forward_error quadprog_qp_test quadprog_sqp_test control_pid_test control_lti_sys_test control_nonlin_sys_test control_kalman_filter_test control_mpc_test robotics_test
+TEST_RUN = matf32_test linsolve_test_forward_error linsolve_test_residual_error
 
 AR := ar
 AR_ARM = arm-none-eabi-ar
@@ -45,6 +46,19 @@ all:
 		&& echo "   OK" || echo "   FAILED (see logs/cortexm4-$$o.log)"; \
 	done;
 
+test: static_test
+	@fail=0; \
+	for t in $(TEST_RUN); do \
+	    ./$(TEST_BUILD)/$$t > $(TEST_BUILD)/$$t.log 2>&1; rc=$$?; \
+	    echo "== $$t"; \
+		grep FAIL $(TEST_BUILD)/$$t.log; \
+	    tail -n 1 $(TEST_BUILD)/$$t.log; \
+	    [ $$rc -eq 0 ] || fail=1; \
+	done; \
+	if [ $$fail -eq 0 ]; then echo "ALL TESTS PASSED"; \
+	else echo "SOME TESTS FAILED"; fi; \
+	exit $$fail
+
 $(LIB): $(OBJS)
 	$(AR) rcs $@ $^
 
@@ -69,4 +83,4 @@ $(TEST_BUILD)/%.o: $(TST_SRC)/%.c
 clean: 
 	rm -rf build logs
 
-.PHONY: static_library static_test static_arm_library clean all
+.PHONY: static_library static_test static_arm_library clean test all
