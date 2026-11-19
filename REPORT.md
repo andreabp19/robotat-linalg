@@ -70,5 +70,30 @@ All error and warning messages printed correctly into the log files for each com
 
 ### Task 1.2 Self-checking tests
 
+**Objective:** Modify ```matf32_test.c``` and ```linsolve_test.c``` test files to self-check for PASS/FAIL the test cases.
 
+**Approach and solution:** Previously I had both numerical and timing tests in the same file, so I removed the timing tests and modified the numerical test cases to report PASS/FAIL, matrix conditioning and the largest absolute error observed between the resulting matrix and the MATLAB reference data. Additionally, the total number of tests and of failed tests are counted and printed out at the end of the program, and the ```main``` returns 1 if at least one test failed. 
 
+**Results:**
+
+Below is the summary of FAIL results executing ```matf32_test.c``` with the changes implemented:
+
+```
+matf32_exp, 3 x 3: FAIL, conditioning A: 23.7020, max. error: 0.000011444
+matf32_pinv,basic, 3 x 3: FAIL, conditioning A: 23.7020, max. error: 0.000022411
+matf32_pinv,basic, 5 x 5: FAIL, conditioning A: 50.8983, max. error: 0.000029802
+matf32_pinv,basic, 6 x 6: FAIL, conditioning A: 30.5445, max. error: 0.000024080
+matf32_pinv,basic, 7 x 7: FAIL, conditioning A: 32.6011, max. error: 0.000013709
+matf32_exp, 8 x 8: FAIL, conditioning A: 47.8661, max. error: 0.000015259
+matf32_pinv,basic, 8 x 8: FAIL, conditioning A: 47.8661, max. error: 0.000011444
+matf32_exp, 9 x 9: FAIL, conditioning A: 25.5908, max. error: 0.000015259
+matf32_exp, 10 x 10: FAIL, conditioning A: 33.1580, max. error: 0.000015259
+
+matf32: 190/199 passed
+```
+
+Approximately 95% of test cases passed successfully. Those who failed, are shown above, alongside with the conditioning for the input matrix and the maximum observed absolute error in the elements of the matrix. This error metric was chosen to evaluate numerical agreement against MATLAB, as the operations in this file require to be as correct as possible in individual elements to ensure more complex operations have correct results. The usual metric for ```robotat-linalg``` numerical agreement so far is 1E-05 (five correct decimal values compared to the MATLAB reference), while all the maximum errors in this case have an order of 1E-04.
+
+In the case of ```linsolve_test.c```, I changed the error metric from element-wise error to residual-based error, as it's a more recommended metric for evaluating the solutions of solver methods. The reason for this is that this metric evaluates "how useful" the solution is, even if it has visible numerical differences to a baseline result. Numerically, this translates to: a smaller residual-based error means the solution is accurate even if it differs from the baseline. This also allowed me to make the tests completely self-checking and have a more robust error evaluation, because this metric doesn't rely on reference results as it can be computed with the matrices and computed solution for the system.
+
+The residual-based error was also evaluated with a tolerance of 1E-05, so any error below that threshold would be considered correct and the test case would pass. In this case, all test cases passed, as the error was much lower than the threshold.
