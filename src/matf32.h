@@ -8,7 +8,7 @@
  *       matf32_math.h, matf32_check.h, matf32_def.h and math_util.c previously developed by
  *       Daniel Pineda and Miguel Zea, and to add new functions.
  * 
- * Last modified: 26 Jan. 2025
+ * Last modified: 18 Nov. 2026
  *          By: Andrea Pineda
  */
 
@@ -825,7 +825,7 @@ matf32_check_symposdef(const matf32_t* const p_mat);
  *
  * @return  Float with the norm of the input matrix.
  */
-inline float
+static inline float
 matf32_norm(const matf32_t* p_src)
 {
     return norm(p_src->p_data, p_src->num_rows, p_src->num_cols);
