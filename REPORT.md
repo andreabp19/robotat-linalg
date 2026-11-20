@@ -1,84 +1,46 @@
 
 # Report of results for this test/challenge
 
-## Summary
+## Brief summary about Robotat Linalg
 
-This report summarizes the results obtained during this challenge for the branch ```build-test-perf```.
-As required, it's written for an engineer who hasn't read my work before, so it starts with a section about the
-context about ```robotat-linalg```, including characteristics, motivation, scope and current state of the project.
-Afterwards, the report explains the results for each task of the challenge, and finishes with some conclusions and recommendations.
-
-## Background, motivation and purpose of Robotat Linalg
-
-Robotics environments where accesibility is high-priority usually work with low-to-mid capacity embedded devices, such
-as Arduino, ESP32, STM32, Tiva C, and other, development boards. These devices, while capable, have a much more limited
-capacity compared to more powerful devices, and lack native support for the numerical routines required for real-time
-control and robotics applications.
-
-Robotat Linalg addresses this issue, by providing a numerical infrastructure tailored to the aforementioned devices,
-including the essential linear algebra, linear and quadratic solvers, upon which control and robotics routines are built. All of this, written in C, with single-precision arithmetic, static memory, and no external dependencies, to ensure
-portability across platforms and a more efficient use of the computational and memory resources of these devices.
-
-This project has been in development at the Robotat laboratory, in Universidad del Valle de Guatemala, since 2021. With
-the first public version presented in a paper by late 2026. However, the portability of Robotat Linalg allows it to be adapted to other environments, and as it's open source, it's accessible to anyone interested in embedded control and robotics.
-
-## Robotat Linalg software architecture and routines
-
-Robotat Linalg is a C library stack, currently divided in five libraries across two levels: 1) the Robotat Linalg Core, which corresponds to the numerical infrastructure, encompassing the library files ```matf32```, ```linsolve``` and ```quadprog```; and 2) the application layer, including ```robotat-control``` and ```robotat-robotics``` for control and robotics routines, respectively, which implement the Robotat Linalg Core libraries.
-
-Below is a summary of the routines inside each library file:
-
-- ```matf32```: Contains linear algebra routines, including basic matrix operations (addition, subtraction, multiplications, transpose, inverse, etc.) and matrix factorizations (LU, QR, Cholesky, SVD). Matrix representation
-is established with the custom struct ```matf32_t``` upon which all matrix and vector operations are established.
-- ```linsolve```: The linear solver, built using ```matf32```. The linear solver uses direct methods such as LU, QR,
-Cholesky and SVD.
-- ```quadprog```: The quadratic solver, built using both ```matf32``` and ```linsolve```. Similar to ```linsolve```, it
-uses mostly direct methods whenever possible, and also includes an active-set method for solving mixed-constraint quadratic problems (QPs).
-- ```robotat-control```: Control algorithms, including PID control, LTI systems, nonlinear systems, Kalman filter, 
-and an LTI shooting-based MPC.
-- ```robotat-robotics```: Robotics algorithms, mainly pose-computation routines, including homogeneous transformations,
-rotation matrices, angle conversions and quaternion operations.
+Robotat Linalg is an embedded C library stack that provides essential routines for linear algebra, numerical optimization, control and robotics, targeting single-precision devices such as Arduino, ESP32 and STM32. It's divided in five library files: 1) ```matf32```, for linear algebra, 2) ```linsolve``` for the linear solver, 3) ```quadprog``` for the quadratic solver, 4) ```robotat-control``` for control routines, and 5) ```robotat-robotics``` for robotics routines.
 
 ## Results of this challenge
-
-This challenge was divided in two parts, with a total of seven tasks. The following sections summarize the result of each
-task, with a brief discussion of the results.
 
 ## Part 1 Build and test
 
 ### Task 1.1 Build system
 
-**Objective:** Write a Makefile or a CMake build for the ```robotat-linalg``` libraries using ```gcc``` and ```clang``` on a Linux machine, and for ```cortex-m4```, across four optimization levels: ```-O0```, ```-Os```, ```-O2```  and ```-O3```, using the indicated configuration and error flags.
+**Objective:** Write a Makefile for the ```robotat-linalg``` libraries using ```gcc``` and ```clang``` on a Linux machine, and Cortex-M4, across four optimization levels: ```-O0```, ```-Os```, ```-O2```  and ```-O3```.
 
 **Approach and solution:**
 - I used Makefiles as I'm a bit more familiar with those, compared to CMake builds.
-- Implemented all the compiler and optimization level compilations such that it compiles for all with a single command ```make all```, to confirm it works for every combination.
-- Wrote the error and warning messaged to ```.log``` files for each compiler and optimization level, in order to check with greater ease the differences across each one.
+- Implemented all build combinations so everything compiles with ```make all```.
+- Saved the error and warnings to ```.log``` files for each compiler and optimization level.
 
 **Results:**
 
 *Compilation and build of libraries and test files*
 
-All the ```robotat-linalg``` libraries and test files compiled correctly for all compilers and optimization levels in the Linux machine. The instructions specified that the test files for ```matf32``` and ```linsolve``` had to be built, but just in case, I added all the relevant test files for the rest of the libraries. Similarly, the libraries built correctly for the ```Cortex M4```.
+- All the libraries and test files compiled correctly for all compilers and optimization levels in Linux and for the Cortex-M4.
 
 *Error warnings*
 
-All error and warning messages printed correctly into the log files for each compiler and optimization level combination. Using the flags ```-Wall``` and ```-Wextra```, showed previously undetected error and warning messages. However, as all were related to unused variables, nonvoid functions without return type and implicit declarations, most were fixed with ease. Only some errors were left untouched, for the following reasons:
-- Undefined behavior in the variable arguments of a PID routine, which was written by another contributor and I decided the right approach is to ask the person before making any changes to the function.
-- Unused ```angle_units``` parameter in two robotics routines, which correspond to a not yet implemented units check to ensure the routine works for both degrees and radians. These parameters do not affect the functionalities of the routines, so for the purpose of this challenge, those are negligible for now and will be implemented after the challenge finishes.
-- Unused parameter ```sys_input``` in ```pendulum_outputs``` routine, which is the output behavior of a simple pendulum modeled for a nonlinear system. This is normal behavior, as the nonlinear systems expect the system input for modeling the output, as some systems require it, but in this specific case, it doesn't so it remains unused. However, this has no impact on functionalities of the routines.
+The flags ```-Wall``` and ```-Wextra``` showed previously undetected error and warnings. However, all were related to unused variables, nonvoid functions without return type and implicit declarations, and so I fixed them with ease, with only some exceptions that would require more time and attention beyond the available time for this challenge:
+- Undefined behavior in the variable arguments of a PID routine: routine written by another contributor, so it's best to ask before changing it.
+- Unused ```angle_units``` parameter in two robotics routines: not-yet implemented feature to check angle units (but will be used).
+- Unused parameter ```sys_input``` in ```pendulum_outputs``` routine: this argument might be needed depending on the specific nonlinear system, so in this case it is not used, but the routines expect it in case it is relevant.
 
 ### Task 1.2 Self-checking tests
 
-**Objective:** Modify ```matf32_test.c``` and ```linsolve_test.c``` test files to self-check for PASS/FAIL the test cases.
+**Objective:** Modify ```matf32_test.c``` and ```linsolve_test.c``` test files to self-check their results.
 
-**Approach and solution:** Previously I had both numerical and timing tests in the same file (for all tests), so I removed the timing tests and modified the numerical test cases to report PASS/FAIL, matrix conditioning and the largest absolute error observed between the resulting matrix and the MATLAB reference data. Additionally, the total number of tests and of failed tests are counted and printed out at the end of the program, and the ```main``` returns 1 if at least one test failed. 
-
-In the case of ```linsolve_test.c```, I added an additional error metric, besides element-wise error. For this reason, there's now two linsolve test files: ```linsolve_test_residual_error.c```, using residual-based error to evaluate the stability of the solver methods; and ```linsolve_test_forward_error.c``` for the usual numerical error comparison against MATLAB. This was made to take advantage of the more automated tests and add the residual-based error metric, which is usually recommended in the theory books to evaluate the performance of solvers.
-
-Both error metrics used a tolerance of 1E-05, so any error below that threshold would be considered correct and the test case would pass. As always, this was decided based on the limitations of accuracy in ```float32```, as the fifth decimal is the safest choice to provide as much accuracy while avoiding the last digits that could have error accumulation from garbage values beyond the limit of the single precision.
-
-After changing the code, I modified the Makefile to add the command ```test```, which takes every selected test file (in this case, ```matf32``` and ```linsolve``` test files) and executes them, while printing the results and number of tests that failed the error threshold. 
+**Approach and solution:**
+- Removed the timing tests from the test files, keeping only numerical tests.
+- Separated ```linsolve``` tests in two files: ```linsolve_test_residual_error.c``` for residuals check, ```linsolve_test_forward_error.c``` for the usual numerical error comparison against MATLAB (this was to have more robust evaluations). 
+- Total number of tests and failed tests is printed. Main returns 1 if a test failed.
+- Error metrics used a tolerance of 1E-05, so any error below that threshold would be considered a ```PASS```. This is according to the limitations of accuracy in ```float32```.
+- Added command ```test``` to the Makefile to execute all ```matf32``` and ```linsolve``` test files.
 
 **Results:**
 
@@ -105,4 +67,81 @@ matf32: 58/60 passed
 matf32: 60/60 passed
 SOME TESTS FAILED
 make: *** [Makefile:50: test] Error 1
+```
+
+### Task 1.3 Look inside the binary
+
+**Objective:** Evaluate memory usage of some of the built libraries for the Cortex-M4 and Linux.
+
+**Aproach and solution:** Used the terminal and some commands of the arm compiler to check file size and memory usage. 
+
+**Results:**
+
+*Results 1.* How much RAM and FLASH does each module use and what uses the most RAM?
+
+Command used: ```arm-none-eabi-size -t build/cortex-m4-Os/*.o```. The module that used the most RAM was ```quadprog```, with 5,712 bytes (5.58 Kb aprox.).
+
+```
+arm-none-eabi-size -t build/cortex-m4-Os/*.o
+   text    data     bss     dec     hex filename
+   1637       0    3304    4941    134d build/cortex-m4-Os/linsolve.o
+   6841       0     884    7725    1e2d build/cortex-m4-Os/matf32.o
+   6215       0    5712   11927    2e97 build/cortex-m4-Os/quadprog.o
+   7103       0    2448    9551    254f build/cortex-m4-Os/robotat_control.o
+   5922       0       0    5922    1722 build/cortex-m4-Os/robotat_robotics.o
+  27718       0   12348   40066    9c82 (TOTALS)
+```
+
+*Results 2.* Which are the 10 largest functions?
+
+The following command was used:
+
+```
+arm-none-eabi-nm -S -A -t d --defined-only build/cortex-m4-Os/*.o | grep -E ' [Tt] ' | sort -k2,2 -n -r | head -10
+```
+
+Memory use of the 10 largest functions (formatted to Kb):
+
+```
+Routine                     RAM (Kb)
+quadprog_sqp                3.02
+quadprog_qp_ldlt            1.73
+ctr_linloc                  0.74
+quadprog_qp_nullspace       0.65
+matf32_qr                   0.65
+rob_rot2quat                0.62
+ctr_mpc_set_constraints     0.62
+ctr_pid_update              0.61
+matf32_one_sided_jacobi     0.53
+linsolve_method             0.44
+```
+
+*Result 3.* How much stack do the five most stack-hungry functions need? (`-fstack-usage` reports this). Are there functions whose stack use the compiler can't tell you? Why not?
+
+The following command was used:
+
+```
+make static_arm_library OPT=Os CORTEXM4_EXTRAFLAGS=-fstack-usage
+```
+
+which created ```.su``` files for each ```robotat-linalg``` module, showing the stack consumption of each routine and the type of memory they have at compile-time (static or dynamic).
+
+The compiler cannot fully compute the memory usage of the following routines, as they use float arrays with size depending on variable matrices (hence, it's flaggged as dynamic memory):
+
+```
+grep -h dynamic build/cortex-m4-Os/*.su
+src/linsolve.c:183:1:linsolve_method    48      dynamic
+src/matf32.c:1249:1:matf32_qr   128     dynamic
+src/quadprog.c:542:1:quadprog_sqp       1736    dynamic
+```
+
+The five most stack-hungry functions were checked and printed out as follows:
+
+```
+cat build/cortex-m4-Os/*.su | sort -t \t -k2 -n -r | head -5
+src/matf32.c:967:1:matf32_pinv  2504    static
+src/quadprog.c:542:1:quadprog_sqp       1736    dynamic
+src/robotat_robotics.c:695:1:rob_eul2rot.part.0 1664    static
+src/robotat_robotics.c:604:1:rob_rpy2rot.part.0 1664    static
+src/robotat_robotics.c:271:1:rob_inv_transform  1264    static
 ```
