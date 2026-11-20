@@ -9,6 +9,7 @@ COMPILERS = gcc clang
 OPT_LEVELS = O0 Os O2 O3
 CFLAGS = -Wall -Wextra
 CORTEXM4_FLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+CORTEXM4_EXTRAFLAGS = 
 LIB_FILES = matf32 linsolve quadprog robotat_control robotat_robotics
 TEST_FILES = matf32_test linsolve_test_residual_error linsolve_test_forward_error quadprog_qp_test quadprog_sqp_test control_pid_test control_lti_sys_test control_nonlin_sys_test control_kalman_filter_test control_mpc_test robotics_test
 TEST_RUN = matf32_test linsolve_test_forward_error linsolve_test_residual_error
@@ -67,7 +68,7 @@ $(ARM_LIB): $(ARM_OBJS)
 
 $(ARM_BUILD)/%.o: $(SRC)/%.c
 	@mkdir -p $(@D)
-	$(CC_ARM) $(CFLAGS) $(CORTEXM4_FLAGS) -$(OPT) -c $< -o $@
+	$(CC_ARM) $(CFLAGS) $(CORTEXM4_FLAGS) $(CORTEXM4_EXTRAFLAGS) -$(OPT) -c $< -o $@
 
 $(BUILD_DIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(@D)
