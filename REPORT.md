@@ -7,14 +7,10 @@ Robotat Linalg is an embedded C library stack that provides essential routines f
 
 ## Results of this challenge
 
-## Part 1 Build and test
-
-### Task 1.1 Build system
-
-**Objective:** Write a Makefile for the ```robotat-linalg``` libraries using ```gcc``` and ```clang``` on a Linux machine, and Cortex-M4, across four optimization levels: ```-O0```, ```-Os```, ```-O2```  and ```-O3```.
+#### Task 1.1 Build system.
 
 **Approach and solution:**
-- I used Makefiles as I'm a bit more familiar with those, compared to CMake builds.
+- I used Makefiles as I'm a bit more familiar with those, compared to CMake builds. 
 - Implemented all build combinations so everything compiles with ```make all```.
 - Saved the error and warnings to ```.log``` files for each compiler and optimization level.
 
@@ -31,20 +27,18 @@ The flags ```-Wall``` and ```-Wextra``` showed previously undetected error and w
 - Unused ```angle_units``` parameter in two robotics routines: not-yet implemented feature to check angle units (but will be used).
 - Unused parameter ```sys_input``` in ```pendulum_outputs``` routine: this argument might be needed depending on the specific nonlinear system, so in this case it is not used, but the routines expect it in case it is relevant.
 
-### Task 1.2 Self-checking tests
-
-**Objective:** Modify ```matf32_test.c``` and ```linsolve_test.c``` test files to self-check their results.
+#### Task 1.2 Self-checking tests.
 
 **Approach and solution:**
-- Removed the timing tests from the test files, keeping only numerical tests.
-- Separated ```linsolve``` tests in two files: ```linsolve_test_residual_error.c``` for residuals check, ```linsolve_test_forward_error.c``` for the usual numerical error comparison against MATLAB (this was to have more robust evaluations). 
-- Total number of tests and failed tests is printed. Main returns 1 if a test failed.
-- Error metrics used a tolerance of 1E-05, so any error below that threshold would be considered a ```PASS```. This is according to the limitations of accuracy in ```float32```.
+- Removed the timing tests from the test files, keeping only numerical tests. 
+- Separated ```linsolve``` tests in two files: ```linsolve_test_residual_error.c``` for residuals check, ```linsolve_test_forward_error.c``` for the usual numerical error comparison against MATLAB (this was to have more robust evaluations).
+- Total number of tests and failed tests is printed. Main returns 1 if a test failed. 
+- Error metrics used a tolerance of 1E-05, so any error below that threshold would be considered a ```PASS```. This is according to the limitations of accuracy in ```float32```. 
 - Added command ```test``` to the Makefile to execute all ```matf32``` and ```linsolve``` test files.
 
 **Results:**
 
-Below is the output of the files, with the current test data, as printed by the summary created with ```make test``` from the Makefile. Approximately 96% of test cases passed successfully. Those who failed, are shown above in the summary, alongside with the conditioning for the input matrix and the maximum observed error, according to the chosen metrics.
+Below is the output of the files, using the current test data in my files, as printed by the summary created with ```make test```. Approximately 96% of test cases passed successfully. Those who failed are shown in the summary, and was due to slight numerical error above the threshold.
 
 ```
 make test
@@ -69,9 +63,7 @@ SOME TESTS FAILED
 make: *** [Makefile:50: test] Error 1
 ```
 
-### Task 1.3 Look inside the binary
-
-**Objective:** Evaluate memory usage of some of the built libraries for the Cortex-M4 and Linux.
+#### Task 1.3 Look inside the binary.
 
 **Aproach and solution:** Used the terminal and some commands of the arm compiler to check file size and memory usage. 
 
@@ -156,7 +148,7 @@ The command used to print on the terminal the exported symbols was:
 arm-none-eabi-nm -g --defined-only build/cortex-m4-Os/librobotat.a
 ```
 
-*Results 5.* Comparing executable test files using the static library ```.a``` and the shared library ```.so```
+*Results 5.* Comparing executable test files using the static and shared libraries.
 
 The Makefile was modified to compile the shared library and link the test files to them. Afterwards, the following commands were used to check the size of the files for GCC -O2:
 
@@ -165,7 +157,7 @@ ls -lh build/gcc-O2/test/ build/gcc-O2/test-pic/
 ls -lh build/gcc-O2-pic/librobotat.so build/gcc-O2/librobotat.a
 ```
 
-As shown in the summary below, the shared library was considerably smaller in size, and as consequence, also the test files linked to it. Aside from that, the output of ```ldd``` shows how the shared library is retrieved and linked to the test files at runtime, and if the ```.so``` file is deleted, ```ldd``` outputs: ```build/gcc-O2-pic/librobotat.so => not found```.
+The memory comparison is shown below. The shared library, and test files linked to it, were considerably smaller. The output of ```ldd``` shows how the shared library is retrieved and linked to the test files at runtime, and if the ```.so``` file is deleted, ```ldd``` outputs: ```build/gcc-O2-pic/librobotat.so => not found```. I would use shared libraries when saving memory is critical, and static libraries when robustness is more important.
 
 ```
 Name                              Size (Kb) 
@@ -185,3 +177,5 @@ quadprog_qp_test                      72                        31
 quadprog_sqp_test                     62                        21
 robotics_test                         72                        36
 ```
+
+
