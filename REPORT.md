@@ -145,3 +145,43 @@ src/robotat_robotics.c:695:1:rob_eul2rot.part.0 1664    static
 src/robotat_robotics.c:604:1:rob_rpy2rot.part.0 1664    static
 src/robotat_robotics.c:271:1:rob_inv_transform  1264    static
 ```
+
+*Results 4.* Which global symbols does the library export? (`nm` lists them.) Which ones should users not see, and what did you do about them?
+
+All ```robotat-linalg``` modules export global functions (indicated by ```T``` when checking in the terminal). All modules use global variables to execute the operations, mainly stock matrices and vectors, but all of those are hidden from exporting by making them static. 
+
+The command used to print on the terminal the exported symbols was:
+
+```
+arm-none-eabi-nm -g --defined-only build/cortex-m4-Os/librobotat.a
+```
+
+*Results 5.* Comparing executable test files using the static library ```.a``` and the shared library ```.so```
+
+The Makefile was modified to compile the shared library and link the test files to them. Afterwards, the following commands were used to check the size of the files for GCC -O2:
+
+```
+ls -lh build/gcc-O2/test/ build/gcc-O2/test-pic/
+ls -lh build/gcc-O2-pic/librobotat.so build/gcc-O2/librobotat.a
+```
+
+As shown in the summary below, the shared library was considerably smaller in size, and as consequence, also the test files linked to it. Aside from that, the output of ```ldd``` shows how the shared library is retrieved and linked to the test files at runtime, and if the ```.so``` file is deleted, ```ldd``` outputs: ```build/gcc-O2-pic/librobotat.so => not found```.
+
+```
+Name                              Size (Kb) 
+build/gcc-O2/librobotat.a           145 
+build/gcc-O2-pic/librobotat.so      90 
+
+Name                          Size Kb (.a library)     Size Kb (.so library)
+control_kalman_filter_test            78                        19
+control_lti_sys_test                  99                        40
+control_mpc_test                      78                        19
+control_nonlin_sys_test               79                        20
+control_pid_test                      77                        18
+linsolve_test_forward_error           72                        40
+linsolve_test_residual_error          72                        40
+matf32_test                           96                        74
+quadprog_qp_test                      72                        31
+quadprog_sqp_test                     62                        21
+robotics_test                         72                        36
+```
