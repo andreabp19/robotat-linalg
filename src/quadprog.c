@@ -6,17 +6,17 @@
 
 #include "quadprog.h"
 
-float kkt_M_data[MAX_MAT_SIZE];
-matf32_t kkt_M;
+static float kkt_M_data[MAX_MAT_SIZE];
+static matf32_t kkt_M;
 
-float kkt_y_data[MAX_MAT_SIZE];
-matf32_t kkt_y;
+static float kkt_y_data[MAX_MAT_SIZE];
+static matf32_t kkt_y;
 
-float kkt_n_data[MAX_MAT_SIZE];
-matf32_t kkt_n;
+static float kkt_n_data[MAX_MAT_SIZE];
+static matf32_t kkt_n;
 
-float temp_Aeq_data[MAX_MAT_SIZE];
-matf32_t temp_Aeq;
+static float temp_Aeq_data[MAX_MAT_SIZE];
+static matf32_t temp_Aeq;
 
 static float m1data[MAX_MAT_SIZE];
 static matf32_t m1;
