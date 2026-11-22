@@ -800,7 +800,8 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
     float* data_b;
     float* data_c = p_dst->p_data;
 
-    for (uint16_t i = 0; i < p_srca->num_rows; i++)
+    // Original loop, before changes
+    /*for (uint16_t i = 0; i < p_srca->num_rows; i++)
     {
         // Then we go through every column of b
         for (uint16_t j = 0; j < p_srcb->num_cols; j++)
@@ -815,6 +816,31 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
                 *data_c += *data_a * *data_b;
                 data_a++;
                 data_b += p_srcb->num_cols;
+            }
+            data_c++;
+        }
+    }*/
+
+    // Version 2: Saving the dimensions beforehand to avoid reading them in the loop
+    uint16_t a_rows = p_srca->num_rows;
+    uint16_t a_cols = p_srca->num_cols;
+    uint16_t b_cols = p_srcb->num_cols;
+    
+    for (uint16_t i = 0; i < a_rows; i++)
+    {
+        // Then we go through every column of b
+        for (uint16_t j = 0; j < b_cols; j++)
+        {
+            data_a = &p_srca->p_data[i * a_cols];
+            data_b = &p_srcb->p_data[j];
+
+            *data_c = 0; // Reset
+            // And we multiply rows from a with columns of b
+            for (uint16_t k = 0; k < a_cols; k++)
+            {
+                *data_c += *data_a * *data_b;
+                data_a++;
+                data_b += b_cols;
             }
             data_c++;
         }
