@@ -18,3 +18,7 @@ My AI use here consisted mostly of double-checking syntax and logic errors while
 ### Task 1.3 Look inside the build
 
 My use of AI in this task was to search the commands that I needed to read and print the characteristics of the built files on the terminal, as I'm on an arch-based linux machine and don't know from memory the commands. Also, to double-check my implementation of the build for the shared libraries and the test files with the shared libraries, as I made some syntax mistakes in my first try.
+
+### Task 2.1 Measurement program
+
+I used AI here to search up the configuration for the Cycle Counter, the syntax to write bash commands inside platformio to be able to print through serial the library commit, and to check the flags and terminal commands needed to print the optimization level in the terminal. All the test code for the PID, Kalman filter and MPC were taken from the code I had written previously in my thesis files, and no AI was used to modify those.
