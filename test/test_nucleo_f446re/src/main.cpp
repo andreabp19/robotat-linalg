@@ -2,7 +2,7 @@
 /*
 Test project for the STM32 Nucleo F446RE for branch build-test-perf
 Author: Andrea Pineda
-Date: 20 Nov. 2026, last modified: 20 Nov. 2026
+Date: 20 Nov. 2026, last modified: 21 Nov. 2026
 */
 
 // ----------------------------------------------------------------------------------------------------
@@ -243,7 +243,7 @@ uint32_t cycle_counter_dt = 0;    // Time interval
 uint32_t overhead = 0;            // Cycle Counter overhead (calibration for time of measurement itself)
 uint32_t overhead_meas[SAMPLES];  // To take several measurements of the overhead
 
-uint32_t min_t = UINT32_MAX;      // Start at the max. possible value to reduce it to the minimum
+uint32_t min_t = 0;
 uint32_t med_t = 0;
 uint32_t max_t = 0;
 
@@ -362,7 +362,7 @@ void setup()
     med_t = (n % 2) ? pid_time[n / 2] : (pid_time[n / 2 - 1] + pid_time[n / 2]) / 2;
     max_t = pid_time[n-1];
 
-    Serial.println("routine,minimum(us),median(us),maximum(us),clock_frequency(Hz),compiler_version,lib_commit");
+    Serial.println("routine,minimum(s),median(s),maximum(s),clock_frequency(Hz),compiler_version,lib_commit");
     Serial.print("PID,");
     Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
