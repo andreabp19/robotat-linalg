@@ -20,6 +20,9 @@ Date: 20 Nov. 2026, last modified: 20 Nov. 2026
 // Variables and constants
 // ----------------------------------------------------------------------------------------------------
 
+#define STR_(x) #x
+#define STR(x) STR_(x)
+
 // --------------------------------------------------
 // PID
 // --------------------------------------------------
@@ -359,17 +362,19 @@ void setup()
     med_t = (n % 2) ? pid_time[n / 2] : (pid_time[n / 2 - 1] + pid_time[n / 2]) / 2;
     max_t = pid_time[n-1];
 
-    Serial.println("routine,minimum(us),median(us),maximum(us),clock_frequency(Hz),compiler_version");
+    Serial.println("routine,minimum(us),median(us),maximum(us),clock_frequency(Hz),compiler_version,lib_commit");
     Serial.print("PID,");
-    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
-    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
-    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to microseconds
+    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to seconds
     Serial.print(",");
     Serial.print(SystemCoreClock);
     Serial.print(",");
-    Serial.println(__VERSION__);
+    Serial.print(__VERSION__);
+    Serial.print(",");
+    Serial.println(STR(LIB_COMMIT));
 
     // -------------------------------------------------------------------------------------
     // Kalman filter test case
@@ -450,15 +455,17 @@ void setup()
     max_t = kf_time[n-1];
 
     Serial.print("KF,");
-    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
-    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
-    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to microseconds
+    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to seconds
     Serial.print(",");
     Serial.print(SystemCoreClock);
     Serial.print(",");
-    Serial.println(__VERSION__);
+    Serial.print(__VERSION__);
+    Serial.print(",");
+    Serial.println(STR(LIB_COMMIT));
 
     // -------------------------------------------------------------------------------------
     // MPC test case
@@ -526,15 +533,17 @@ void setup()
     max_t = mpc_time[n-1];
 
     Serial.print("MPC,");
-    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
-    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to seconds
     Serial.print(",");
-    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to microseconds
+    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to secons
     Serial.print(",");
     Serial.print(SystemCoreClock);
     Serial.print(",");
-    Serial.println(__VERSION__);
+    Serial.print(__VERSION__);
+    Serial.print(",");
+    Serial.println(STR(LIB_COMMIT));
 }
 
 void loop()
