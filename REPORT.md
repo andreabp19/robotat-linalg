@@ -161,3 +161,24 @@ MPC,0.005269622,0.061413455,0.062941465,180000000,12.3.1 20230626
 1.30E-05 	  3.30E-05 	      6.37E-02
 ```
 *Note: The website has a typo in the time of the PID for the STM32, and says 1.30E-02 when it's 1.30E-05 as stated in the paper (the value in the paper has been used for this report, and will be fixed in the website soon).
+
+#### 2.2 Stating point, measure matf32_mul and a solver
+
+I used the cycle counter, as in the previous task, to measure the execution time of ```matf32_mul``` for 3x3, 6x6 and 10x10, matrices; and also to measure a Cholesky solve (instructions didn't specify a size for this one, so I measured it with 10x10 matrices). To check the memory use of each routine, I used the ```arm-none-eabi-nm -S --size-sort -t d``` on the respective files of each optimization level. The routine ```matf32_mul``` required the least memory in ```-O2```, while for ```linsolve_method```, which was the routine used to execute the Cholesky solve, the least memory was used in ```-O3```. In this case, if memory was critical, I would choose to use ```-O2``` for an application, as the linear solver requires several multiplications, and so it would make sense to prioritize the memory usage of ```matf32_mul```.
+
+*All RAM results are presented in bytes.
+```
+Routine           RAM (-Os)    RAM (-O2)   RAM (-O3)
+matf32_mul           262         192         232                  
+linsolve_method      620         412         400
+```
+
+*All time measurements correspond to the maximum measured execution time, and are reported in number of cycles
+```
+Routine          Dimension     Time (-Os)   Time (-O2)    Time (-O3)
+matf32_mul         3 x 3          4,191          733           702
+matf32_mul         6 x 6         15,985        3,359         3,287
+matf32_mul         10x10         67,692       13,330        13,282
+linsolve_method    10x10         67,692       13,330        13,282
+```
+
