@@ -797,7 +797,7 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
 
     // Data matrix
     float* data_a;
-    float* data_b;
+    //float* data_b;
     float* data_c = p_dst->p_data;
 
     // Original loop, before changes
@@ -821,8 +821,8 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
         }
     }*/
 
-    // Version 2: Saving the dimensions beforehand to avoid reading them in the loop
-    uint16_t a_rows = p_srca->num_rows;
+    // Version 2: Saving the dimensions beforehand to avoid reading them in the loop (slower than the original)
+    /*uint16_t a_rows = p_srca->num_rows;
     uint16_t a_cols = p_srca->num_cols;
     uint16_t b_cols = p_srcb->num_cols;
     
@@ -844,7 +844,34 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
             }
             data_c++;
         }
+    }*/
+
+    // Version 3: Golub, Saxpi matrix multiplication, algorithm 1.1.7
+
+    float b_kj = 0;
+    
+    zeros(p_dst->p_data, p_dst->num_rows, p_dst->num_cols); // Clean C, the output matrix
+
+    // C = C + AB, where C starts as 0, so it can be cleaned from the beginning
+    for (uint16_t j = 0; j < p_srcb->num_cols; j++)
+    {
+        // Then we go through every column of b
+        for (uint16_t k = 0; k < p_srca->num_cols; k++)
+        {
+            b_kj = p_srcb->p_data[k*(p_srcb->num_cols) + j]; // B(k,j)
+
+            data_a = &p_srca->p_data[k];    // A(0,k)
+            data_c = &p_dst->p_data[j];     // C(0,j)
+
+            for (uint16_t i = 0; i < p_srca->num_rows; i++)
+            {
+                *data_c += *data_a * b_kj;
+                data_a += p_srca->num_cols;
+                data_c += p_srcb->num_cols;
+            }
+        }
     }
+
 
     return MATH_SUCCESS;
 }
