@@ -1,13 +1,11 @@
 
 # Notes about AI usage for this test/challenge branch
 
-As indicated in the test/challenge instructions, AI tools were allowed. I used Claude, but complemented with googling things myself now and then, and my use of AI included: 1) researching about terms or concepts unknown to me, 2) searching for syntax or examples for unknown commands/routines, 3) fixing my own syntax or logic mistakes to save time (AFTER writing the code on my own). For transparency, my AI usage during this test is summarized by task, so the reviewers know how I approached each task.
+As indicated in the test/challenge instructions, AI tools were allowed. I used Claude, but complemented with googling things myself now and then, and my use of AI included mostly: 1) researching about terms or concepts unknown to me, 2) searching for syntax or examples for unknown commands/routines, especially for bash commands and flags, 3) fixing my own syntax or logic mistakes to save time (AFTER writing the code on my own). For transparency, my AI usage during this test is summarized by task, so the reviewers know how I approached each one.
 
 ## Part 1: Build and test
 
 ### Task 1.1 Build system
-
-The objective of this task was to write a Makefile to compile the libraries and test files with ```gcc``` and ```clang```, across four optimization levels: ```-O0```, ```-Os```, ```-O1```, ```-O2```. My approach was to start with a command to compile a single file to a specific folder ```build/compiler-optimization-level/```, then modify that to include the rest of compiler and optimization level options until getting an optimated compilation system to generate each file.
 
 My AI usage in this task consisted mostly of researching the meaning of unknown configurations for compilation and for the syntax that I needed for the Makefile, as my knowledge of Makefiles is very basic and I get confused easily with the syntax. I built my solution gradually, double-checking by testing it and asking the AI if I was writing it correctly at each step. Once I got a handle of the syntax, I progressed more on my own.
 
@@ -21,4 +19,8 @@ My use of AI in this task was to search the commands that I needed to read and p
 
 ### Task 2.1 Measurement program
 
-I used AI here to search up the configuration for the Cycle Counter, the syntax to write bash commands inside platformio to be able to print through serial the library commit, and to check the flags and terminal commands needed to print the optimization level in the terminal. All the test code for the PID, Kalman filter and MPC were taken from the code I had written previously in my thesis files, and no AI was used to modify those.
+I used AI here to search up the configuration for the Cycle Counter, write an insertion sort function to organize the time arrays (and obtain that way the min, median and maximum), check the syntax to write bash commands inside platformio to be able to print through serial the library commit, and to check the flags and terminal commands needed to print the optimization level in the terminal. All the test code for the PID, Kalman filter and MPC were taken from the code I had written previously in my thesis files, and no AI was used to modify those.
+
+### Task 2.2 Starting point, measure matf32_mul and a solver
+
+Only used AI to check the commands needed to print the memory usage of each routine. I wrote the test cases for ```matf32_mul``` and the cholesky solve myself with code from the previous task and looking at my older test files.
