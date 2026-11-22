@@ -14,6 +14,8 @@ Date: 21 Nov. 2026, last modified: 21 Nov. 2026
 #include "matf32.h"
 #include "linsolve.h"
 
+#include "matf32_matlab_data.h"
+
 // ----------------------------------------------------------------------------------------------------
 // Variables and constants
 // ----------------------------------------------------------------------------------------------------
@@ -27,11 +29,8 @@ Date: 21 Nov. 2026, last modified: 21 Nov. 2026
 // Matrices
 // --------------------------------------------------
 
-float A_data[MAX_MAT_SIZE];
+float* A_data_list[3] = {A_data3, A_data6, A_data10};
 matf32_t A;
-
-float At_data[MAX_MAT_SIZE];
-matf32_t At;
 
 float B_data[MAX_MAT_SIZE];
 matf32_t B;
@@ -42,6 +41,12 @@ matf32_t R;
 float C_data[MAX_MAT_SIZE];
 matf32_t C;
 
+float Ct_data[MAX_MAT_SIZE];
+matf32_t Ct;
+
+float CtC_data[MAX_MAT_SIZE];
+matf32_t CtC;
+
 float b_data[MAX_VEC_SIZE];
 matf32_t b;
 
@@ -51,6 +56,11 @@ matf32_t x;
 uint16_t matrix_sizes[3] = {3, 6, 10};
 
 uint32_t matf32_mul_time[SAMPLES];
+
+float* R_mul_list[3] = {R_mul3, R_mul6, R_mul10};
+matf32_t R_mul;
+
+matf32_t R_cholesky;
 
 // --------------------------------------------------
 // Other Variables
@@ -68,7 +78,12 @@ uint32_t min_t = 0;
 uint32_t med_t = 0;
 uint32_t max_t = 0;
 
+uint16_t total_tests_counter = 0;
+uint16_t fails_counter = 0;
+
 void insertion_sort(uint32_t *a, uint16_t n);
+
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter);
 
 void setup()
 {
@@ -127,24 +142,24 @@ void setup()
     // Iterate over every chosen matrix dimension n x n: 3x3, 6x6 and 10x10
     for (uint16_t i = 0; i < 3; i++)
     {
-        matf32_init(&A, matrix_sizes[i], matrix_sizes[i], A_data);
-        matf32_init(&B, matrix_sizes[i], matrix_sizes[i], B_data);
+        matf32_init(&A, matrix_sizes[i], matrix_sizes[i], A_data_list[i]);
         matf32_init(&R, matrix_sizes[i], matrix_sizes[i], R_data);
-
-        matf32_randn(&A, 0, 1);
-        matf32_randn(&B, 0, 1);
-        matf32_randn(&R, 0, 1);
+        matf32_init(&R_mul, matrix_sizes[i], matrix_sizes[i], R_mul_list[i]);
 
         // Measure execution time 100 times, using the cycle counter 
         for (uint16_t k = 0; k < n; k++)
         {
             t0 = DWT->CYCCNT;
-            matf32_mul(&A, &B, &R);
+            matf32_mul(&A, &A, &R);
             t1 = DWT->CYCCNT;
 
             cycle_counter_dt = t1 - t0;
             matf32_mul_time[k] = (cycle_counter_dt > overhead) ? cycle_counter_dt - overhead : 0;
         }
+
+        // Forward-error test
+        matf32_mul(&A, &A, &R);
+        check_test_case("matf32_mul", matrix_sizes[i], matrix_sizes[i], matf32_is_equal(&R, &R_mul), &total_tests_counter, &fails_counter);
 
         // Order data from min to max
         insertion_sort(matf32_mul_time, n);
@@ -154,15 +169,16 @@ void setup()
         med_t = (n % 2) ? matf32_mul_time[n / 2] : (matf32_mul_time[n / 2 - 1] + matf32_mul_time[n / 2]) / 2;
         max_t = matf32_mul_time[n-1];
 
-        Serial.print("matf32_mul");
-        Serial.print(matrix_sizes[i]);
-        Serial.print("x");
-        Serial.print(matrix_sizes[i]);
-        Serial.print(",");
+        //Serial.println();
+        //Serial.print("matf32_mul");
+        //Serial.print(matrix_sizes[i]);
+        //Serial.print("x");
+        //Serial.print(matrix_sizes[i]);
+        //Serial.print(",");
         //Serial.print(min_t);   // Convert to seconds
         //Serial.print(",");
         //Serial.print(med_t);   // Convert to seconds
-        //Serial.print(",");
+        Serial.print(", cycles: ");
         Serial.println(max_t); // Convert to second
         //Serial.print(",");
         //Serial.print(SystemCoreClock);
@@ -177,23 +193,22 @@ void setup()
     // -------------------------------------------------------------------------------------
 
     // The instructions don't specify dimensions to test, so I'm testing the largest case (10x10)
-    matf32_init(&A, 10, 10, A_data);
-    matf32_init(&At, 10, 10, At_data);
     matf32_init(&C, 10, 10, C_data);
+    matf32_init(&Ct, 10, 10, Ct_data);
     matf32_init(&b, 10, 1, b_data);
     matf32_init(&x, 10, 1, x_data);
 
-    matf32_randn(&A, 0, 1);
+    matf32_randn(&C, 0, 1);
     matf32_randn(&b, 0, 1);
 
-    matf32_trans(&A, &At);          // A'
-    matf32_mul(&At, &A, &C);        // A'A -> Symmetric positive definite matrix for Cholesky
+    matf32_trans(&C, &Ct);          // C'
+    matf32_mul(&Ct, &C, &CtC);      // CtC = C'C -> Symmetric positive definite matrix for Cholesky
 
     // Measure execution time 100 times, using the cycle counter 
     for (uint16_t k = 0; k < n; k++)
     {
         t0 = DWT->CYCCNT;
-        linsolve_method(&C, &b, &x, CHOLESKY);    // Solve system with Cholesky
+        linsolve_method(&CtC, &b, &x, CHOLESKY);    // Solve system with Cholesky
         t1 = DWT->CYCCNT;
 
         cycle_counter_dt = t1 - t0;
@@ -233,5 +248,23 @@ void insertion_sort(uint32_t *a, uint16_t n)
         }
 
         a[j + 1] = key;
+    }
+}
+
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter)
+{
+    Serial.print(routine);
+    Serial.print(", ");
+    Serial.print(m);
+    Serial.print(" x ");
+    Serial.print(n);
+    Serial.print(", ");
+    Serial.print(result?"PASS":"FAIL");
+
+    *total_tests_counter += 1;
+
+    if (!result)
+    {
+        *fails_counter += 1;
     }
 }
