@@ -113,7 +113,7 @@ matf32_t Fw;
 
 #define K (100)
 
-float sample_time = 0.1;
+float kf_sample_time = 0.1;
 
 float xhat_history[K];
 float x_history[K];
@@ -122,6 +122,111 @@ float y_history[K];
 
 ctr_sys_lti_t kf_sys;
 ctr_kalman_t kf;
+
+// --------------------------------------------------
+// MPC
+// --------------------------------------------------
+
+#define N (4) // Horizon length
+#define ROWS (2)
+#define COLS (1)
+
+uint32_t mpc_time[SAMPLES];
+
+static float tmpmat1_data[MAX_MAT_SIZE];
+static matf32_t tmpmat1;
+
+float mpc_sys_A_data[ROWS*ROWS] = {1.1, 2.0, 0.0, 0.95};
+matf32_t mpc_sys_A;
+
+float mpc_sys_B_data[ROWS*COLS] = {0.0, 0.0787};
+matf32_t mpc_sys_B;
+
+float mpc_sys_C_data[COLS*ROWS] = {-1, 1};
+matf32_t mpc_sys_C;
+
+float mpc_sys_D_data[MAX_MAT_SIZE];
+matf32_t mpc_sys_D;
+
+float mpc_u_data[MAX_MAT_SIZE];
+matf32_t mpc_u;
+
+float mpc_x_data[MAX_MAT_SIZE];
+matf32_t mpc_x;
+
+float qp_Q_data[MAX_MAT_SIZE];
+matf32_t qp_Q;
+
+float qp_c_data[MAX_MAT_SIZE];
+matf32_t qp_c;
+
+float qp_Ain_data[MAX_MAT_SIZE];
+matf32_t qp_Ain;
+
+float qp_bin_data[MAX_MAT_SIZE];
+matf32_t qp_bin;
+
+// Memory stack and pointer arrays for MPC matrix M
+float M1_data[MAX_MAT_SIZE];
+matf32_t M1;
+float M2_data[MAX_MAT_SIZE];
+matf32_t M2;
+float M3_data[MAX_MAT_SIZE];
+matf32_t M3;
+float M4_data[MAX_MAT_SIZE];
+matf32_t M4;
+
+float* mpc_M_data[N] = {M1_data, M2_data, M3_data, M4_data};
+matf32_t* mpc_M[N] = {&M1, &M2, &M3, &M4}; // Fix matrix names inside quadprog to avoid conflict with naming this M.
+
+// Memory stack and pointer arrays for MPC convolution matrix C
+float AB_data[MAX_MAT_SIZE];
+matf32_t AB;
+float A2B_data[MAX_MAT_SIZE];
+matf32_t A2B;
+float A3B_data[MAX_MAT_SIZE];
+matf32_t A3B;
+float C_null_mat_data[MAX_MAT_SIZE];
+matf32_t C_null_mat;
+
+// Put C matrices in an array to iterate over them
+float* mpc_C_stack_data[N+1] = {mpc_sys_B_data, AB_data, A2B_data, A3B_data, C_null_mat_data};
+matf32_t* mpc_C_stack[N+1] = {&mpc_sys_B, &AB, &A2B, &A3B, &C_null_mat};
+matf32_t* mpc_C[N*N]; // Matrix of matrices C. Don't initialize yet.
+
+float mpc_Q_data[MAX_MAT_SIZE];
+matf32_t mpc_Q;
+
+float mpc_R_data[MAX_MAT_SIZE];
+matf32_t mpc_R;
+
+float U[2*N];
+float cost[2*N];
+float X1[2*N];
+float X2[2*N];
+
+float utQ_data[MAX_MAT_SIZE];
+matf32_t utQ;
+
+float utQu_data[MAX_MAT_SIZE];
+matf32_t utQu;
+
+float ut_data[MAX_MAT_SIZE];
+matf32_t ut;
+
+float ct_data[MAX_MAT_SIZE];
+matf32_t ct;
+
+float ctu_data[MAX_MAT_SIZE];
+matf32_t ctu;
+
+bool state_constraints = false;
+
+quadprog_t qp;
+ctr_sys_lti_t sys;
+ctr_mpc_lti_shooting_t mpc;
+
+float mpc_sample_time = 0.01;
 
 // --------------------------------------------------
 // Other Variables
@@ -256,11 +361,11 @@ void setup()
 
     Serial.println("routine,minimum(us),median(us),maximum(us),clock_frequency(Hz),compiler_version");
     Serial.print("PID,");
-    Serial.print((float)min_t * 1e6f / (float)SystemCoreClock, 4);   // Convert to microseconds
+    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to microseconds
     Serial.print(",");
-    Serial.print((float)med_t * 1e6f / (float)SystemCoreClock, 4);   // Convert to microseconds
+    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to microseconds
     Serial.print(",");
-    Serial.print((float)max_t * 1e6f / (float)SystemCoreClock, 4); // Convert to microseconds
+    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to microseconds
     Serial.print(",");
     Serial.print(SystemCoreClock);
     Serial.print(",");
@@ -291,7 +396,7 @@ void setup()
     matf32_mul(&kf_C, &kf_x, &kf_y);
     matf32_zeros(&kf_xhat);
 
-    ctr_sys_lti_init(&kf_sys, &kf_x, &kf_A, &kf_B, &kf_C, &kf_D, sample_time);
+    ctr_sys_lti_init(&kf_sys, &kf_x, &kf_A, &kf_B, &kf_C, &kf_D, kf_sample_time);
     ctr_kalman_init(&kf, &kf_sys, &kf_F, &kf_Qw, &kf_Qv, &kf_xhat, &kf_P);
 
     matf32_init(&Ax, kf_A.num_rows, kf_x.num_cols, Ax_data);
@@ -302,7 +407,7 @@ void setup()
     matf32_zeros(&Bu);
     matf32_zeros(&Fw);
 
-    for (uint16_t k = 1; k < K; ++k)
+    for (uint16_t k = 1; k < n; ++k)
     {
         //matf32_set(&u_k, 1, 1, -1); // u = -1
 
@@ -345,11 +450,11 @@ void setup()
     max_t = kf_time[n-1];
 
     Serial.print("KF,");
-    Serial.print((float)min_t * 1e6f / (float)SystemCoreClock, 4);   // Convert to microseconds
+    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to microseconds
     Serial.print(",");
-    Serial.print((float)med_t * 1e6f / (float)SystemCoreClock, 4);   // Convert to microseconds
+    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to microseconds
     Serial.print(",");
-    Serial.print((float)max_t * 1e6f / (float)SystemCoreClock, 4); // Convert to microseconds
+    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to microseconds
     Serial.print(",");
     Serial.print(SystemCoreClock);
     Serial.print(",");
@@ -358,6 +463,78 @@ void setup()
     // -------------------------------------------------------------------------------------
     // MPC test case
     // -------------------------------------------------------------------------------------
+
+    matf32_init(&mpc_sys_A, ROWS, ROWS, mpc_sys_A_data);
+    matf32_init(&mpc_sys_B, ROWS, COLS, mpc_sys_B_data);
+    matf32_init(&mpc_sys_C, COLS, ROWS, mpc_sys_C_data);
+    matf32_init(&mpc_sys_D, COLS, COLS, mpc_sys_D_data);
+    matf32_init(&mpc_x, ROWS, COLS, mpc_x_data);
+    matf32_init(&mpc_u, N, COLS, mpc_u_data);
+    matf32_init(&qp_Ain, N, N, qp_Ain_data);
+    matf32_init(&qp_bin, N, COLS, qp_bin_data);
+    matf32_init(&qp_Q, N*COLS, N*COLS, qp_Q_data);
+    matf32_init(&qp_c, N*COLS, COLS, qp_c_data);
+    matf32_init(&mpc_R, COLS, COLS, mpc_R_data);
+    matf32_init(&mpc_Q, ROWS, ROWS, mpc_Q_data);
+
+    matf32_init(&ut, mpc_u.num_cols, mpc_u.num_rows, ut_data);
+    matf32_init(&utQ, ut.num_rows, qp_Q.num_cols, utQ_data);
+    matf32_init(&utQu, mpc_u.num_rows, mpc_u.num_cols, utQu_data);
+    matf32_init(&ct, qp_c.num_cols, qp_c.num_rows, ct_data);
+    matf32_init(&ctu, ct.num_rows, mpc_u.num_cols, ctu_data);
+
+    matf32_set(&mpc_Q, 1, 1, 1);
+    matf32_set(&mpc_Q, 1, 2, -1);
+    matf32_set(&mpc_Q, 2, 1, -1);
+    matf32_set(&mpc_Q, 2, 2, 1);
+
+    matf32_set(&mpc_R, 1, 1, 0.01);
+
+    matf32_ones(&mpc_x);
+
+    ctr_sys_lti_init(&sys, &mpc_x, &mpc_sys_A, &mpc_sys_B, &mpc_sys_C, &mpc_sys_D, mpc_sample_time); // x_k_1 = A*x_k + B*u_k, y_k_1 = C*x_k + D*u_k
+    //ctr_mpc_lti_init(&mpc, &qp, &sys, &u_k, &x_k, NULL, NULL, &mpc_Q, &mpc_R, &mpc_Q, mpc_C, mpc_M, N, state_constraints);
+    ctr_mpc_lti_init(&mpc, &qp, &sys, &mpc_u, &mpc_x, &qp_Ain, &qp_bin, &mpc_Q, &mpc_R, &mpc_Q, mpc_C, mpc_M, N, state_constraints);
+    ctr_mpc_set_M(&mpc, mpc_M_data); // Initialize and define the matrices for mpc_M
+    ctr_mpc_set_C(&mpc, mpc_C_stack, mpc_C_stack_data); // Initialize and define matrices and pointer array for mpc_C
+    ctr_mpc_set_qpQ(&mpc, &qp_Q); // Compute values for qp_Q
+    ctr_mpc_set_qpc(&mpc, &qp_c); // Compute vales for qp_c
+
+    mpc.state_constraints = true;
+    ctr_mpc_set_constraints(&mpc, 10, -10);
+
+    for (uint16_t i = 0; i < n; i++)
+    {
+        t0 = DWT->CYCCNT;
+        for (uint16_t k = 0; k < 2*N; ++k)
+        {
+            ctr_mpc_set_qpQ(&mpc, &qp_Q);
+            ctr_mpc_set_qpc(&mpc, &qp_c);
+            ctr_mpc_set_constraints(&mpc, 10, -10);
+            ctr_mpc_update(&mpc, &qp_Q, &qp_c, &mpc_x, &mpc_u);
+        }
+        t1 = DWT->CYCCNT;
+
+        cycle_counter_dt = t1 - t0;
+        mpc_time[i] = (cycle_counter_dt > overhead) ? cycle_counter_dt - overhead : 0;
+    }
+
+    insertion_sort(mpc_time, n);
+
+    min_t = mpc_time[0];
+    med_t = (n % 2) ? mpc_time[n / 2] : (mpc_time[n / 2 - 1] + mpc_time[n / 2]) / 2;
+    max_t = mpc_time[n-1];
+
+    Serial.print("MPC,");
+    Serial.print((float)min_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print(",");
+    Serial.print((float)med_t / (float)SystemCoreClock, 9);   // Convert to microseconds
+    Serial.print(",");
+    Serial.print((float)max_t / (float)SystemCoreClock, 9); // Convert to microseconds
+    Serial.print(",");
+    Serial.print(SystemCoreClock);
+    Serial.print(",");
+    Serial.println(__VERSION__);
 }
 
 void loop()
