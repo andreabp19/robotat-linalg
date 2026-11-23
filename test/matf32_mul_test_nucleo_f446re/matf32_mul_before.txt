@@ -1,0 +1,20 @@
+ 80058ae:	f001 fcb5 	bl	800721c <matf32_mul>
+ 8005900:	f001 fc8c 	bl	800721c <matf32_mul>
+ 8005a7a:	f001 fbcf 	bl	800721c <matf32_mul>
+ 80061ac:	f001 f836 	bl	800721c <matf32_mul>
+ 8006594:	f000 fe42 	bl	800721c <matf32_mul>
+ 800659e:	f000 fe3d 	bl	800721c <matf32_mul>
+ 80065a8:	f000 fe38 	bl	800721c <matf32_mul>
+0800721c <matf32_mul>:
+ 8007242:	d105      	bne.n	8007250 <matf32_mul+0x34>
+ 800724e:	d001      	beq.n	8007254 <matf32_mul+0x38>
+ 8007252:	e062      	b.n	800731a <matf32_mul+0xfe>
+ 800725e:	d005      	beq.n	800726c <matf32_mul+0x50>
+ 800726a:	d101      	bne.n	8007270 <matf32_mul+0x54>
+ 800726e:	e054      	b.n	800731a <matf32_mul+0xfe>
+ 800727a:	e048      	b.n	800730e <matf32_mul+0xf2>
+ 8007280:	e03d      	b.n	80072fe <matf32_mul+0xe2>
+ 80072ae:	e01b      	b.n	80072e8 <matf32_mul+0xcc>
+ 80072f0:	d3de      	bcc.n	80072b0 <matf32_mul+0x94>
+ 8007306:	d3bc      	bcc.n	8007282 <matf32_mul+0x66>
+ 8007316:	d3b1      	bcc.n	800727c <matf32_mul+0x60>
