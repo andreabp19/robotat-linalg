@@ -24,3 +24,7 @@ I used AI here to search up the configuration for the Cycle Counter, write an in
 ### Task 2.2 Starting point, measure matf32_mul and a solver
 
 Only used AI to check the commands needed to print the memory usage of each routine. I wrote the test cases for ```matf32_mul``` and the cholesky solve myself with code from the previous task and looking at my older test files.
+
+### Task 2.3 Making matf32_mul faster by changing the source code
+
+Used AI only to flag potential areas of issue that could be increasing execution time. Versions 2 and 3 of changes for matf32_mul were my idea based on assumptions and my available literature, version 4 was a suggestion by the AI. Any changes to the test case done during this stage I did them myself with the code from previous tasks and test files.
