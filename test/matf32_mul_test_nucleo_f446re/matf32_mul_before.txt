@@ -1,20 +1,79 @@
- 80058ae:	f001 fcb5 	bl	800721c <matf32_mul>
- 8005900:	f001 fc8c 	bl	800721c <matf32_mul>
- 8005a7a:	f001 fbcf 	bl	800721c <matf32_mul>
- 80061ac:	f001 f836 	bl	800721c <matf32_mul>
- 8006594:	f000 fe42 	bl	800721c <matf32_mul>
- 800659e:	f000 fe3d 	bl	800721c <matf32_mul>
- 80065a8:	f000 fe38 	bl	800721c <matf32_mul>
-0800721c <matf32_mul>:
- 8007242:	d105      	bne.n	8007250 <matf32_mul+0x34>
- 800724e:	d001      	beq.n	8007254 <matf32_mul+0x38>
- 8007252:	e062      	b.n	800731a <matf32_mul+0xfe>
- 800725e:	d005      	beq.n	800726c <matf32_mul+0x50>
- 800726a:	d101      	bne.n	8007270 <matf32_mul+0x54>
- 800726e:	e054      	b.n	800731a <matf32_mul+0xfe>
- 800727a:	e048      	b.n	800730e <matf32_mul+0xf2>
- 8007280:	e03d      	b.n	80072fe <matf32_mul+0xe2>
- 80072ae:	e01b      	b.n	80072e8 <matf32_mul+0xcc>
- 80072f0:	d3de      	bcc.n	80072b0 <matf32_mul+0x94>
- 8007306:	d3bc      	bcc.n	8007282 <matf32_mul+0x66>
- 8007316:	d3b1      	bcc.n	800727c <matf32_mul+0x60>
+
+.pio/build/o2/firmware.elf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+080041b0 <matf32_mul>:
+ 80041b0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+ 80041b4:	8803      	ldrh	r3, [r0, #0]
+ 80041b6:	f8b2 9000 	ldrh.w	r9, [r2]
+ 80041ba:	4599      	cmp	r9, r3
+ 80041bc:	b083      	sub	sp, #12
+ 80041be:	d003      	beq.n	80041c8 <matf32_mul+0x18>
+ 80041c0:	2003      	movs	r0, #3
+ 80041c2:	b003      	add	sp, #12
+ 80041c4:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 80041c8:	f8b1 a002 	ldrh.w	sl, [r1, #2]
+ 80041cc:	8853      	ldrh	r3, [r2, #2]
+ 80041ce:	4553      	cmp	r3, sl
+ 80041d0:	d1f6      	bne.n	80041c0 <matf32_mul+0x10>
+ 80041d2:	8845      	ldrh	r5, [r0, #2]
+ 80041d4:	880b      	ldrh	r3, [r1, #0]
+ 80041d6:	42ab      	cmp	r3, r5
+ 80041d8:	d1f2      	bne.n	80041c0 <matf32_mul+0x10>
+ 80041da:	6840      	ldr	r0, [r0, #4]
+ 80041dc:	6853      	ldr	r3, [r2, #4]
+ 80041de:	4298      	cmp	r0, r3
+ 80041e0:	d040      	beq.n	8004264 <matf32_mul+0xb4>
+ 80041e2:	f8d1 b004 	ldr.w	fp, [r1, #4]
+ 80041e6:	455b      	cmp	r3, fp
+ 80041e8:	d03c      	beq.n	8004264 <matf32_mul+0xb4>
+ 80041ea:	f1b9 0f00 	cmp.w	r9, #0
+ 80041ee:	d035      	beq.n	800425c <matf32_mul+0xac>
+ 80041f0:	f10a 32ff 	add.w	r2, sl, #4294967295	@ 0xffffffff
+ 80041f4:	b292      	uxth	r2, r2
+ 80041f6:	3201      	adds	r2, #1
+ 80041f8:	0092      	lsls	r2, r2, #2
+ 80041fa:	ed9f 6a1c 	vldr	s12, [pc, #112]	@ 800426c <matf32_mul+0xbc>
+ 80041fe:	f8cd a000 	str.w	sl, [sp]
+ 8004202:	ea4f 0c8a 	mov.w	ip, sl, lsl #2
+ 8004206:	eb00 0085 	add.w	r0, r0, r5, lsl #2
+ 800420a:	9201      	str	r2, [sp, #4]
+ 800420c:	ea4f 0885 	mov.w	r8, r5, lsl #2
+ 8004210:	2700      	movs	r7, #0
+ 8004212:	46da      	mov	sl, fp
+ 8004214:	9a00      	ldr	r2, [sp, #0]
+ 8004216:	b1ea      	cbz	r2, 8004254 <matf32_mul+0xa4>
+ 8004218:	eba0 0b08 	sub.w	fp, r0, r8
+ 800421c:	461c      	mov	r4, r3
+ 800421e:	4656      	mov	r6, sl
+ 8004220:	eb0c 0e03 	add.w	lr, ip, r3
+ 8004224:	eca4 6a01 	vstmia	r4!, {s12}
+ 8004228:	4632      	mov	r2, r6
+ 800422a:	b16d      	cbz	r5, 8004248 <matf32_mul+0x98>
+ 800422c:	eddf 7a0f 	vldr	s15, [pc, #60]	@ 800426c <matf32_mul+0xbc>
+ 8004230:	4659      	mov	r1, fp
+ 8004232:	ed92 7a00 	vldr	s14, [r2]
+ 8004236:	ecf1 6a01 	vldmia	r1!, {s13}
+ 800423a:	eee6 7a87 	vfma.f32	s15, s13, s14
+ 800423e:	4281      	cmp	r1, r0
+ 8004240:	4462      	add	r2, ip
+ 8004242:	ed44 7a01 	vstr	s15, [r4, #-4]
+ 8004246:	d1f4      	bne.n	8004232 <matf32_mul+0x82>
+ 8004248:	4574      	cmp	r4, lr
+ 800424a:	f106 0604 	add.w	r6, r6, #4
+ 800424e:	d1e9      	bne.n	8004224 <matf32_mul+0x74>
+ 8004250:	9a01      	ldr	r2, [sp, #4]
+ 8004252:	4413      	add	r3, r2
+ 8004254:	3701      	adds	r7, #1
+ 8004256:	454f      	cmp	r7, r9
+ 8004258:	4440      	add	r0, r8
+ 800425a:	d1db      	bne.n	8004214 <matf32_mul+0x64>
+ 800425c:	2000      	movs	r0, #0
+ 800425e:	b003      	add	sp, #12
+ 8004260:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 8004264:	2001      	movs	r0, #1
+ 8004266:	b003      	add	sp, #12
+ 8004268:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 800426c:	00000000 	.word	0x00000000

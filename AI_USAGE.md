@@ -28,3 +28,7 @@ Only used AI to check the commands needed to print the memory usage of each rout
 ### Task 2.3 Making matf32_mul faster by changing the source code
 
 Used AI only to flag potential areas of issue that could be increasing execution time. Versions 2 and 3 of changes for matf32_mul were my idea based on assumptions and my available literature, version 4 was a suggestion by the AI. Any changes to the test case done during this stage I did them myself with the code from previous tasks and test files.
+
+### Task 2.4 Read the assembly of the Cortex-M4
+
+I used AI for this task to help me look up the meaning of some assembly commands I didn't know the meaning of, as I couldn't find online the documentation of the assembly commands for this platform. Outside of that, I did my best to interpret the assembly lines myself and understand what they were doing, solving occassional questions about some commands or syntax with the AI, but my discussion of the results is based on what I understood, as the goal of the task was to understand it myself.

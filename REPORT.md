@@ -180,16 +180,16 @@ version 4    268        184       212      65,381     11,948       11,856
 
 While only version 4 was faster, I kept the results of the other changes I implemented. I initially thought version 2 would be faster as it would reduce the number of reads of each 3 matrix-pointers inside the loops, but it turned out to be slower. Then, I tried finding a faster multiplication algorithm, but was slower as well. Version 4 follows a similar idea to version 2, but applied only to ```data_c``` that accumulates partial multiplication results, which reduces the number of reads from the matrix-pointer, and thus is faster.
 
+##### Task 2.4 Read the Assembly of the Cortex-M4
+
+The faster ```matf32_mul``` uses an accumulator to sum partial products of each element of the resultant matrix A*B: ```vfma.f32	s15, s13, s14```, and after the loop only makes one assignment to save the result on ```data_c``` before incrementing the direction of ```data_c``` for the next loop: ```vstmia	r6!, {s15}```. In contrast, the original version of the routine does something similar, but also writes each loop to the register pointed at through ```data_c```: ```vstr	s15, [r4, #-4]```, which increases time spent in the loop.
+
 ##### Conclusions and time log
 
-I left Task 2.4 incomplete, as I'm having trouble understanding how to approach it, and instead of rushing on Monday without understanding what I do, I prefer to submit what I completed. With one more week, I would finish task 2.4, fix the pending error warnings I pointed out and the routines flagged as using dynamic memory, and would try and reduce solver computing time based on task 2.3. Finally, here's a summary of my time log:
+With one more week, I would fix the pending error warnings I pointed out and the routines flagged as using dynamic memory, and would try and reduce solver computing time based on task 2.3. Finally, here's a summary of my time log:
 
-- Task 1.1: 5 hours
-- Task 1.2: 4 hours
-- Task 1.3: 3.5 hours
-- Task 2.1: 4 hours
-- Task 2.2: 2 hours
-- Task 2.3: 5 hours
+- Task 1.1: 5 hours     - Task 1.2: 4 hours    - Task 1.3: 3.5 hours
+- Task 2.1: 4 hours     - Task 2.2: 2 hours    - Task 2.3: 5 hours    - Task 2.4: 6 hours
 - Fixing warnings and errors in the libraries: 1 hour
 - Writing REPORT.md and AI_USAGE.md: 5 hours
-- Total: 29.5 hours (not counting time spent on task 2.4)
+- Total: 35.5 hours

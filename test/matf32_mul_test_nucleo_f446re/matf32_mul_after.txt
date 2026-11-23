@@ -1,20 +1,77 @@
- 80058ae:	f001 fcb5 	bl	800721c <matf32_mul>
- 8005900:	f001 fc8c 	bl	800721c <matf32_mul>
- 8005a7a:	f001 fbcf 	bl	800721c <matf32_mul>
- 80061ac:	f001 f836 	bl	800721c <matf32_mul>
- 8006594:	f000 fe42 	bl	800721c <matf32_mul>
- 800659e:	f000 fe3d 	bl	800721c <matf32_mul>
- 80065a8:	f000 fe38 	bl	800721c <matf32_mul>
-0800721c <matf32_mul>:
- 8007242:	d105      	bne.n	8007250 <matf32_mul+0x34>
- 800724e:	d001      	beq.n	8007254 <matf32_mul+0x38>
- 8007252:	e065      	b.n	8007320 <matf32_mul+0x104>
- 800725e:	d005      	beq.n	800726c <matf32_mul+0x50>
- 800726a:	d101      	bne.n	8007270 <matf32_mul+0x54>
- 800726e:	e057      	b.n	8007320 <matf32_mul+0x104>
- 8007280:	e048      	b.n	8007314 <matf32_mul+0xf8>
- 8007286:	e03d      	b.n	8007304 <matf32_mul+0xe8>
- 80072b2:	e019      	b.n	80072e8 <matf32_mul+0xcc>
- 80072f0:	d3e0      	bcc.n	80072b4 <matf32_mul+0x98>
- 800730c:	d3bc      	bcc.n	8007288 <matf32_mul+0x6c>
- 800731c:	d3b1      	bcc.n	8007282 <matf32_mul+0x66>
+
+.pio/build/o2/firmware.elf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+080041b0 <matf32_mul>:
+ 80041b0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+ 80041b4:	8803      	ldrh	r3, [r0, #0]
+ 80041b6:	f8b2 9000 	ldrh.w	r9, [r2]
+ 80041ba:	4599      	cmp	r9, r3
+ 80041bc:	b083      	sub	sp, #12
+ 80041be:	d003      	beq.n	80041c8 <matf32_mul+0x18>
+ 80041c0:	2003      	movs	r0, #3
+ 80041c2:	b003      	add	sp, #12
+ 80041c4:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 80041c8:	f8b1 a002 	ldrh.w	sl, [r1, #2]
+ 80041cc:	8853      	ldrh	r3, [r2, #2]
+ 80041ce:	4553      	cmp	r3, sl
+ 80041d0:	d1f6      	bne.n	80041c0 <matf32_mul+0x10>
+ 80041d2:	8845      	ldrh	r5, [r0, #2]
+ 80041d4:	880b      	ldrh	r3, [r1, #0]
+ 80041d6:	42ab      	cmp	r3, r5
+ 80041d8:	d1f2      	bne.n	80041c0 <matf32_mul+0x10>
+ 80041da:	6840      	ldr	r0, [r0, #4]
+ 80041dc:	6853      	ldr	r3, [r2, #4]
+ 80041de:	4298      	cmp	r0, r3
+ 80041e0:	d03c      	beq.n	800425c <matf32_mul+0xac>
+ 80041e2:	f8d1 b004 	ldr.w	fp, [r1, #4]
+ 80041e6:	455b      	cmp	r3, fp
+ 80041e8:	d038      	beq.n	800425c <matf32_mul+0xac>
+ 80041ea:	f1b9 0f00 	cmp.w	r9, #0
+ 80041ee:	d031      	beq.n	8004254 <matf32_mul+0xa4>
+ 80041f0:	f10a 32ff 	add.w	r2, sl, #4294967295	@ 0xffffffff
+ 80041f4:	b292      	uxth	r2, r2
+ 80041f6:	3201      	adds	r2, #1
+ 80041f8:	0092      	lsls	r2, r2, #2
+ 80041fa:	eb00 0185 	add.w	r1, r0, r5, lsl #2
+ 80041fe:	f8cd a000 	str.w	sl, [sp]
+ 8004202:	ea4f 008a 	mov.w	r0, sl, lsl #2
+ 8004206:	9201      	str	r2, [sp, #4]
+ 8004208:	ea4f 0885 	mov.w	r8, r5, lsl #2
+ 800420c:	2700      	movs	r7, #0
+ 800420e:	46da      	mov	sl, fp
+ 8004210:	9a00      	ldr	r2, [sp, #0]
+ 8004212:	b1da      	cbz	r2, 800424c <matf32_mul+0x9c>
+ 8004214:	eba1 0b08 	sub.w	fp, r1, r8
+ 8004218:	46d4      	mov	ip, sl
+ 800421a:	eb03 0e00 	add.w	lr, r3, r0
+ 800421e:	461e      	mov	r6, r3
+ 8004220:	eddf 7a10 	vldr	s15, [pc, #64]	@ 8004264 <matf32_mul+0xb4>
+ 8004224:	4662      	mov	r2, ip
+ 8004226:	b14d      	cbz	r5, 800423c <matf32_mul+0x8c>
+ 8004228:	465c      	mov	r4, fp
+ 800422a:	ecf4 6a01 	vldmia	r4!, {s13}
+ 800422e:	ed92 7a00 	vldr	s14, [r2]
+ 8004232:	428c      	cmp	r4, r1
+ 8004234:	eee6 7a87 	vfma.f32	s15, s13, s14
+ 8004238:	4402      	add	r2, r0
+ 800423a:	d1f6      	bne.n	800422a <matf32_mul+0x7a>
+ 800423c:	ece6 7a01 	vstmia	r6!, {s15}
+ 8004240:	4576      	cmp	r6, lr
+ 8004242:	f10c 0c04 	add.w	ip, ip, #4
+ 8004246:	d1eb      	bne.n	8004220 <matf32_mul+0x70>
+ 8004248:	9a01      	ldr	r2, [sp, #4]
+ 800424a:	4413      	add	r3, r2
+ 800424c:	3701      	adds	r7, #1
+ 800424e:	454f      	cmp	r7, r9
+ 8004250:	4441      	add	r1, r8
+ 8004252:	d1dd      	bne.n	8004210 <matf32_mul+0x60>
+ 8004254:	2000      	movs	r0, #0
+ 8004256:	b003      	add	sp, #12
+ 8004258:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 800425c:	2001      	movs	r0, #1
+ 800425e:	b003      	add	sp, #12
+ 8004260:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 8004264:	00000000 	.word	0x00000000
