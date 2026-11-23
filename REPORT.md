@@ -1,25 +1,23 @@
 
 # Report of results for this test/challenge
 
-## Brief summary about Robotat Linalg
+Robotat Linalg is an embedded C library with routines targeting single-precision devices such as Arduino, ESP32 and STM32. It's divided in five modules: 1) ```matf32```, for linear algebra, 2) ```linsolve``` for the linear solver, 3) ```quadprog``` for the quadratic solver, 4) ```robotat-control``` for control routines, and 5) ```robotat-robotics``` for robotics routines. This challenge focused on performance tests regarding compilation and speed of certain routines.
 
-Robotat Linalg is an embedded C library stack that provides essential routines for linear algebra, numerical optimization, control and robotics, targeting single-precision devices such as Arduino, ESP32 and STM32. It's divided in five library files: 1) ```matf32```, for linear algebra, 2) ```linsolve``` for the linear solver, 3) ```quadprog``` for the quadratic solver, 4) ```robotat-control``` for control routines, and 5) ```robotat-robotics``` for robotics routines.
+## Challenge tasks and results
 
-## Results of this challenge
-
-#### Task 1.1 Build system
+##### Task 1.1 Build system
 
 **Approach and solution:**
 - I used Makefiles as I'm a bit more familiar with those, compared to CMake builds. 
 - Implemented all build combinations so everything compiles with ```make all```.
 - Saved the error and warnings to ```.log``` files for each compiler and optimization level.
 
-**Results:** All the libraries and test files compiled correctly for all compilers and optimization levels in Linux and for the Cortex-M4. The flags ```-Wall``` and ```-Wextra``` showed previously undetected error and warnings. However, all were related to unused variables, nonvoid functions without return type and implicit declarations, and so I fixed them with ease, with only some exceptions that would require more time and attention beyond the available time for this challenge:
+**Results:** All the libraries and test files compiled correctly for all compilers and optimization levels in Linux and for the Cortex-M4. The flags ```-Wall``` and ```-Wextra``` showed previously undetected error and warnings. However, all were related to unused variables, nonvoid functions without return type and implicit declarations, and so I fixed them with ease, with the following exceptions that require more time beyond this challenge:
 - Undefined behavior in the variable arguments of a PID routine: routine written by another contributor, so it's best to ask before changing it.
 - Unused ```angle_units``` parameter in two robotics routines: not-yet implemented feature to check angle units (but will be used).
 - Unused parameter ```sys_input``` in ```pendulum_outputs``` routine: this argument might be needed depending on the specific nonlinear system, so in this case it is not used, but the routines expect it in case it is relevant.
 
-#### Task 1.2 Self-checking tests
+##### Task 1.2 Self-checking tests
 
 **Approach and solution:**
 - Removed the timing tests from the test files, keeping only numerical tests. 
@@ -42,15 +40,11 @@ SOME TESTS FAILED
 make: *** [Makefile:50: test] Error 1
 ```
 
-#### Task 1.3 Look inside the binary
+##### Task 1.3 Look inside the binary
 
-**Aproach and solution:** Used the terminal and some commands of the arm compiler to check file size and memory usage. 
+**1. How much memory does each module use? What uses the most RAM?**
 
-**Results:**
-
-**Results 1. How much RAM and FLASH does each module use and what uses the most RAM?**
-
-I used the following command for this task: ```arm-none-eabi-size -t build/cortex-m4-Os/*.o```. The module that used the most RAM was ```quadprog```, with 5,712 bytes (5.58 Kb aprox.).
+I used the command ```arm-none-eabi-size -t``` for this task. The module ```quadprog``` used the most RAM, with 5,712 bytes (5.58 Kb aprox.).
 
 ```
 arm-none-eabi-size -t build/cortex-m4-Os/*.o
@@ -63,13 +57,9 @@ arm-none-eabi-size -t build/cortex-m4-Os/*.o
   27718       0   12348   40066    9c82 (TOTALS)
 ```
 
-**Results 2. Which are the 10 largest functions?**
+**2. Which are the 10 largest functions?**
 
-The command I used and the results (formatted for readability) are shown below. Results match with some of the heaviest routines that I had identified during previous tests (MPC, quadprog LDLT, QR, etc.), though I was surprised that ```ctr_linloc``` is amongst the heaviest routines, but it makes sense as it uses several stock matrices for operations.
-
-```
-arm-none-eabi-nm -S -A -t d --defined-only build/cortex-m4-Os/*.o | grep -E ' [Tt] ' | sort -k2,2 -n -r | head -10
-```
+Used bash commands to read the files and locate the largest functions sorting by memory. Results match with some of the heaviest routines that I had identified previously (MPC, quadprog LDLT, QR, etc.). Though I was surprised that ```ctr_linloc``` is amongst the heaviest routines, but it makes sense as it uses several stock matrices for operations.
 
 ```
 Routine                     RAM (Kb)
@@ -85,9 +75,9 @@ matf32_one_sided_jacobi     0.53
 linsolve_method             0.44
 ```
 
-**Result 3. How much stack do the five most stack-hungry functions need? Are there functions whose stack use the compiler can't tell you? Why not?**
+**3. How much stack do the five most stack-hungry functions need? Are there functions whose stack use the compiler can't tell you? Why not?**
 
-The commands I used for this was: ```make static_arm_library OPT=Os CORTEXM4_EXTRAFLAGS=-fstack-usage```, which created ```.su``` files for each ```robotat-linalg``` module, showing the stack consumption of each routine and the memory type at compile-time (static or dynamic). The compiler cannot fully compute the memory usage of some routines (shown in a table below), as they use dynamic memory at runtime due to using float arrays with size depending on variable matrices. This was unexpected and I will change it after the challenge to use only static memory.
+I used ```make static_arm_library OPT=Os CORTEXM4_EXTRAFLAGS=-fstack-usage```, which created ```.su``` files for each ```robotat-linalg``` module, showing the stack consumption of each routine and the memory type at compile-time (static or dynamic). The compiler cannot fully compute the memory usage of the routines shown in the table below, as they use dynamic memory at runtime due to declaring float arrays with their size depending on the dimensions of variable-sized matrices. This was unknown to me, and I will change it after the challenge to use only static memory (didn't change it during the challenge as it might require testing to ensure nothing is broken, especially in the solvers).
 
 ```
 src/linsolve.c:183:1:linsolve_method    48      dynamic
@@ -106,22 +96,13 @@ src/robotat_robotics.c:604:1:rob_rpy2rot.part.0 1664    static
 src/robotat_robotics.c:271:1:rob_inv_transform  1264    static
 ```
 
-**Results 4. Which global symbols does the library export? (`nm` lists them.) Which ones should users not see, and what did you do about them?**
+**4. Which global symbols does the library export? (`nm` lists them.) Which ones should users not see, and what did you do about them?**
 
-All ```robotat-linalg``` modules export global functions (indicated by ```T``` when checking in the terminal). All modules use global variables to execute the operations, mainly stock matrices and vectors, but all of those are hidden from exporting by making them static to prevent the user from seeing them. The command used to print on the terminal the exported symbols was:
+All ```robotat-linalg``` modules export global functions (indicated by ```T``` when checking in the terminal). All modules use global variables to execute the operations, mainly stock matrices and vectors, but all of those are hidden from exporting by making them static to prevent the user from seeing them. To print on the terminal the exported symbols I used the command ```arm-none-eabi-nm -g --defined-only```.
 
-```
-arm-none-eabi-nm -g --defined-only build/cortex-m4-Os/librobotat.a
-```
+**5. Comparing executable test files using the static and shared libraries.**
 
-**Results 5. Comparing executable test files using the static and shared libraries.**
-
-The Makefile was modified to compile the shared library and link the test files to them. Afterwards, the following commands were used to check the size of the files for GCC -O2:
-
-```
-ls -lh build/gcc-O2/test/ build/gcc-O2/test-pic/
-ls -lh build/gcc-O2-pic/librobotat.so build/gcc-O2/librobotat.a
-```
+The Makefile was modified to compile the shared library and link the test files to them. Afterwards, I used the command ```ls -lh``` to check the size of the files using GCC -O2.
 
 The memory comparison is shown below. The shared library, and test files linked to it, were considerably smaller. The output of ```ldd``` shows how the shared library is retrieved and linked to the test files at runtime, and if the ```.so``` file is deleted, ```ldd``` outputs: ```build/gcc-O2-pic/librobotat.so => not found```. I would use shared libraries when saving memory is critical, and static libraries when robustness is more important.
 
@@ -144,7 +125,7 @@ quadprog_sqp_test                     62                        21
 robotics_test                         72                        36
 ```
 
-#### Task 2.1 Measurement program
+##### Task 2.1 Measurement program
 
 A new PlatformIO project was created for this task, implementing there the measurements with the Cortex-M4's Cycle Counter and the test cases for the PID, Kalman filter and MPC. A summary of the measured time is shown below. The maximum times, in seconds were: 9.017E-06 for the PID, 2.716E-05 for the Kalman filter, and 6.294E-02 for the MPC. This is similar in magnitude, though slightly faster, than the previously measured values; the most notable difference being the PID measured with the Cycle Counter, which was one order of magnitude faster than the previous value. This indicates that the measures made sense despite the added time cost of using ```micros()```, but I would prefer to use the Cycle Counter in the future to obtain more precise measurements for all routines. 
 
@@ -157,14 +138,14 @@ MPC,0.005269622,0.061413455,0.062941465,180000000,12.3.1 20230626
 *For all these measurements, -Os optimization level was used.
 
 ```
-  PID      Kalman filter      MPC
+  PID      Kalman filter          MPC
 1.30E-05 	  3.30E-05 	      6.37E-02
 ```
-*Note: The website has a typo in the time of the PID for the STM32, and says 1.30E-02 when it's 1.30E-05 as stated in the paper (the value in the paper has been used for this report, and will be fixed in the website soon).
+*Note: The website has a typo in the time of the PID for the STM32, and says 1.30E-02 when it's 1.30E-05 as stated in the paper (I will fix it after submitting the challenge).
 
-#### 2.2 Stating point, measure matf32_mul and a solver
+##### 2.2 Stating point, measure matf32_mul and a solver
 
-I used the cycle counter, as in the previous task, to measure the execution time of ```matf32_mul``` for 3x3, 6x6 and 10x10, matrices; and also to measure a Cholesky solve (instructions didn't specify a size for this one, so I measured it with 10x10 matrices). To check the memory use of each routine, I used the ```arm-none-eabi-nm -S --size-sort -t d``` on the respective files of each optimization level. The routine ```matf32_mul``` required the least memory in ```-O2```, while for ```linsolve_method```, which was the routine used to execute the Cholesky solve, the least memory was used in ```-O3```. In this case, if memory was critical, I would choose to use ```-O2``` for an application, as the linear solver requires several multiplications, and so it would make sense to prioritize the memory usage of ```matf32_mul```.
+I used the cycle counter, as in the previous task, to measure the execution time of ```matf32_mul``` for 3x3, 6x6 and 10x10, matrices; and also to measure a Cholesky solve (instructions didn't specify a size for this one, so I measured it with 10x10 matrices). To check the memory use of each routine, I used the ```arm-none-eabi-nm -S --size-sort -t d``` on the respective files of each optimization level. The routine ```matf32_mul``` required the least memory in -O2, while for ```linsolve_method```, which was the routine used to execute the Cholesky solve, the least memory was used in -O3. In this case, if memory was critical, I would choose to use -O2 for an application, as the linear solver requires several multiplications, and so it would make sense to prioritize the memory usage of ```matf32_mul```.
 
 *All RAM results are presented in bytes.
 ```
@@ -173,7 +154,7 @@ matf32_mul           262         192         232
 linsolve_method      620         412         400
 ```
 
-*All time measurements correspond to the maximum measured execution time, and are reported in number of cycles
+*Maximum measured execution time, all values reported in cycles.
 ```
 Routine          Dimension     Time (-Os)   Time (-O2)    Time (-O3)
 matf32_mul         3 x 3          4,191          733           702
@@ -182,3 +163,33 @@ matf32_mul         10x10         67,692       13,330        13,282
 linsolve_method    10x10         67,692       13,330        13,282
 ```
 
+##### 2.3 Make matf32_mul faster by changing the source code
+
+All the following ```matf32_mul``` measurements were done with 10x10 matrices, time is reported in cycles, and RAM in bytes. The changes implemented are described in the table as "versions" due to table space constraints, but correspond to:
+- version 2: original algorithm but saving the matrix dimensions before the loops, instead of reading them each loop.
+- version 3: replacing with a Saxpi multiplication algorithm (algorithm 1.1.7, Golub).
+- version 4: adding a local accumulator inside the loops for computing the multiplication elements, instead of accumulating on ```data_c``` each loop, which corresponds to reading upon ```p_src->p_data``` each time and increases the time.
+
+```
+version      RAM(Os)   RAM(O2)   RAM(O3)   Time(Os)   Time (O2)    Time(O3)
+original     262        192       232      67,692     13,330       13,282
+version 2    262        192       232      70,405     13,937       13,869
+version 3    296        222       232      78,182     15,758       13,864
+version 4    268        184       212      65,381     11,948       11,856
+```
+
+While only version 4 was faster, I kept the results of the other changes I implemented. I initially thought version 2 would be faster as it would reduce the number of reads of each 3 matrix-pointers inside the loops, but it turned out to be slower. Then, I tried finding a faster multiplication algorithm, but was slower as well. Version 4 follows a similar idea to version 2, but applied only to ```data_c``` that accumulates partial multiplication results, which reduces the number of reads from the matrix-pointer, and thus is faster.
+
+##### Conclusions and time log
+
+I left Task 2.4 incomplete, as I'm having trouble understanding how to approach it, and instead of rushing on Monday without understanding what I do, I prefer to submit what I completed. With one more week, I would finish task 2.4, fix the pending error warnings I pointed out and the routines flagged as using dynamic memory, and would try and reduce solver computing time based on task 2.3. Finally, here's a summary of my time log:
+
+- Task 1.1: 5 hours
+- Task 1.2: 4 hours
+- Task 1.3: 3.5 hours
+- Task 2.1: 4 hours
+- Task 2.2: 2 hours
+- Task 2.3: 5 hours
+- Fixing warnings and errors in the libraries: 1 hour
+- Writing REPORT.md and AI_USAGE.md: 5 hours
+- Total: 29.5 hours (not counting time spent on task 2.4)
