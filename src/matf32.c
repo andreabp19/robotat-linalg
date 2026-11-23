@@ -1,5 +1,5 @@
 /**
- * Last modified: 16 Jan. 2025
+ * Last modified: 17 Nov. 2026
  *          By: Andrea Pineda
  */
 
@@ -29,8 +29,8 @@ generate_gauss(float mu, float sigma)
     // Compute the uniform norm
     do 
     {
-        U1 = -1 + ((float)rand() / RAND_MAX) * 2;
-        U2 = -1 + ((float)rand() / RAND_MAX) * 2;
+        U1 = -1 + ((float)rand() / (float)RAND_MAX) * 2;
+        U2 = -1 + ((float)rand() / (float)RAND_MAX) * 2;
         W = pow(U1, 2) + pow(U2, 2);
     } while (W >= 1 || W == 0);
 
@@ -800,7 +800,8 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
     float* data_b;
     float* data_c = p_dst->p_data;
 
-    for (uint16_t i = 0; i < p_srca->num_rows; i++)
+    // Original loop, before changes
+    /*for (uint16_t i = 0; i < p_srca->num_rows; i++)
     {
         // Then we go through every column of b
         for (uint16_t j = 0; j < p_srcb->num_cols; j++)
@@ -816,6 +817,80 @@ matf32_mul(const matf32_t* p_srca, const matf32_t* p_srcb, matf32_t* p_dst)
                 data_a++;
                 data_b += p_srcb->num_cols;
             }
+            data_c++;
+        }
+    }*/
+
+    // Version 2: Saving the dimensions beforehand to avoid reading them in the loop (slower than the original)
+    /*uint16_t a_rows = p_srca->num_rows;
+    uint16_t a_cols = p_srca->num_cols;
+    uint16_t b_cols = p_srcb->num_cols;
+    
+    for (uint16_t i = 0; i < a_rows; i++)
+    {
+        // Then we go through every column of b
+        for (uint16_t j = 0; j < b_cols; j++)
+        {
+            data_a = &p_srca->p_data[i * a_cols];
+            data_b = &p_srcb->p_data[j];
+
+            *data_c = 0; // Reset
+            // And we multiply rows from a with columns of b
+            for (uint16_t k = 0; k < a_cols; k++)
+            {
+                *data_c += *data_a * *data_b;
+                data_a++;
+                data_b += b_cols;
+            }
+            data_c++;
+        }
+    }*/
+
+    // Version 3: Golub, Saxpi matrix multiplication, algorithm 1.1.7 (even slower)
+
+    /*float b_kj = 0;
+    
+    zeros(p_dst->p_data, p_dst->num_rows, p_dst->num_cols); // Clean C, the output matrix
+
+    // C = C + AB, where C starts as 0, so it can be cleaned from the beginning
+    for (uint16_t j = 0; j < p_srcb->num_cols; j++)
+    {
+        // Then we go through every column of b
+        for (uint16_t k = 0; k < p_srca->num_cols; k++)
+        {
+            b_kj = p_srcb->p_data[k*(p_srcb->num_cols) + j]; // B(k,j)
+
+            data_a = &p_srca->p_data[k];    // A(0,k)
+            data_c = &p_dst->p_data[j];     // C(0,j)
+
+            for (uint16_t i = 0; i < p_srca->num_rows; i++)
+            {
+                *data_c += *data_a * b_kj;
+                data_a += p_srca->num_cols;
+                data_c += p_srcb->num_cols;
+            }
+        }
+    }*/
+
+    // Version 4 (local accumulator to avoid reading and rewriting data_c every loop)
+    float sum = 0;
+    for (uint16_t i = 0; i < p_srca->num_rows; i++)
+    {
+        // Then we go through every column of b
+        for (uint16_t j = 0; j < p_srcb->num_cols; j++)
+        {
+            data_a = &p_srca->p_data[i * p_srca->num_cols];
+            data_b = &p_srcb->p_data[j];
+
+            sum = 0.0f; // Reset
+            // And we multiply rows from a with columns of b
+            for (uint16_t k = 0; k < p_srca->num_cols; k++)
+            {
+                sum += *data_a * *data_b;
+                data_a++;
+                data_b += p_srcb->num_cols;
+            }
+            *data_c = sum;
             data_c++;
         }
     }
@@ -891,7 +966,7 @@ matf32_lup(const matf32_t* p_src, matf32_t* p_lu, uint16_t* pivot)
 
 
 void 
-solve(float* A, float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
+solve(float* x, float* b, uint16_t* P, float* LU, uint16_t row) 
 {
     // Forward substitution with pivoting
     for (uint16_t i = 0; i < row; ++i) 
@@ -950,7 +1025,7 @@ matf32_inv(const matf32_t* p_src, matf32_t* p_dst)
     for (uint16_t i = 0; i < row; ++i)
     {
         tmpvec[i] = 1.0;
-        solve(p_src->p_data, &invmat->p_data[row * i], tmpvec, p, lu->p_data, row);
+        solve(&invmat->p_data[row * i], tmpvec, p, lu->p_data, row);
         tmpvec[i] = 0.0;
     }
 
@@ -1075,7 +1150,6 @@ matf32_vecposmul(const matf32_t* const p_srcm, float* const p_srcv, float* const
 void
 matf32_vecpremul(const matf32_t* const p_srcm, float* const p_srcv, float* const p_dst)
 {
-    float* tmpvec;
     float* res = v1;
     zeros(res, 1, p_srcm->num_cols);
 
@@ -1118,8 +1192,6 @@ matf32_exp(const matf32_t* const p_src, matf32_t* const p_dst, uint16_t exp)
     float temp_data[MAX_MAT_SIZE];
     matf32_t temp;
     matf32_init(&temp, p_src->num_rows, p_dst->num_cols, temp_data);
-
-    err_status_t status;
 
     for (uint16_t k = 1; k < exp; ++k)
     {
@@ -1251,8 +1323,6 @@ matf32_arr_mul(const matf32_t** const p_matarray, uint16_t length, matf32_t* p_d
 err_status_t
 matf32_qr(const matf32_t* const p_a, matf32_t* const p_q, matf32_t* const p_r)
 {
-    float* p_a_data = p_a->p_data;
-    float* p_q_data = p_q->p_data;
     float* p_r_data = p_r->p_data;
 
     uint16_t rows = p_a->num_rows;
@@ -1395,7 +1465,6 @@ matf32_lu(const matf32_t* p_a, matf32_t* const p_l, matf32_t* const p_u, uint16_
     }
 #endif
 
-    float* p_a_data = p_a->p_data;
     float* p_l_data = p_l->p_data;
     float* p_u_data = p_u->p_data;
 
@@ -1501,14 +1570,10 @@ matf32_cholesky(const matf32_t* const p_a, matf32_t* const p_c)
     }
 #endif
 
-    err_status_t status;
-
     float* p_data_a = p_a->p_data;
     float* p_data_c = p_c->p_data;
 
     uint16_t size = p_a->num_cols;
-
-    float temp_v[size];
 
     float sum = 0;
     float dot = 0;

@@ -6,7 +6,7 @@
  * with direct methods for inequality constrained problems and an
  * active-set method for inequality constrained problems.
  *
- * Last modified: 15 Jan. 2026
+ * Last modified: 16 Nov. 2026
  *          By: Andrea Pineda
  */
 
@@ -45,7 +45,7 @@ typedef struct
  */
 typedef enum
 {
-    QP_SUCESS,          /**< Operation completed correctly */
+    QP_SUCCESS,          /**< Operation completed correctly */
     QP_SIZE_MISMATCH,   /**< Matrices/vectors are not the correct size */
     QP_NOT_RESTRICTED,  /**< Missing restrictions */
     QP_NOT_CONVEX,      /**< Problem is not convex */

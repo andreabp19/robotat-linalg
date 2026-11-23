@@ -1,7 +1,7 @@
 /**
  * Created: 2022
  *      By: Daniel Pineda
- * Last modified 14 jan. 2025
+ * Last modified 17 Nov. 2026
  *      By: Andrea Pineda
  */
 
@@ -232,6 +232,11 @@ linsolve_method(const matf32_t* const p_a, const matf32_t* const p_b, matf32_t* 
             return status;
             break;
 
+        case QR_SQUARE: // Square matrices are not handled with QR in this solver
+            status = MATH_ARGUMENT_ERROR;
+            return status;
+            break;
+
         case SVD:
             
             // Copy of A because matf32_jacobi_svd rewrites the input matrix
@@ -312,6 +317,10 @@ linsolve_qr(matf32_t* const p_q, matf32_t* const p_r, const matf32_t* const p_b,
         case QR_RECT:
             matf32_submatrix_copy(p_r, &sub_R, 0, 0, 0, 0, sub_R.num_rows, sub_R.num_cols);
             status = linsolve_backward_substitution(&sub_R, &y, p_x);
+            break;
+
+        default:
+            status = MATH_ARGUMENT_ERROR;
             break;
     }
     

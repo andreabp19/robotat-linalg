@@ -1,22 +1,22 @@
 /**
- * Last modified: 31 Jan. 2026
+ * Last modified: 16 Nov. 2026
  */
 
 #include <stdint.h>
 
 #include "quadprog.h"
 
-float kkt_M_data[MAX_MAT_SIZE];
-matf32_t kkt_M;
+static float kkt_M_data[MAX_MAT_SIZE];
+static matf32_t kkt_M;
 
-float kkt_y_data[MAX_MAT_SIZE];
-matf32_t kkt_y;
+static float kkt_y_data[MAX_MAT_SIZE];
+static matf32_t kkt_y;
 
-float kkt_n_data[MAX_MAT_SIZE];
-matf32_t kkt_n;
+static float kkt_n_data[MAX_MAT_SIZE];
+static matf32_t kkt_n;
 
-float temp_Aeq_data[MAX_MAT_SIZE];
-matf32_t temp_Aeq;
+static float temp_Aeq_data[MAX_MAT_SIZE];
+static matf32_t temp_Aeq;
 
 static float m1data[MAX_MAT_SIZE];
 static matf32_t m1;
@@ -60,8 +60,8 @@ quadprog_status_print(quadprog_status_t status)
 {
     switch(status)
     {
-        case QP_SUCESS:
-            printf("QP_SUCESS\n");
+        case QP_SUCCESS:
+            printf("QP_SUCCESS\n");
             break;
         
         case QP_SIZE_MISMATCH:
@@ -70,6 +70,10 @@ quadprog_status_print(quadprog_status_t status)
         
         case QP_NOT_RESTRICTED:
             printf("QP_NOT_RESTRICTED\n");
+            break;
+
+        case QP_BAD_DEFINED:
+            printf("QP_BAD_DEFINED\n");
             break;
         
         case QP_NOT_CONVEX:
@@ -97,7 +101,9 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadpr
         matf32_init(&m1, p_qp->p_c->num_rows, p_qp->p_c->num_cols, m1data);
 
         matf32_scale(p_qp->p_c, -1.0, &m1); // m = -c
-        return linsolve(p_qp->p_Q, &m1, p_x); // LU or SVD
+        linsolve(p_qp->p_Q, &m1, p_x); // LU or SVD
+        
+        return QP_SUCCESS;
     }
 
     // Equality restrictions (solve with normal linsolve methods or specific KKT methods)
@@ -129,6 +135,10 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadpr
                 case QP_QR:
                     return quadprog_qp_linsolve(p_qp, p_x, QR_SQUARE);
                     break;
+
+                default:
+                    return quadprog_qp_linsolve(p_qp, p_x, QR_SQUARE);
+                    break;
             }
         }
 
@@ -140,13 +150,13 @@ quadprog(quadprog_t* p_qp, matf32_t* const p_x, bool set_linsolve_method, quadpr
     {
         return quadprog_sqp(p_qp, p_x);
     }
+
+    return QP_SUCCESS;
 }
 
 quadprog_status_t
 quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t method)
 {
-    err_status_t status;
-
     const matf32_t* p_Q = p_qp->p_Q;
     const matf32_t* p_c = p_qp->p_c;
     const matf32_t* p_Aeq = p_qp->p_Aeq;
@@ -183,12 +193,12 @@ quadprog_qp_linsolve(quadprog_t* p_qp, matf32_t* const p_x, linsolve_method_t me
     matf32_submatrix_copy(p_beq, &kkt_n, 0, 0, p_c->num_rows, 0, p_beq->num_rows, 1); // Save beq in n(c_rows:beq_rows, 1)
 
     // Solve linear system My = n using linsolve's methods
-    status = linsolve_method(&kkt_M, &kkt_n, &kkt_y, method);
+    linsolve_method(&kkt_M, &kkt_n, &kkt_y, method);
 
     // Save the part of y that corresponds to the solution x of the QP
     matf32_submatrix_copy(&kkt_y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
-    return QP_SUCESS;
+    return QP_SUCCESS;
 }
 
 
@@ -271,7 +281,7 @@ quadprog_qp_nullspace(quadprog_t* p_qp, matf32_t* const p_x)
 
     matf32_add(p_x, Zpz, p_x); // p_x = Y*py + Z*pz
 
-    return QP_SUCESS;
+    return QP_SUCCESS;
 }
 
 
@@ -287,8 +297,6 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     const matf32_t* p_c = p_qp->p_c;
     const matf32_t* p_Aeq = p_qp->p_Aeq;
     const matf32_t* p_beq = p_qp->p_beq;
-
-    err_status_t status;
 
     uint16_t rows = p_qp->p_Q->num_rows + p_qp->p_Aeq->num_rows; 
     uint16_t cols = p_qp->p_Q->num_cols + p_qp->p_Aeq->num_rows; // Aeq is used transposed here
@@ -525,7 +533,7 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
     // y = [x lambda]', so save x and discard the lambda (lagrange multipliers)
     matf32_submatrix_copy(&kkt_y, p_x, 0, 0, 0, 0, p_c->num_rows, 1);
 
-    return QP_SUCESS;
+    return QP_SUCCESS;
 }
 
 
@@ -533,9 +541,6 @@ quadprog_qp_ldlt(quadprog_t* p_qp, matf32_t* const p_x)
 quadprog_status_t
 quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
 {
-    err_status_t err_status;
-    quadprog_status_t quadprog_status;
-
     const matf32_t* Q = p_qp->p_Q;
     const matf32_t* c = p_qp->p_c;
     const matf32_t* Aeq = p_qp->p_Aeq;
@@ -591,7 +596,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
 
     matf32_t* temp_row = &m3;
 
-    uint16_t active_index = 0;
     for (uint16_t i = 0; i < Ain->num_rows; ++i)
     {
         matf32_init(temp_row, 1, Ain->num_cols, m3data);
@@ -613,7 +617,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
         {
             index_flags[i] = true;
             working_set_rows += 1;
-            active_index += 1;
         }
     }
 
@@ -703,7 +706,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                err_status = linsolve(&kkt_M, l, &p);
+                linsolve(&kkt_M, l, &p);
                 matf32_init(&lambda, A_w->num_rows, 1, lambda_data);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
                 matf32_submatrix_copy(&p, &lambda, Q->num_rows+Aeq->num_rows, 0, 0, 0, lambda.num_rows, 1);
@@ -744,7 +747,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                err_status = linsolve(&kkt_M, l, &p);
+                linsolve(&kkt_M, l, &p);
                 matf32_init(&lambda, 1, 1, lambda_data);
                 matf32_zeros(&lambda);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
@@ -810,7 +813,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_t p;
                 matf32_init(&p, l->num_rows, 1, p_data);
 
-                err_status = linsolve(&kkt_M, l, &p);
+                linsolve(&kkt_M, l, &p);
                 matf32_init(&lambda, Ax_b->num_rows, 1, lambda_data);
                 matf32_submatrix_copy(&p, &p_k, 0, 0, 0, 0, p_k.num_rows, 1);
                 matf32_submatrix_copy(&p, &lambda, Qx_c->num_rows, 0, 0, 0, lambda.num_rows, 1);
@@ -822,7 +825,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
                 matf32_scale(l, -1.0, l); // n = -Q*x
                 matf32_sub(l, c, l); // n = -Q*x - c
                 
-                err_status = linsolve(Q, l, &p_k); // Solving Qp = -c because in this case there are no constraints
+                linsolve(Q, l, &p_k); // Solving Qp = -c because in this case there are no constraints
                 matf32_init(&lambda, 1, 1, lambda_data);
                 matf32_zeros(&lambda); // No constraints = no Lagrange Multipliers
             }
@@ -860,7 +863,7 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
             if (sigma >= 0)
             {
                 matf32_copy(&x_k, p_x);
-                return QP_SUCESS;
+                return QP_SUCCESS;
             }
             else // sigma is negative, then remove the corresponding condition from the working set
             {
@@ -921,4 +924,6 @@ quadprog_sqp(quadprog_t* p_qp, matf32_t* const p_x)
             matf32_add(&x_k, &p_k, &x_k); // x_k = x_k + alpha*p_k
         }
     }
+
+    return QP_SUCCESS;
 }

@@ -1,14 +1,13 @@
 
 /**
  * @author: Andrea Pineda
- * @date: Created 14 Oct 2025, Last Modified 29 Oct 2025
+ * @date: Created 14 Oct 2025, Last Modified 16 Nov. 2026
  * 
  * For testing mpc functions in robotat_control
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
 
 #include "matf32.h"
@@ -19,9 +18,6 @@
 #define N (4) // Horizon length
 #define ROWS (2)
 #define COLS (1)
-
-static float tmpmat1_data[MAX_MAT_SIZE];
-static matf32_t tmpmat1;
 
 float A_data[ROWS*ROWS] = {1.1, 2.0, 0.0, 0.95};
 matf32_t A;

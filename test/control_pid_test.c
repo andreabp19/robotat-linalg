@@ -1,6 +1,6 @@
 /**
  * @author: Andrea Pineda
- * @date: Created 20 Oct 2025, Last Modified 23 Oct 2025
+ * @date: Created 20 Oct 2025, Last Modified 16 Nov. 2026
  * 
  * For testing pid functions of robotat_control in a computer
  */
@@ -76,7 +76,6 @@ uint8_t t = 100;
 int main(void)
 {
     clock_t time;
-    err_status_t status;
 
     // ---------------------------------------------------------------------------
     // PID TESTING

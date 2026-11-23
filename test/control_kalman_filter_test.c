@@ -1,7 +1,7 @@
 
 /**
  * @author: Andrea Pineda
- * @date: Created 22 Oct 2025, Last Modified 27 Oct 2025
+ * @date: Created 22 Oct 2025, Last Modified 16 Nov. 2026
  * 
  * For testing the kalman filter functions in robotat_control
  */
@@ -76,7 +76,6 @@ ctr_kalman_t kf;
 int main(void)
 {
     clock_t time;
-    err_status_t status;
 
     matf32_init(&A, 1, 1, A_data);
     matf32_init(&B, 1, 1, B_data);

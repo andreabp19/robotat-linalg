@@ -98,16 +98,21 @@ rob_rotx(matf32_t* p_R, float theta, bool angle_units)
 
     float rads = theta*M_PI/180; // TODO: Check why M_PI appears as undefined
 
-    // Check if the input angle is in radians or degrees
-    switch(angle_units)
+    if (angle_units)
     {
-        case 0: // RADIANS
-            break;
-        
-        case 1: // DEGREES
-            rad2deg(&rads); //math.h revisar si hay una
-            break;
-    }
+        rad2deg(&rads); // Degrees
+    } // Else: radians so no conversion is needed
+
+    // Check if the input angle is in radians or degrees
+    //switch(angle_units) // To-Do: Raises warning of switch having a boolean condition, maybe change it to an if?
+    //{
+    //    case 0: // RADIANS
+    //        break;
+    //    
+    //    case 1: // DEGREES
+    //        rad2deg(&rads); //math.h revisar si hay una
+    //        break;
+    //}
 
     // Calculate sin, cos and -sin
     float cos_theta = cosf(theta*M_PI/180);
@@ -136,16 +141,21 @@ rob_roty(matf32_t* p_R, float theta, bool angle_units)
 
     float rads = theta*M_PI/180;
 
-    // Check if the input angle is in radians or degrees
-    switch(angle_units)
+    if (angle_units)
     {
-        case 0: // RADIANS
-            break;
-        
-        case 1:
-            rad2deg(&rads);
-            break;
-    }
+        rad2deg(&rads); // Degrees
+    } // Else: radians so no conversion is needed
+
+    // Check if the input angle is in radians or degrees
+    //switch(angle_units)
+    //{
+    //    case 0: // RADIANS
+    //        break;
+    //    
+    //    case 1:
+    //        rad2deg(&rads);
+    //        break;
+    //}
 
     // Calculate sin, cos and -sin
     float cos_theta = cosf(theta*M_PI/180);
@@ -174,16 +184,21 @@ rob_rotz(matf32_t* p_R, float theta, bool angle_units)
 
     float rads = theta*M_PI/180;
 
-    // Check if the input angle is in radians or degrees
-    switch(angle_units)
+    if (angle_units)
     {
-        case 0: // RADIANS
-            break;
-        
-        case 1:
-            rad2deg(&rads);
-            break;
-    }
+        rad2deg(&rads); // Degrees
+    } // Else: radians so no conversion is needed
+
+    // Check if the input angle is in radians or degrees
+    //switch(angle_units) // To-Do: Raises warning of a switch having a boolean condition, change to an if?
+    //{
+    //    case 0: // RADIANS
+    //        break;
+    //    
+    //    case 1:
+    //        rad2deg(&rads);
+    //        break;
+    //}
 
     // Calculate sin, cos and -sin
     float cos_theta = cosf(theta*M_PI/180);
@@ -358,6 +373,8 @@ rob_apply_rot_sequence(rob_frame_t* p_F, rob_point_t* p_srcp, rob_point_t* p_dst
             rob_apply_transform(p_F, p_srcp, p_dstp);
             break;    
     }
+
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -516,6 +533,8 @@ rob_quat_apply_transform(rob_quat_t* p_srcq, rob_frame_t* p_F, rob_point_t* p_sr
 {
     rob_quat2tr(p_srcq, p_F);
     rob_apply_transform(p_F, p_srcp, p_dstp);
+
+    return ROB_MATH_SUCCESS;
 }
 
 
@@ -644,6 +663,12 @@ rob_rpy2rot(float roll, float pitch, float yaw, rob_angle_sequences_t rot_sequen
             rob_roty(&R_pitch, pitch, angle_units);
             rob_rotx(&R_roll, roll, angle_units);
             break;
+
+        default: // XYZ
+            rob_rotx(&R_yaw, yaw, angle_units);
+            rob_roty(&R_pitch, pitch, angle_units);
+            rob_rotz(&R_roll, roll, angle_units);
+            break;
     }
 
     // Multiply the generated rotation matrices in the order: R_yaw * R_pitch * R_roll, then save to p_R
@@ -725,6 +750,12 @@ rob_eul2rot(float phi, float theta, float psi, rob_angle_sequences_t rot_sequenc
             break;
 
         case ZYZ:
+            rob_rotz(&R_phi, phi, angle_units);
+            rob_roty(&R_theta, theta, angle_units);
+            rob_rotz(&R_psi, psi, angle_units);
+            break;
+
+        default: // ZYZ
             rob_rotz(&R_phi, phi, angle_units);
             rob_roty(&R_theta, theta, angle_units);
             rob_rotz(&R_psi, psi, angle_units);
@@ -914,6 +945,8 @@ rob_eul2quat(float phi, float theta, float psi, rob_angle_sequences_t rot_sequen
 rob_status_t 
 rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* roll, float* pitch, float* yaw)
 {
+    // To-Do: Add units check and conversion options?
+
     if (rob_isrot(p_R))
     {
         return ROT_SIZE_MISMATCH;
@@ -956,6 +989,12 @@ rob_rot2rpy(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
             *pitch = asinf(-1.0*p_R->p_data[6]);
             *roll = atan2f(p_R->p_data[7], p_R->p_data[8]);
             break;
+
+        default: // XYZ
+            *yaw = atan2f(-1.0*p_R->p_data[5], p_R->p_data[8]);
+            *pitch = asinf(p_R->p_data[2]);
+            *roll = atan2f(-1.0*p_R->p_data[1], p_R->p_data[0]);
+            break;
     }
 
     return ROB_MATH_SUCCESS;
@@ -972,6 +1011,8 @@ rob_tr2rpy(rob_frame_t* p_F, bool angle_units, rob_angle_sequences_t rot_sequenc
 rob_status_t 
 rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence, float* phi, float* theta, float* psi)
 {
+    // To-Do: Add angle units check and conversion options?
+
     if (rob_isrot(p_R))
     {
         return ROT_SIZE_MISMATCH;
@@ -1010,6 +1051,12 @@ rob_rot2eul(matf32_t* p_R, bool angle_units, rob_angle_sequences_t rot_sequence,
             break;
 
         case ZYZ:
+            *phi = atan2f(p_R->p_data[5], p_R->p_data[2]);
+            *theta = acosf(p_R->p_data[8]);
+            *psi = atan2f(p_R->p_data[7], -1.0*p_R->p_data[6]);
+            break;
+
+        default: // ZYZ
             *phi = atan2f(p_R->p_data[5], p_R->p_data[2]);
             *theta = acosf(p_R->p_data[8]);
             *psi = atan2f(p_R->p_data[7], -1.0*p_R->p_data[6]);
@@ -1200,15 +1247,13 @@ rob_frame_id_print(rob_frame_id_t tags)
 void
 rob_angle_units_print(bool angle_units)
 {
-    switch(angle_units)
+    if (angle_units)
     {
-        case 0:
-            printf("RADIANS\n");
-            break;
-
-        case 1:
-            printf("DEGREES\n");
-            break;
+        printf("DEGREES\n");
+    }
+    else
+    {
+        printf("RADIANS\n");
     }
 }
 

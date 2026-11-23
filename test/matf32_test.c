@@ -1,15 +1,12 @@
 
 /**
  * @author Andrea Pineda
- * @date Created 23 Aug 2025, last modified: 22 Oct 2025
+ * @date Created 23 Aug 2025, last modified: 16 Nov. 2026
  * 
  * For testing matf32 in computer
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
 
 #include "matf32.h"
 #include "matf32_matlab_data.h"
@@ -122,21 +119,31 @@ matf32_t A_QR;
 float PA_data[MAX_MAT_SIZE];
 matf32_t PA;
 
-// Condition numbers for all input matrices used
+float Vt_data[MAX_MAT_SIZE];
+matf32_t Vt;
+float US_data[MAX_MAT_SIZE];
+matf32_t US;
+float USVt_data[MAX_MAT_SIZE];
+matf32_t USVt;
+
 float cond_A = 0;
-float cond_B = 0;
-float cond_C = 0;
-float cond_D = 0;
+
+uint16_t total_tests_counter = 0;
+uint16_t fails_counter = 0;
+
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter, float cond_A, float max_error);
+
+float matf32_max_numerical_error(const matf32_t* const A, const matf32_t* const B);
 
 int main(void)
 {
-    clock_t time;
-
     printf("\n\n");
 
     for (uint8_t i = 0; i < 10; i++)
     {
         uint8_t n = i + 1; // i is 1 value below the dimension n, for each matrix
+
+        uint16_t p_index[n]; // Permutations vector for LU factorization
 
         matf32_init(&temp, n, n, temp_data);
         matf32_init(&temp_L, n, n, temp_L_data);
@@ -168,6 +175,12 @@ int main(void)
         matf32_init(&R_qr, n, n, R_qr_list[i]);
         matf32_init(&A_QR, A.num_rows, A.num_cols, A_QR_data);
         matf32_init(&PA, A.num_rows, A.num_cols, PA_data);
+
+        matf32_zeros(&temp_L);
+        matf32_zeros(&temp_U);
+        matf32_zeros(&temp);
+        matf32_zeros(&temp_Q);
+        matf32_zeros(&temp_R);
         
         if (n > 1)
         {
@@ -175,492 +188,225 @@ int main(void)
             matf32_init(&U, A.num_rows, A.num_cols, U_data);
             matf32_init(&S, A.num_rows, A.num_cols, S_data);
             matf32_init(&V, A.num_rows, A.num_cols, V_data);
+            matf32_init(&Vt, V.num_cols, V.num_rows, Vt_data);
+            matf32_init(&US, U.num_rows, S.num_cols, US_data);
+            matf32_init(&USVt, U.num_rows, Vt.num_cols, USVt_data);
             matf32_init(&R_jacobi_svd, n, n, R_jacobi_svd_list[i-1]);
         }
 
         const matf32_t* mat_array[3] = {&A, &A, &A};
-        
-        //printf("\n--------------------------------------------------\n");
-        //printf("n = %i\n", n);
-        //printf("--------------------------------------------------\n\n");
 
         matf32_cond(&A, &cond_A);
-        matf32_cond(&C, &cond_C);
-
-        //printf("cond_A = %.9f\n", cond_A);
-        //printf("cond_C = %.9f\n", cond_C);
-        //printf("\n");
 
         // ---------------------------------------------------------------------------
         // matf32_add
         // ---------------------------------------------------------------------------
 
-        /*float add_time[x];
-        float mean_add_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_add(&A, &A, &temp);
-            add_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_add_time = mean(add_time, x);
-
-        bool add_ans = matf32_is_equal(&temp, &R_add);
-        //printf("matf32_add%i\n",n);
-        //printf("%.9f\n", mean_add_time);
-        printf("matf32_add           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_add_time, add_ans?"success":"failure");*/
+        matf32_add(&A, &A, &temp);
+        check_test_case("matf32_add", n, n, matf32_is_equal(&temp, &R_add), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_add));
 
         // ---------------------------------------------------------------------------
         // matf32_sub
         // ---------------------------------------------------------------------------
 
-        /*float sub_time[x];
-        float mean_sub_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_sub(&A, &A, &temp);
-            sub_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_sub_time = mean(sub_time, x);
-
-        bool sub_ans = matf32_is_equal(&temp, &R_sub);
-        //printf("matf32_sub%i\n", n);
-        //printf("%.9f\n", mean_sub_time);
-        printf("matf32_sub           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_sub_time, sub_ans?"success":"failure");*/
+        matf32_sub(&A, &A, &temp);
+        check_test_case("matf32_sub", n, n, matf32_is_equal(&temp, &R_sub), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_sub));
 
         // ---------------------------------------------------------------------------
         // matf32_scale
         // ---------------------------------------------------------------------------
-
-        /*float scale_time[x];
-        float mean_scale_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_scale(&A, c, &temp);
-            scale_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_scale_time = mean(scale_time, x);
-
-        bool scale_ans = matf32_is_equal(&temp, &R_scale);
-        //printf("matf32_scale%i\n", n);
-        //printf("%.9f\n", mean_scale_time);
-        printf("matf32_scale         , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_scale_time, scale_ans?"success":"failure");*/
-
+        
+        matf32_scale(&A, c, &temp);
+        check_test_case("matf32_scale", n, n, matf32_is_equal(&temp, &R_scale), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_scale));
+        
         // ---------------------------------------------------------------------------
         // matf32_trans
         // ---------------------------------------------------------------------------
 
-        /*float trans_time[x];
-        float mean_trans_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_trans(&A, &temp);
-            trans_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_trans_time = mean(trans_time, x);
-
-        bool trans_ans = matf32_is_equal(&temp, &R_trans);
-        //printf("matf32_trans%i\n", n);
-        //printf("%.9f\n", mean_trans_time);
-        printf("matf32_trans         , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_trans_time, trans_ans?"success":"failure");*/
-
+        matf32_trans(&A, &temp);
+        check_test_case("matf32_trans", n, n, matf32_is_equal(&temp, &R_trans), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_trans));
+        
         // ---------------------------------------------------------------------------
         // matf32_mul
         // ---------------------------------------------------------------------------
 
-        /*float mul_time[x];
-        float mean_mul_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_mul(&A, &A, &temp);
-            mul_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_mul_time = mean(mul_time, x);
-
-        bool mul_ans = matf32_is_equal(&temp, &R_mul);
-        //printf("matf32_mul%i\n", n);
-        //printf("%.9f\n", mean_mul_time);
-        printf("matf32_mul           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_mul_time, mul_ans?"success":"failure");*/
+        matf32_mul(&A, &A, &temp);
+        check_test_case("matf32_mul", n, n, matf32_is_equal(&temp, &R_mul), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_mul));
 
         // ---------------------------------------------------------------------------
         // matf32_inv
         // ---------------------------------------------------------------------------
 
-        /*float inv_time[x];
-        float mean_inv_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_inv(&A, &temp);
-            inv_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-    
-        mean_inv_time = mean(inv_time, x);
-
-        bool inv_ans = matf32_is_equal(&temp, &R_inv);
-        //printf("matf32_inv%i\n", n);
-        //printf("%.9f\n", mean_inv_time);
-        printf("matf32_inv           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_inv_time, inv_ans?"success":"failure");*/
+        matf32_inv(&A, &temp);
+        check_test_case("matf32_inv", n, n, matf32_is_equal(&temp, &R_inv), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_inv));
 
         // ---------------------------------------------------------------------------
         // matf32_dot
         // ---------------------------------------------------------------------------
 
-        /*float dot_time[x];
-        float mean_dot_time = 0;
-
         float dot_temp_data[1];
         matf32_t dot_temp;
 
         matf32_init(&dot_temp, 1, 1, dot_temp_data);
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_dot(&rowvec, &colvec, dot_temp_data);
-            dot_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
+        matf32_dot(&rowvec, &colvec, dot_temp_data);
         matf32_set(&dot_temp, 1, 1, *dot_temp_data);
 
-        mean_dot_time = mean(dot_time, x);
-
-        bool dot_ans = matf32_is_equal(&dot_temp, &R_dot);
-        //printf("matf32_dot%i\n", n);
-        //printf("%.9f\n", mean_dot_time);
-        printf("matf32_dot           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_dot_time, dot_ans?"success":"failure");*/
+        check_test_case("matf32_dot", n, n, matf32_is_equal(&dot_temp, &R_dot), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_dot));
 
         // ---------------------------------------------------------------------------
         // matf32_vecposmul
         // ---------------------------------------------------------------------------
         
-        /*float vecposmul_time[x];
-        float mean_vecposmul_time = 0;
         float vecposmul_result[n];
 
         matf32_t vecposmul_temp;
         matf32_init(&vecposmul_temp, n, 1, vecposmul_result);
 
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_vecposmul(&A, colvec.p_data, vecposmul_temp.p_data);
-            vecposmul_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_vecposmul_time = mean(vecposmul_time, x);
-
-        bool vecposmul_ans = matf32_is_equal(&vecposmul_temp, &R_vecposmul);
-        //printf("matf32_vecposmul%i\n", n);
-        //printf("%.9f\n", mean_vecposmul_time);
-        printf("matf32_vecposmul     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecposmul_time, vecposmul_ans?"success":"failure");*/
+        matf32_vecposmul(&A, colvec.p_data, vecposmul_temp.p_data);
+        check_test_case("matf32_vecposmul", n, n, matf32_is_equal(&vecposmul_temp, &R_vecposmul), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&vecposmul_temp, &R_vecposmul));
 
         // ---------------------------------------------------------------------------
         // matf32_vecpremul
         // ---------------------------------------------------------------------------
 
-        /*float vecpremul_time[x];
-        float mean_vecpremul_time = 0;
         float vecpremul_result[n];
 
         matf32_t vecpremul_temp;
         matf32_init(&vecpremul_temp, 1, n, vecpremul_result);
 
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_vecpremul(&A, rowvec.p_data, vecpremul_temp.p_data);
-            vecpremul_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_vecpremul_time = mean(vecpremul_time, x);
-
-        bool vecpremul_ans = matf32_is_equal(&vecpremul_temp, &R_vecpremul);
-        //printf("matf32_vecpremul%i\n", n);
-        //printf("%.9f\n", mean_vecpremul_time);
-        printf("matf32_vecpremul     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecpremul_time, vecpremul_ans?"success":"failure");*/
+        matf32_vecpremul(&A, rowvec.p_data, vecpremul_temp.p_data);
+        check_test_case("matf32_vecpremul", n, n, matf32_is_equal(&vecpremul_temp, &R_vecpremul), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&vecpremul_temp, &R_vecpremul));
 
         // ---------------------------------------------------------------------------
         // matf32_vecmul_col_row
         // ---------------------------------------------------------------------------
-        
-        /*float vecmul_time[x];
-        float mean_vecmul_time = 0;
 
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_vecmul_col_row(colvec_list[i], rowvec_list[i], &temp);
-            vecmul_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_vecmul_time = mean(vecmul_time, x);
-
-        bool vecmul_ans = matf32_is_equal(&temp, &R_vecmul);
-        //printf("matf32_vecmul%i\n", n);
-        //printf("%.9f\n", mean_vecmul_time);
-        printf("matf32_vecmul_col_row, Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_vecmul_time, vecmul_ans?"success":"failure");*/
+        matf32_vecmul_col_row(colvec_list[i], rowvec_list[i], &temp);
+        check_test_case("matf32_vecmul", n, n, matf32_is_equal(&temp, &R_vecmul), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_vecmul));
 
         // ---------------------------------------------------------------------------
         // matf32_arr_add
         // ---------------------------------------------------------------------------
 
-        /*float arr_add_time[x];
-        float mean_arr_add_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_arr_add(mat_array, 3, &temp);
-            arr_add_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_arr_add_time = mean(arr_add_time, x);
-
-        bool arr_add_ans = matf32_is_equal(&temp, &R_arr_add);
-        //printf("matf32_arr_add%i\n", n);
-        //printf("%.9f\n", mean_arr_add_time);
-        printf("matf32_arr_add       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_add_time, arr_add_ans?"success":"failure");*/
+        matf32_arr_add(mat_array, 3, &temp);
+        check_test_case("matf32_arr_add", n, n, matf32_is_equal(&temp, &R_arr_add), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_arr_add));
 
         // ---------------------------------------------------------------------------
         // matf32_arr_sub
         // ---------------------------------------------------------------------------
 
-        /*float arr_sub_time[x];
-        float mean_arr_sub_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_arr_sub(mat_array, 3, &temp);
-            arr_sub_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_arr_sub_time = mean(arr_sub_time, x);
-
-        bool arr_sub_ans = matf32_is_equal(&temp, &R_arr_sub);
-        //printf("matf32_arr_sub%i\n", n);
-        //printf("%.9f\n", mean_arr_sub_time);
-        printf("matf32_arr_sub       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_sub_time, arr_sub_ans?"success":"failure");*/
+        matf32_arr_sub(mat_array, 3, &temp);
+        check_test_case("matf32_arr_sub", n, n, matf32_is_equal(&temp, &R_arr_sub), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_arr_sub));
 
         // ---------------------------------------------------------------------------
         // matf32_arr_mul
         // ---------------------------------------------------------------------------
 
-        /*float arr_mul_time[x];
-        float mean_arr_mul_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_arr_mul(mat_array, 3, &temp);
-            arr_mul_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_arr_mul_time = mean(arr_mul_time, x);
-
-        bool arr_mul_ans = matf32_is_equal(&temp, &R_arr_mul);
-        //printf("matf32_arr_mul%i\n", n);
-        //printf("%.9f\n", mean_arr_mul_time);
-        printf("matf32_arr_mul       , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_arr_mul_time, arr_mul_ans?"success":"failure");*/
+        matf32_arr_mul(mat_array, 3, &temp);
+        check_test_case("matf32_arr_mul", n, n, matf32_is_equal(&temp, &R_arr_mul), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_arr_mul));
 
         // ---------------------------------------------------------------------------
         // matf32_exp
         // ---------------------------------------------------------------------------
 
-        float exp_time[x];
-        float mean_exp_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_exp(&A, &temp, 4);
-            exp_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_exp_time = mean(exp_time, x);
-
-        bool exp_ans = matf32_is_equal(&temp, &R_exp);
-        printf("matf32_exp%i\n", n);
-        printf("%.9f\n", mean_exp_time);
-        //printf("matf32_exp           , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_exp_time, exp_ans?"success":"failure");
+        matf32_exp(&A, &temp, 4);
+        check_test_case("matf32_exp", n, n, matf32_is_equal(&temp, &R_exp), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_exp));
 
         // ---------------------------------------------------------------------------
         // matf32_pinv
         // ---------------------------------------------------------------------------
 
-        // ------------------------- BASIC PINV -------------------------
-        /*float pinv_basic_time[x];
-        float mean_pinv_basic_time = 0;
+        // ------------------------- BASIC PINV --------------------------------------
 
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_pinv(&A, &temp, BASIC_PINV);
-            pinv_basic_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
+        matf32_pinv(&A, &temp, BASIC_PINV);
+        check_test_case("matf32_pinv,basic", n, n, matf32_is_equal(&temp, &R_pinv_basic), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_pinv_basic));
 
-        mean_pinv_basic_time = mean(pinv_basic_time, x);
+        // ------------------------- SVD PINV ----------------------------------------
 
-        bool pinv_basic_ans = matf32_is_equal(&temp, &R_pinv_basic);
-        //printf("matf32_pinv,basic%i\n",n);
-        //printf("%.9f\n", mean_pinv_time);
-        printf("matf32_pinv: Basic   , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_pinv_basic_time, pinv_basic_ans?"success":"failure");*/
-
-        // ------------------------- SVD PINV -------------------------
-
-        /*float pinv_svd_time[x];
-        float mean_pinv_svd_time = 0;
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_pinv(&A, &temp, SVD_PINV);
-            pinv_svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_pinv_svd_time = mean(pinv_svd_time, x);
-
-        bool pinv_svd_ans = matf32_is_equal(&temp, &R_pinv_svd);
-        //printf("matf32_pinv,svd%i\n",n);
-        //printf("%.9f\n", mean_pinv_time);
-        printf("matf32_pinv: SVD     , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_pinv_svd_time, pinv_svd_ans?"success":"failure");*/
+        matf32_pinv(&A, &temp, SVD_PINV);
+        check_test_case("matf32_pinv,svd", n, n, matf32_is_equal(&temp, &R_pinv_svd), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_pinv_svd));
 
         // ---------------------------------------------------------------------------
         // matf32_lu
         // ---------------------------------------------------------------------------
-        
-        /*float lu_time[x];
-        float mean_lu_time = 0;
-        
-        uint16_t p_index[n];
 
-        matf32_zeros(&temp_L);
-        matf32_zeros(&temp_U);
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_lu(&A, &temp_L, &temp_U, p_index);
-            lu_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
+        matf32_lu(&A, &temp_L, &temp_U, p_index);
         matf32_mul(&temp_L, &temp_U, &PA);
-
-        mean_lu_time = mean(lu_time, x);
-
-        bool lu_ans = matf32_is_equal(&PA, &R_lu);
-        //printf("matf32_lu%i\n",n);
-        //printf("%.9f\n", mean_lu_time);
-        printf("matf32_lu            , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_lu_time, lu_ans?"success":"failure");*/
-
+        check_test_case("matf32_lu", n, n, matf32_is_equal(&PA, &R_lu), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&PA, &R_lu));
+        
         // ---------------------------------------------------------------------------
         // matf32_cholesky
         // ---------------------------------------------------------------------------
 
-        /*float cholesky_time[x];
-        float mean_cholesky_time = 0;
-
         matf32_zeros(&temp);
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_cholesky(&C, &temp);
-            cholesky_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
-
-        mean_cholesky_time = mean(cholesky_time, x);
-
-        bool cholesky_ans = matf32_is_equal(&temp, &R_cholesky);
-        //printf("matf32_cholesky%i\n", n);
-        //printf("%.9f\n", mean_cholesky_time);
-        printf("matf32_cholesky      , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_cholesky_time, cholesky_ans?"success":"failure");*/
+        matf32_cholesky(&C, &temp);
+        check_test_case("matf32_cholesky", n, n, matf32_is_equal(&temp, &R_cholesky), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&temp, &R_cholesky));
 
         // ---------------------------------------------------------------------------
         // matf32_qr
         // ---------------------------------------------------------------------------
 
-        /*float qr_time[x];
-        float mean_qr_time = 0;
-
-        matf32_zeros(&temp_Q);
-        matf32_zeros(&temp_R);
-
-        for (uint8_t j = 0; j < x; j++)
-        {
-            time = clock();
-            matf32_qr(&A, &temp_Q, &temp_R);
-            qr_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-        }
+        matf32_qr(&A, &temp_Q, &temp_R);
         matf32_mul(&temp_Q, &temp_R, &A_QR);
-
-        mean_qr_time = mean(qr_time, x);
-
-        bool qr_ans = matf32_is_equal(&A, &R_qr);
-        //printf("matf32_qr%i\n", n);
-        //printf("%.9f\n", mean_qr_time);
-        printf("matf32_qr            , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_qr_time, qr_ans?"success":"failure");*/
+        check_test_case("matf32_qr", n, n, matf32_is_equal(&A_QR, &R_qr), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&A_QR, &R_qr));
 
         // ---------------------------------------------------------------------------
         // matf32_jacobi_svd
         // ---------------------------------------------------------------------------
 
-        /*if (n > 1)
+        if (n > 1)
         {
-            float jacobi_svd_time[x];
-            float mean_jacobi_svd_time = 0;
-
-            float A_copy_data[MAX_MAT_SIZE];
-            matf32_t A_copy;
-            matf32_init(&A_copy, A.num_rows, A.num_cols, A_copy_data);
-            matf32_submatrix_copy(&A, &A_copy, 0, 0, 0, 0, A.num_rows, A.num_cols);
-
-            float Vt_data[MAX_MAT_SIZE];
-            matf32_t Vt;
-            matf32_init(&Vt, V.num_cols, V.num_rows, Vt_data);
-
-            float US_data[MAX_MAT_SIZE];
-            matf32_t US;
-            matf32_init(&US, U.num_rows, S.num_cols, US_data);
-
-            float USVt_data[MAX_MAT_SIZE];
-            matf32_t USVt;
-            matf32_init(&USVt, U.num_rows, Vt.num_cols, USVt_data);
-
-            for (uint8_t j = 0; j < x; j++)
-            {
-                time = clock();
-                matf32_jacobi_svd(&A_copy, &U, &S, &V);
-                jacobi_svd_time[j] = (float)(clock()-time)/CLOCKS_PER_SEC;
-                matf32_copy(&A, &A_copy); // Reset A_copy = A, because it's modified in matf32_jacobi_svd
-            }
-            matf32_trans(&V, &Vt);
+            matf32_jacobi_svd(&A, &U, &S, &V);
+            matf32_trans(&V, &Vt); // To-Do: Add functions in matf32 to reconstruct the factorizations, it will be easier
             matf32_mul(&U, &S, &US);
             matf32_mul(&US, &Vt, &USVt);
-
-            mean_jacobi_svd_time = mean(jacobi_svd_time, x);
-
-            bool jacobi_svd_ans = matf32_is_equal(&USVt, &R_jacobi_svd);
-            //printf("jacobi_svd%i\n", n);
-            //printf("%.9f\n", mean_jacobi_svd_time);
-            printf("matf32_jacobi_svd    , Mean Time (s): %.9f, 1E-05 Tolerance: %s\n", mean_jacobi_svd_time, jacobi_svd_ans?"success":"failure");
-        }*/
-            
-        //printf("\n");
+            check_test_case("matf32_jacobi_svd", n, n, matf32_is_equal(&USVt, &R_jacobi_svd), &total_tests_counter, &fails_counter, cond_A, matf32_max_numerical_error(&USVt, &R_jacobi_svd));
+        }
     }
+
+    printf("\nmatf32: %u/%u passed\n", total_tests_counter - fails_counter, total_tests_counter);
+
+    return fails_counter > 0 ? 1 : 0; // If there was at least one fail, return 1
+}
+
+void check_test_case(const char *routine, int m, int n, bool result, uint16_t *total_tests_counter, uint16_t *fails_counter, float cond_A, float max_error)
+{
+    printf("%s, %i x %i: %s, conditioning A: %.4f, max. error: %.9f\n", routine, m, n, result?"PASS":"FAIL", cond_A, max_error);
+
+    *total_tests_counter += 1;
+
+    if (!result)
+    {
+        *fails_counter += 1;
+    }
+}
+
+float matf32_max_numerical_error(const matf32_t* const A, const matf32_t* const B) // A and B must have the same dimensions and shape
+{
+    float max_error = 0;
+    float numerical_error = 0;
+
+    uint16_t elements = A->num_rows*A->num_cols;
+
+    if (A->num_rows != B->num_rows || A->num_cols != B->num_cols)
+    {
+        return MATH_SIZE_MISMATCH;
+    }
+
+    for (uint16_t k = 0; k < elements; k++)
+    {
+        numerical_error = fabsf(A->p_data[k] - B->p_data[k]);
+
+        if (isnan(numerical_error))
+        {
+            return numerical_error;
+        } 
+
+        if (numerical_error > max_error)
+        {
+            max_error = numerical_error;
+        }
+    }
+
+    return max_error;
 }

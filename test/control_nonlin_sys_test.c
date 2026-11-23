@@ -1,7 +1,7 @@
 
 /**
  * @author: Andrea Pineda
- * @date: Created 28 Oct 2025, Last Modified 28 Oct 2025
+ * @date: Created 28 Oct 2025, Last Modified 16 Nov. 2026
  * 
  * For testing nonlinear systems functions of robotat_control in computer
  */
@@ -60,7 +60,6 @@ err_status_t pendulum_outputs(matf32_t* const sys_output, const matf32_t* sys_st
 int main(void)
 {
     clock_t time;
-    err_status_t status;
 
     // ---------------------------------------------------------------------------
     // NONLINEAR SYSTEMS TESTING
@@ -86,9 +85,6 @@ int main(void)
     //printf("--------------------------------------------------\n");
 
     float delta = 2;
-
-    float lti_state_data[MAX_MAT_SIZE];
-    matf32_t lti_state;
 
     float A_data[MAX_MAT_SIZE];
     float B_data[MAX_MAT_SIZE];
@@ -181,7 +177,7 @@ int main(void)
 
     // For comparing results with loclin_fast.m, add an array of random values for x and u and iterate over it.
 
-    //printf("linloc,mean_time(s):%.9f\n\n", mean_linloc_time); // Time measurement
+    printf("linloc,mean_time(s):%.9f\n\n", mean_linloc_time); // Time measurement
 
     // ---------------------------------------------------------------------------
     // ctr_linear_state_feedback
@@ -206,7 +202,6 @@ int main(void)
         matf32_init(&x, n, 1, x_list[i]);
         matf32_init(&K, 1, n, K_list[i]);
 
-        float linear_state_feedback_time[samples];
         float mean_linear_state_feedback_time = 0;
         time = clock();
         for (uint8_t i = 0; i < samples; i++)
@@ -260,10 +255,10 @@ int main(void)
     //printf("x_k_1 - Forward Euler:\n");
     //matf32_print(&x_k_1);
 
-    //mean_nonlin_sim_fwd_eul_time = mean(nonlin_sim_fwd_eul_time, samples);
+    mean_nonlin_sim_fwd_eul_time = mean(nonlin_sim_fwd_eul_time, samples);
 
-    //bool nonlin_sim_fwd_eul_ans = matf32_is_equal(&x_k_1, &R_x_k_1_fwd_eul);
-    //printf("nonlin_simulate, mean_time(s): %.9f, ForwardEuler: %s\n\n", mean_nonlin_sim_fwd_eul_time, nonlin_sim_fwd_eul_ans?"success":"failure");
+    bool nonlin_sim_fwd_eul_ans = matf32_is_equal(&x_k_1, &R_x_k_1_fwd_eul);
+    printf("nonlin_simulate, mean_time(s): %.9f, ForwardEuler: %s\n\n", mean_nonlin_sim_fwd_eul_time, nonlin_sim_fwd_eul_ans?"success":"failure");
 
     // Print nonlin_simulate Forward Euler time results for plotting in matlab
     printf("nonlin_simulate_fwd_eul\n");
@@ -290,8 +285,8 @@ int main(void)
 
     mean_nonlin_sim_rk4_time = mean(nonlin_sim_rk4_time, samples);
 
-    //bool nonlin_sim_rk4_ans = matf32_is_equal(&x_k_1, &R_x_k_1_rk4);
-    //printf("nonlin_simulate, mean_time(s): %.9f, RK4: %s\n", mean_nonlin_sim_rk4_time, nonlin_sim_rk4_ans?"success":"failure");
+    bool nonlin_sim_rk4_ans = matf32_is_equal(&x_k_1, &R_x_k_1_rk4);
+    printf("nonlin_simulate, mean_time(s): %.9f, RK4: %s\n", mean_nonlin_sim_rk4_time, nonlin_sim_rk4_ans?"success":"failure");
 
     // Print nonlin_simulate Runge-Kutta4 time results for plotting in matlab
     printf("nonlin_simulate_rk4\n");
